@@ -1,0 +1,685 @@
+@Init_sprites
+Dim Vector(1,4)
+For I%=0 To 1
+  For J%=1 To 4
+    Read Vector(I%,J%)
+  Next J%
+Next I%
+@Game
+Procedure Game
+  @Init_variables
+  Defmouse 0
+  @Draw_screen
+  @Mouse_routine
+Return
+Procedure Mouse_routine
+  Do
+    Arrayfill Input_shot(),0
+    Arrayfill Output_shot(),0
+    A=0
+    B=0
+    Bx=0
+    By=0
+    C=0
+    D=0
+    Oa=0
+    Ob=0
+    Oc=0
+    Od=0
+    Oldblock=Block
+    Qu=0
+    Sol=0
+    Mx=Mousex
+    My=Mousey
+    If Mousek=1
+      If Mx>=199 And Mx<232
+        If My>=39 And My<50
+          @Beep
+          Sol=1
+        Endif
+        If My>=54 And My<65
+          @Beep
+          @Finish
+        Endif
+        For I%=0 To 8
+          If My>=I%*32+71 And My<I%*32+103
+            Block=I%+1
+            If Block<>Oldblock
+              @Beep
+            Endif
+          Endif
+        Next I%
+      Endif
+      If Mx>=272 And Mx<280
+        For I%=0 To 7
+          If My>I%*32+80 And My<=I%*32+94
+            @Beep
+            B=I%+1
+            Input_shot(1)=2
+            Input_shot(2)=B
+          Endif
+        Next I%
+      Endif
+      If Mx>=605 And Mx<613
+        For I%=0 To 7
+          If My>I%*32+80 And My<=I%*32+94
+            @Beep
+            D=I%+1
+            Input_shot(1)=4
+            Input_shot(2)=D
+          Endif
+        Next I%
+      Endif
+      If My>=29 And My<43
+        For I%=0 To 7
+          If Mx>I%*32+326 And Mx<=I%*32+334
+            @Beep
+            A=I%+1
+            Input_shot(1)=1
+            Input_shot(2)=A
+          Endif
+        Next I%
+      Endif
+      If My>=358 And My<372
+        For I%=0 To 7
+          If Mx>I%*32+326 And Mx<=I%*32+334
+            @Beep
+            C=I%+1
+            Input_shot(1)=3
+            Input_shot(2)=C
+          Endif
+        Next I%
+      Endif
+      If My>=71 And My<327 And Mx>=311 And Mx<567
+        For I%=0 To 7
+          For J%=0 To 7
+            If Mx>=I%*32+311 And Mx<I%*32+343
+              If My>=J%*32+71 And My<J%*32+103
+                @Beep
+                Bx=I%+1
+                By=J%+1
+              Endif
+            Endif
+          Next J%
+        Next I%
+      Endif
+    Endif
+    If Sol=1
+      @Solve
+    Endif
+    If Block<>Oldblock
+      @Markblock
+    Endif
+    If Bx<>0 And By<>0
+      @Notepad
+    Endif
+    If A<>0 Or B<>0 Or C<>0 Or D<>0
+      @Make_move
+    Endif
+  Loop
+Return
+Procedure Beep
+  Sound 1,14,3,5,5
+  Sound 1,0,0,0,0
+Return
+Procedure Markblock
+  Graphmode 3
+  Deftext 1,16,0,13
+  Text 190,(Oldblock-1)*32+94,Chr$(62)
+  Text 190,(Block-1)*32+94,Chr$(62)
+Return
+Procedure Notepad
+  If Board(Bx,By)<>0
+    Put (Bx-1)*32+312,(By-1)*32+72,Block$(Board(Bx,By)),6
+  Endif
+  Put (Bx-1)*32+312,(By-1)*32+72,Block$(Block),6
+  Board(Bx,By)=Block
+Return
+Procedure Make_move
+  Deftext 1,16,0,13
+  Graphmode 3
+  If A<>0
+    Text (A-1)*32+319,42,"A"
+    X%=Input_shot(2)
+    Y%=1
+  Endif
+  If B<>0
+    Text 264,(B-1)*32+94,"B"
+    X%=1
+    Y%=Input_shot(2)
+  Endif
+  If C<>0
+    Text (C-1)*32+319,371,"C"
+    X%=Input_shot(2)
+    Y%=8
+  Endif
+  If D<>0
+    Text 597,(D-1)*32+94,"D"
+    X%=8
+    Y%=Input_shot(2)
+  Endif
+  Flag=0
+  If Maxshots>Shots
+    If Prev_shots(Input_shot(1),Input_shot(2))=0
+      Path=Input_shot(1)
+      If Input_shot(1)=1 Or Input_shot(1)=2
+        Add Path,2
+      Else
+        Sub Path,2
+      Endif
+      @Beam_path(X%,Y%,Path)
+      Flag=1
+    Else
+      If Prev_shots(Input_shot(1),Input_shot(2))=1
+        Deftext 1,0,0,6
+        Text 45,296,"This probe has"
+        Text 45,304,"been tried"
+        Text 45,312,"previously."
+        Text 45,320,"Try again."
+        Text 45,352,"Click mouse "
+        Text 45,360,"button."
+        Repeat
+        Until Mousek=1
+        Repeat
+        Until Mousek=0
+        Deffill 0,2,8
+        Graphmode 1
+        Pbox 45,288,165,360
+        @Highlight_in
+      Endif
+      If Prev_shots(Input_shot(1),Input_shot(2))=-1
+        Deftext 1,0,0,6
+        Text 45,296,"The reverse of"
+        Text 45,304,"this probe has"
+        Text 45,312,"been tried"
+        Text 45,320,"previously."
+        Text 45,328,"Try again."
+        Text 45,352,"Click mouse "
+        Text 45,360,"button."
+        Repeat
+        Until Mousek=1
+        Repeat
+        Until Mousek=0
+        Deffill 0,2,8
+        Graphmode 1
+        Pbox 45,288,165,360
+        @Highlight_in
+      Endif
+    Endif
+  Endif
+  If Maxshots=<Shots
+    Deftext 1,0,0,6
+    Text 45,296,"All "+Str$(Maxshots)+" probes"
+    Text 45,304,"have been taken"
+    Text 45,312,"Click mouse"
+    Text 45,320,"button, arrange"
+    Text 45,328,"optical pieces"
+    Text 45,336,"on the board to"
+    Text 45,344,"form a solution"
+    Text 45,352,"then click on"
+    Text 45,360,"'Solve'"
+    Repeat
+    Until Mousek= 1
+    Repeat
+    Until Mousek=0
+    Deffill 0,2,8
+    Graphmode 1
+    Pbox 45,288,165,360
+    If Flag=0
+      @Highlight_in
+    Endif
+  Endif
+Return
+Procedure Beam_path(X,Y,Vect)
+  Absorb=0
+  Red=0
+  Repeat
+    Ivect=Vect
+    If Location(X,Y)=1
+      Dec Vect
+      If Vect=0
+        Vect=4
+      Endif
+    Endif
+    If Location(X,Y)=2
+      Inc Vect
+      If Vect=5
+        Vect=1
+      Endif
+    Endif
+    If Location(X,Y)=3
+      Vect=5-Ivect
+    Endif
+    If Location(X,Y)=4
+      If Ivect=2 Or Ivect=4
+        Dec Vect
+      Endif
+      If Ivect=1 Or Ivect=3
+        Inc Vect
+      Endif
+    Endif
+    If Location(X,Y)=5
+      If Ivect=1
+        Vect=3
+      Endif
+      If Ivect=3
+        Vect=1
+      Endif
+      If Ivect=2 Or Ivect=4
+        Absorb=1
+      Endif
+    Endif
+    If Location(X,Y)=6
+      If Ivect=1
+        Vect=3
+      Endif
+      If Ivect=2
+        Vect=4
+      Endif
+      If Ivect=3
+        Vect=1
+      Endif
+      If Ivect=4
+        Vect=2
+      Endif
+    Endif
+    If Location(X,Y)=7
+      Absorb=1
+    Endif
+    If Location(X,Y)=8
+      Red=Not (Red)
+    Endif
+    If Absorb=0
+      X=X+Vector(0,Vect)
+      Y=Y+Vector(1,Vect)
+    Endif
+    '    Print X'Vector(0,Vect)
+    '    Print Y'Vector(1,Vect)
+  Until X=0 Or X=9 Or Y=0 Or Y=9 Or Absorb=1
+  If Absorb=1
+    Red=0
+  Endif
+  If Red=-1
+    Red=1
+  Endif
+  '  Deftext 1,0,0,6
+  '  Text 10,10,"ABCD"
+  Draw 10,272
+  '  Print At(6,6);X'Y
+  '  Print At(6,7);Absorb'Red
+  @Draw_route
+Return
+Procedure Draw_route
+  If X=0
+    Output_shot(1)=2
+    Output_shot(2)=Y
+    Ob=Y
+  Endif
+  If X=9
+    Output_shot(1)=4
+    Output_shot(2)=Y
+    Od=Y
+  Endif
+  If Y=0
+    Output_shot(1)=1
+    Output_shot(2)=X
+    Oa=X
+  Endif
+  If Y=9
+    Output_shot(1)=3
+    Output_shot(2)=X
+    Oc=X
+  Endif
+  Inc Shots
+  Prev_shots(Output_shot(1),Output_shot(2))=-1
+  Prev_shots(Input_shot(1),Input_shot(2))=1
+  If Output_shot(1)=Input_shot(1) And Output_shot(2)=Input_shot(2)
+    @Highlight_out
+  Endif
+  Deftext 1,0,0,6
+  If A<>0
+    Text 69,Shots*8+104,"A"+Str$(A)
+  Endif
+  If B<>0
+    Text 69,Shots*8+104,"B"+Str$(B)
+  Endif
+  If C<>0
+    Text 69,Shots*8+104,"C"+Str$(C)
+  Endif
+  If D<>O
+    Text 69,Shots*8+104,"D"+Str$(D)
+  Endif
+  Text 89,Shots*8+104,Chr$(175)
+  If Absorb=0
+    If Oa<>0
+      Text 101,Shots*8+104,"A"+Str$(Oa)
+    Endif
+    If Ob<>0
+      Text 101,Shots*8+104,"B"+Str$(Ob)
+    Endif
+    If Oc<>0
+      Text 101,Shots*8+104,"C"+Str$(Oc)
+    Endif
+    If Od<>0
+      Text 101,Shots*8+104,"D"+Str$(Od)
+    Endif
+    If Red=1
+      Text 123,Shots*8+104,"RED"
+    Endif
+  Else
+    Text 101,Shots*8+104,"ABSORBED"
+  Endif
+  Text 45,352,"Click mouse "
+  Text 45,360,"button."
+  Repeat
+  Until Mousek=1
+  Repeat
+  Until Mousek=0
+  Deffill 0,2,8
+  Graphmode 1
+  Pbox 45,288,165,360
+  @Highlight_out
+  If Output_shot(1)<>Input_shot(1) Or Output_shot(2)<>Input_shot(2)
+    @Highlight_in
+  Endif
+Return
+Procedure Highlight_in
+  Deftext 1,16,0,13
+  Graphmode 3
+  If A<>0
+    Text (A-1)*32+319,42,"A"
+  Endif
+  If B<>0
+    Text 264,(B-1)*32+94,"B"
+  Endif
+  If C<>0
+    Text (C-1)*32+319,371,"C"
+  Endif
+  If D<>0
+    Text 597,(D-1)*32+94,"D"
+  Endif
+Return
+Procedure Highlight_out
+  Deftext 1,16,0,13
+  Graphmode 3
+  If Oa<>0
+    Text (Oa-1)*32+319,42,"A"
+  Endif
+  If Ob<>0
+    Text 264,(Ob-1)*32+94,"B"
+  Endif
+  If Oc<>0
+    Text (Oc-1)*32+319,371,"C"
+  Endif
+  If Od<>0
+    Text 597,(Od-1)*32+94,"D"
+  Endif
+Return
+Procedure Solve
+  Correct=0
+  For I%=1 To 8
+    For J%=1 To 8
+      If Location(J%,I%)=Board(J%,I%)
+        If Location(J%,I%)<>0
+          Inc Correct
+        Endif
+      Else
+        If Location(J%,I%)=0
+          Put (J%-1)*32+312,(I%-1)*32+72,Block$(Board(J%,I%)),6
+        Else
+          Put (J%-1)*32+312,(I%-1)*32+72,Block$(Board(J%,I%)),6
+          Put (J%-1)*32+312,(I%-1)*32+72,Block$(Location(J%,I%)),6
+        Endif
+      Endif
+    Next J%
+  Next I%
+  Score=Correct/No_blocks*100
+  If Score=100
+    Score=Maxshots/Shots*100
+  Endif
+  Deftext 1,0,0,6
+  Text 45,296,Str$(Correct)+" optical"
+  Text 45,304,"blocks correct,"
+  Text 45,312,"out of "+Str$(No_blocks)+"."
+  Text 45,320,Str$(Shots)+" probes were"
+  Text 45,328,"taken out of a"
+  Text 45,336,"maximum of "+Str$(Maxshots)+"."
+  Text 45,344,"Overall score:"
+  Text 45,352,Str$(Score)
+  Text 45,360,"Click mouse..."
+  Repeat
+  Until Mousek=1
+  Repeat
+  Until Mousek=0
+  Deffill 0,2,8
+  Graphmode 1
+  Pbox 45,288,165,360
+  Text 45,296,"Click on 'Quit'"
+  Text 45,304,"to quit, or"
+  Text 45,312,"click anywhere"
+  Text 45,320,"else to play"
+  Text 45,328,"another game."
+  Repeat
+    Mx=Mousex
+    My=Mousey
+  Until Mousek=1
+  Deffill 0,2,8
+  Graphmode 1
+  Pbox 45,288,165,360
+  If Mx>=199 And Mx<232 And My>=54 And My<65
+    @Beep
+    @Finish
+  Endif
+  @Game
+Return
+Procedure Finish
+  Alert 2,"Do you really want or quit?", 2, "Yes|No", Button
+  If Button=1
+    Quit
+  Endif
+Return
+Procedure Draw_screen
+  Cls
+  Deffill 1,2,4
+  Pbox 20,20,240,380
+  Deffill 1,2,8
+  Pbox 260,20,620,380
+  Deffill 0,2,8
+  Pbox 312,72,567,327
+  Pbox 200,72,232,360
+  Pbox 188,72,198,360
+  Pbox 200,40,232,50
+  Pbox 200,55,232,65
+  Pbox 45,72,165,272
+  Pbox 45,288,165,360
+  For X%=0 To 8
+    For Y%=0 To 8
+      Ax%=X%*32+311
+      Ay%=Y%*32+71
+      Draw Ax%,Ay% To Ax%+1,Ay% To Ax%+1,Ay%+1 To Ax%,Ay%+1
+    Next Y%
+  Next X%
+  Deftext 1,0,0,4
+  Text 202,47,"Solve"
+  Text 205,62,"Quit"
+  Graphmode 3
+  Text 312,70,"A"
+  Text 563,70,"A"
+  Text 312,333,"C"
+  Text 563,333,"C"
+  Text 306,77,"B"
+  Text 306,327,"B"
+  Text 569,77,"D"
+  Text 569,327,"D"
+  Deftext 1,0,0,6
+  Text 45,80,"Record of"
+  Text 45,88,"previous probes"
+  For I%=1 To Maxshots
+    Text 45,I%*8+104,I%
+  Next I%
+  Deftext 1,16,0,13
+  For I%=0 To 7
+    Ax%=I%*32+328
+    Ay%=I%*32+94
+    Text Ax%,42,I%+1
+    Text Ax%,371,I%+1
+    Text 273,Ay%,I%+1
+    Text 606,Ay%,I%+1
+  Next I%
+  Restore Sprite_coordinates
+  For I%=1 To 32 Step 4
+    Read Ax%,Ay%,Bx%,By%,Cx%,Cy%,Dx%,Dy%
+    Sprite Spr$(I%),Ax%,Ay%
+    Sprite Spr$(I%+1),Bx%,By%
+    Sprite Spr$(I%+2),Cx%,Cy%
+    Sprite Spr$(I%+3),Dx%,Dy%
+    Get Ax%,Ay%,Dx%+15,Dy%+15,Block$((I%+3)/4)
+  Next I%
+  Text 190,(Block-1)*32+94,Chr$(62)
+Return
+Procedure Init_variables
+  R=1 ! Temporary, later select screen proc will be written
+  Dim Location(8,8)
+  Arrayfill Location(),0
+  Restore 2
+  Read No_blocks
+  For I%=1 To No_blocks
+    Read X%,Y%
+    Read Location(X%,Y%)
+  Next I%
+  Read Maxshots
+  '  For I=1 To 8
+  '  For J=1 To 8
+  '  Print At(J,I);Location(J,I)
+  ' Next J
+  ' Next I
+  '  Pause 500
+  Shots=0
+  Block=9
+  Dim Block$(9)
+  Dim Board(8,8)
+  Arrayfill Board(),0
+  Dim Prev_shots(4,8)
+  Arrayfill Prev_shots(),0
+  Dim Input_shot(2)
+  Dim Output_shot(2)
+Return
+Procedure Init_sprites
+  Dim Spr$(32)
+  For I%=1 To 32
+    Spr$(I%)=Mki$(0)+Mki$(0)+Mki$(0)+Mki$(0)+Mki$(1)
+    For J%=1 To 16
+      Read Foregrnd,Backgrnd
+      Spr$(I%)=Spr$(I%)+Mki$(Backgrnd)+Mki$(Foregrnd)
+    Next J%
+  Next I%
+Return
+Data 0,0,12,0,12,0,12,0,12,0,12,0,12,0,12,0
+Data 28,0,24,0,4152,0,12528,0,32736,0,32640,0,12288,0,4096,0
+'
+Data 0,0,12288,0,30720,0,64512,0,12288,0,12288,0,12288,0,12288,0
+Data 14336,0,6144,0,7168,0,3840,0,2046,0,510,0,0,0,0,0
+'
+Data 0,0,0,0,32640,0,32736,0,240,0,56,0,24,0,28,0
+Data 12,0,12,0,12,0,12,0,63,0,30,0,12,0,0,0
+'
+Data 8,0,12,0,510,0,2046,0,3852,0,7176,0,6144,0,14336,0
+Data 12288,0,12288,0,12288,0,12288,0,12288,0,12288,0,12288,0,0,0
+'
+Data 0,0,12,0,30,0,63,0,12,0,12,0,12,0,12,0
+Data 28,0,24,0,56,0,240,0,32736,0,32640,0,0,0,0,0
+'
+Data 0,0,12288,0,12288,0,12288,0,12288,0,12288,0,12288,0,12288,0
+Data 14336,0,6144,0,7176,0,3852,0,2046,0,510,0,12,0,8,0
+'
+Data 4096,0,12288,0,32640,0,32736,0,12528,0,4152,0,24,0,28,0
+Data 12,0,12,0,12,0,12,0,12,0,12,0,12,0,0,0
+'
+Data 0,0,0,0,510,0,2046,0,3840,0,7168,0,6144,0,14336,0
+Data 12288,0,12288,0,12288,0,12288,0,64512,0,30720,0,12288,0,0,0
+'
+Data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Data 0,0,0,0,0,0,0,0,0,0,1,0,3,0,4,0
+' 10
+Data 8,0,28,0,54,0,107,0,210,0,420,0,840,0,1680,0
+Data 3360,0,6720,0,13440,0,26880,0,53760,0,41984,0,18432,0,36864,0
+'
+Data 9,0,18,0,37,0,75,0,150,0,300,0,600,0,1200,0
+Data 2400,0,4800,0,9600,0,19200,0,54784,0,27648,0,14336,0,4096,0
+'
+Data 8192,0,49152,0,32768,0,0,0,0,0,0,0,0,0,0,0
+Data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+'
+Data 4096,0,14336,0,27648,0,54784,0,19200,0,9600,0,4800,0,2400,0
+Data 1200,0,600,0,300,0,150,0,75,0,37,0,18,0,9,0
+'
+Data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Data 0,0,0,0,0,0,0,0,0,0,32768,0,49152,0,8192,0
+'
+Data 4,0,3,0,1,0,0,0,0,0,0,0,0,0,0,0
+Data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+'
+Data 36864,0,18432,0,41984,0,53760,0,26880,0,13440,0,6720,0,3360,0
+Data 1680,0,840,0,420,0,210,0,107,0,54,0,28,0,8,0
+'
+Data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Data 0,0,0,0,0,0,0,0,0,0,65535,0,54613,0,43690,0
+'
+Data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+Data 0,0,0,0,0,0,0,0,0,0,65535,0,1,0,43691,0
+'
+Data 32768,0,65535,0,0,0,0,0,0,0,0,0,0,0,0,0
+Data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+' 20
+Data 21845,0,65535,0,0,0,0,0,0,0,0,0,0,0,0,0
+Data 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+'
+Data 0,0,15,0,127,0,507,0,1022,0,2013,0,4086,0,8063,0
+Data 8181,0,15839,0,14330,0,16247,0,32221,0,30583,0,32221,0,32630,0
+'
+Data 0,0,61440,0,65024,0,24448,0,59840,0,21216,0,41072,0,17080,0
+Data 43288,0,20604,0,43964,0,17748,0,43710,0,21870,0,43710,0,30582,0
+'
+Data 32221,0,30582,0,32221,0,32631,0,15325,0,16383,0,16255,0,8191,0
+Data 7645,0,4095,0,1911,0,989,0,503,0,127,0,15,0,0,0
+'
+Data 40414,0,30582,0,56798,0,30590,0,56828,0,65532,0,32636,0,65528,0
+Data 56792,0,65392,0,30688,0,56768,0,30592,0,65024,0,61440,0,0,0
+'
+Data 0,0,15,0,127,0,511,0,1023,0,2047,0,4095,0,8191,0
+Data 8191,0,16383,0,16383,0,16383,0,32767,0,32767,0,32767,0,32767,0
+'
+Data 0,0,61440,0,65024,0,65408,0,65472,0,65504,0,65520,0,65528,0
+Data 65528,0,65532,0,65532,0,65532,0,65534,0,65534,0,65534,0,65534,0
+'
+Data 32767,0,32767,0,32767,0,32767,0,16383,0,16383,0,16383,0,8191,0
+Data 8191,0,4095,0,2047,0,1023,0,511,0,127,0,15,0,0,0
+'
+Data 65534,0,65534,0,65534,0,65534,0,65532,0,65532,0,65532,0,65528,0
+Data 65528,0,65520,0,65504,0,65472,0,65408,0,65024,0,61440,0,0,0
+'
+Data 19,0,69,0,19,0,69,0,19,0,69,0,19,0,69,0
+Data 19,0,21829,0,19,0,43685,0,3,0,21845,0,43691,0,65535,0
+' 30
+Data 51200,0,41472,0,51200,0,41472,0,51200,0,41472,0,51200,0,41472,0
+Data 51200,0,41642,0,51200,0,42325,0,49152,0,43690,0,54613,0,65535,0
+'
+Data 65535,0,43691,0,21845,0,3,0,43685,0,19,0,21829,0,19,0
+Data 69,0,19,0,69,0,19,0,69,0,19,0,69,0,19,0
+'
+Data 65535,0,54613,0,43690,0,49152,0,42325,0,51200,0,41642,0,51200,0
+Data 41472,0,51200,0,41472,0,51200,0,41472,0,51200,0,41472,0,51200,0
+' vector array
+Data 0,-1,0,1,-1,0,1,0
+Sprite_coordinates:
+Data 200,72,216,72,200,88,216,88,200,104,216,104,200,120,216,120
+Data 200,136,216,136,200,152,216,152,200,168,216,168,200,184,216,184
+Data 200,200,216,200,200,216,216,216,200,232,216,232,200,248,216,248
+Data 200,264,216,264,200,280,216,280,200,296,216,296,200,312,216,312
+1:
+Data 8,1,1,1,2,2,2,5,3,4,6,4,3,3,5,6,4,6,7,7,7,8,8,8,5,16
+2:
+Data 7,2,3,8,5,3,4,7,3,5,2,5,1,4,5,1,5,6,6,7,7,3,14
+3:
+4:
+5:
