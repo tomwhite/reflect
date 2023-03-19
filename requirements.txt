@@ -1,3 +1,4 @@
+arcade
 blessed
 numba
 numpy

@@ -1,0 +1,250 @@
+"""
+Reflect puzzle.
+"""
+import sys
+
+import arcade
+
+from reflect import Board
+
+# Screen title and size
+SCREEN_WIDTH = 240
+SCREEN_HEIGHT = 320
+SCREEN_TITLE = "Reflect"
+
+BLOCK_SIZE = 40
+SPRITE_SIZE = 32
+
+SPRITE_NAMES = {
+    "/": "oblique_mirror",
+    "\\": "reverse_oblique_mirror",
+    "o": "mirror_ball",
+}
+
+
+class Block(arcade.Sprite):
+    """Block sprite"""
+
+    def __init__(self, piece, name, scale=1):
+        self.piece = piece
+        self.name = name
+
+        # TODO: need to package these and use :resources: ?
+        self.image_file_name = f"sprites/{self.name}_tr.png"
+
+        super().__init__(self.image_file_name, scale, hit_box_algorithm="None")
+
+
+class ReflectPuzzle(arcade.Window):
+    def __init__(self, board):
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
+
+        self.board = board
+        n = board.n
+
+        self.shape_list = arcade.ShapeElementList()
+
+        colours = [
+            "#e6194B",
+            "#3cb44b",
+            "#ffe119",
+            "#4363d8",
+            "#f58231",
+            "#42d4f4",
+            "#f032e6",
+            "#fabed4",
+            "#469990",
+            "#dcbeff",
+            "#9A6324",
+            "#fffac8",
+            "#800000",
+            "#aaffc3",
+            "#000075",
+            "#a9a9a9",
+        ]
+        colours = [arcade.color_from_hex_string(colour) for colour in colours]
+        n = self.board.n
+        beams = self.board.beams
+        m = beams.shape[0]
+        for bi in range(m):
+            colour = colours[bi]
+            width = 5
+            for off in range(0, 4, 2):
+                i = beams[bi, off]
+                j = beams[bi, off + 1]
+                if i == -1:
+                    y = flip_y(20 + (j + 1) * 40)
+                    line = arcade.create_line(5, y, 40, y, colour, width)
+                elif i == n:
+                    y = flip_y(20 + (j + 1) * 40)
+                    line = arcade.create_line(200, y, 235, y, colour, width)
+                elif j == -1:
+                    x = 20 + (i + 1) * 40
+                    line = arcade.create_line(
+                        x, flip_y(5), x, flip_y(40), colour, width
+                    )
+                elif j == n:
+                    x = 20 + (i + 1) * 40
+                    line = arcade.create_line(
+                        x, flip_y(200), x, flip_y(235), colour, width
+                    )
+                self.shape_list.append(line)
+
+        for x in range(BLOCK_SIZE, BLOCK_SIZE * (n + 2), BLOCK_SIZE):
+            line = arcade.create_line(
+                x,
+                flip_y(BLOCK_SIZE),
+                x,
+                flip_y(BLOCK_SIZE * (n + 1)),
+                arcade.color.BLACK,
+                1,
+            )
+            self.shape_list.append(line)
+        for y in range(BLOCK_SIZE, BLOCK_SIZE * (n + 2), BLOCK_SIZE):
+            line = arcade.create_line(
+                BLOCK_SIZE,
+                flip_y(y),
+                BLOCK_SIZE * (n + 1),
+                flip_y(y),
+                arcade.color.BLACK,
+                1,
+            )
+            self.shape_list.append(line)
+
+        # block sprites
+        self.block_list = None
+        self.block_cells = None
+
+        # block currently being held (dragged)
+        self.held_block = None
+        self.held_block_original_position = None
+
+        # cell sprites
+        self.cell_list = None
+        # dict mapping cell to index on board
+        self.cell_indexes = None
+
+        arcade.set_background_color(arcade.color.WHITE)
+
+    def setup(self):
+        self.block_list = arcade.SpriteList()
+        self.block_cells = {}
+
+        self.cell_list: arcade.SpriteList = arcade.SpriteList()
+        self.cell_indexes = {}
+
+        for i, piece in enumerate(self.board.pieces):
+            block = Block(piece, SPRITE_NAMES[piece])
+            x = 20 + ((i % 4) + 1) * 40
+            y = flip_y((i // 4 * 40) + 240 + 20)
+            block.position = x, y
+            self.block_list.append(block)
+            cell = arcade.SpriteSolidColor(
+                SPRITE_SIZE, SPRITE_SIZE, arcade.color.ALICE_BLUE
+            )
+            cell.position = block.position
+            self.cell_list.append(cell)
+            self.block_cells[cell] = block
+        self.held_block = None
+        self.held_block_original_position = None
+
+        for i in range(self.board.n):
+            for j in range(self.board.n):
+                cell = arcade.SpriteSolidColor(
+                    SPRITE_SIZE, SPRITE_SIZE, arcade.color.ALICE_BLUE
+                )
+                self.cell_indexes[cell] = (i, j)
+                x = 20 + (i + 1) * 40
+                y = flip_y(20 + (j + 1) * 40)
+                cell.position = x, y
+                self.cell_list.append(cell)
+
+    def on_draw(self):
+        self.clear()
+        self.shape_list.draw()
+        self.cell_list.draw()
+        self.block_list.draw()
+
+    def pull_to_top(self, block: arcade.Sprite):
+        self.block_list.remove(block)
+        self.block_list.append(block)
+
+    def move_block_to_cell(self, block, cell):
+        prev_cell = None
+        for c, b in dict(self.block_cells).items():
+            if b == block:
+                prev_cell = c
+                break
+        self.block_cells.pop(prev_cell)
+        self.block_cells[cell] = block
+
+        # update the board
+        if prev_cell in self.cell_indexes:
+            i, j = self.cell_indexes[prev_cell]
+            self.board.set_value(i + 1, j + 1, ".")
+
+        if cell in self.cell_indexes:
+            i, j = self.cell_indexes[cell]
+            self.board.set_value(i + 1, j + 1, self.held_block.piece)
+
+    def on_mouse_press(self, x, y, button, key_modifiers):
+        blocks = arcade.get_sprites_at_point((x, y), self.block_list)
+
+        if len(blocks) > 0:
+            block = blocks[-1]  # they don't overlap, but get top one
+            self.held_block = block
+            self.held_block_original_position = self.held_block.position
+            self.pull_to_top(self.held_block)
+
+    def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
+        if self.held_block is None:
+            return
+
+        cell, _ = arcade.get_closest_sprite(self.held_block, self.cell_list)
+        reset_position = True
+        if arcade.check_for_collision(self.held_block, cell):
+            self.held_block.position = cell.center_x, cell.center_y
+            if cell not in self.block_cells:  # not occupied
+                self.block_cells[cell] = self.held_block
+                self.move_block_to_cell(self.held_block, cell)
+                reset_position = False
+        if reset_position:
+            self.held_block.position = self.held_block_original_position
+
+        self.held_block = None
+
+    def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
+        if self.held_block:
+            self.held_block.center_x += dx
+            self.held_block.center_y += dy
+
+    def on_key_press(self, symbol: int, modifiers: int):
+        """User presses key"""
+        if symbol == arcade.key.R:
+            self.setup()
+        elif symbol == arcade.key.S:
+            print(self.board.score())
+        elif symbol == arcade.key.D:  # debug
+            print(self.board)
+
+
+def flip_y(y):
+    # convenience to flip y coordinate
+    return SCREEN_HEIGHT - y
+
+
+def main(full_board_file):
+    full_board_file = sys.argv[1]
+    with open(full_board_file) as f:
+        full_board = "".join(
+            [line for line in f.readlines() if not line.startswith("#")]
+        )
+        full_board = full_board.strip()
+        board = Board.create(full_board=full_board)
+    window = ReflectPuzzle(board)
+    window.setup()
+    arcade.run()
+
+
+if __name__ == "__main__":
+    main(sys.argv[1])
