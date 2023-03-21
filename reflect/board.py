@@ -238,6 +238,25 @@ class Board:
         values = np.vectorize(transpose_val)(values)
         num_beams = self.num_beams  # number of beams doesn't change
         return Board(n, hidden_blocks, values, num_beams)
+    
+    def transforms(self):
+        """Return all the transforms of this board."""
+        board = self
+        yield board
+        board = board.rot90()
+        yield board
+        board = board.rot90()
+        yield board
+        board = board.rot90()
+        yield board
+        board = self.transpose()
+        yield board
+        board = board.rot90()
+        yield board
+        board = board.rot90()
+        yield board
+        board = board.rot90()        
+        yield board
 
 
 def block_str_to_int_array(blocks):
@@ -249,3 +268,23 @@ def block_int_to_str_array(blocks):
     condlist = [blocks == x for x in [0, 1, 2, 3]]
     choicelist = [".", "/", "\\", "o"]
     return np.select(condlist, choicelist, 0)
+
+def boards_are_unique(boards, include_transforms=True):
+    """Test if all boards in a collection are unique.
+    
+    This function is useful for checking if a puzzle has been set before.
+    Uniqueness is based only on the hidden blocks, not on the beams, which are ignored.
+    It might be useful to include beams in the test for uniqueness, but that would
+    require that they are canonicalized somehow.
+    """
+    if include_transforms:
+        all_boards = []
+        for board in boards:
+            all_boards.extend(board.transforms())
+    else:
+        all_boards = boards
+
+    arr = np.stack([board.hidden_blocks.flatten() for board in all_boards])
+    arr_unique = np.unique(arr, axis=0)
+
+    return arr.shape[0] == arr_unique.shape[0]
