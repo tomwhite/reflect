@@ -1,8 +1,10 @@
-from PIL import Image
+# flake8: noqa
 import numpy as np
+from PIL import Image
 
 # The data comes from the original ST listings.
 
+# fmt: off
 oblique_mirror_data = [
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,1,0,3,0,4,0,
@@ -46,6 +48,7 @@ matt_black_ball_data = [
     65534,0,65534,0,65534,0,65534,0,65532,0,65532,0,65532,0,65528,0,
     65528,0,65520,0,65504,0,65472,0,65408,0,65024,0,61440,0,0,0,
 ]
+# fmt: on
 
 
 def convert(raw_data):
@@ -59,12 +62,12 @@ def convert(raw_data):
         a[a == 0] = 255
         a[a == 1] = 0
         quadrants.append(a)
-    
+
     arr = np.empty((32, 32), dtype=np.uint8)
-    arr[0:16,0:16] = quadrants[0]
-    arr[0:16,16:32] = quadrants[1]
-    arr[16:32,0:16] = quadrants[2]
-    arr[16:32,16:32] = quadrants[3]
+    arr[0:16, 0:16] = quadrants[0]
+    arr[0:16, 16:32] = quadrants[1]
+    arr[16:32, 0:16] = quadrants[2]
+    arr[16:32, 16:32] = quadrants[3]
 
     i = Image.fromarray(arr, mode="L")
 
@@ -72,13 +75,13 @@ def convert(raw_data):
 
 
 i = convert(oblique_mirror_data)
-i.save("sprites/oblique_mirror.png","PNG")
+i.save("sprites/oblique_mirror.png", "PNG")
 
 i = convert(reverse_oblique_mirror_data)
-i.save("sprites/reverse_oblique_mirror.png","PNG")
+i.save("sprites/reverse_oblique_mirror.png", "PNG")
 
 i = convert(mirror_ball_data)
-i.save("sprites/mirror_ball.png","PNG")
+i.save("sprites/mirror_ball.png", "PNG")
 
 i = convert(matt_black_ball_data)
-i.save("sprites/matt_black_ball.png","PNG")
+i.save("sprites/matt_black_ball.png", "PNG")

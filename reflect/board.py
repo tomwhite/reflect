@@ -1,30 +1,31 @@
 import numpy as np
 
+
 class Board:
     """A board for Reflect.
-    
-    A board has an outer and an inner part.
 
-    The outer part is one square wide and runs around the edges.
-    It is where beams start and end, and doesn't contain blocks.
-    The corners are not used.
+        A board has an outer and an inner part.
 
-    The inner part contains blocks.
+        The outer part is one square wide and runs around the edges.
+        It is where beams start and end, and doesn't contain blocks.
+        The corners are not used.
 
-    Here is an example board, containing two blocks (`/` and `\\`)
-    on the inner board, and with some beams shown on the
-    outer edges (indicated by A, B, and C).
+        The inner part contains blocks.
 
-    The board is of size n=4, since the inner board is a 4x4 square.
+        Here is an example board, containing two blocks (`/` and `\\`)
+        on the inner board, and with some beams shown on the
+        outer edges (indicated by A, B, and C).
 
-```
-    ....A.
-    ......
-    ......
-    .../\\A
-    B....B
-    ...CC.
-```
+        The board is of size n=4, since the inner board is a 4x4 square.
+
+    ```
+        ....A.
+        ......
+        ......
+        .../\\A
+        B....B
+        ...CC.
+    ```
     """
 
     def __init__(self, n, hidden_blocks, values, num_beams):
@@ -43,13 +44,13 @@ class Board:
 
         if hidden_blocks is not None and full_board is not None:
             raise ValueError("Cannot specify both of hidden_blocks and full_board")
-        
+
         # parse into arrays
         if hidden_blocks is not None:
             hidden_blocks = cls._parse(hidden_blocks)
         if full_board is not None:
             full_board = cls._parse(full_board)
-        
+
         if hidden_blocks is not None:
             n = len(hidden_blocks)
             hidden_blocks = hidden_blocks
@@ -59,13 +60,13 @@ class Board:
         else:
             # get hidden blocks from full board
             n = len(full_board) - 2
-            hidden_blocks = full_board[1:n+1, 1:n+1].copy()
+            hidden_blocks = full_board[1 : n + 1, 1 : n + 1].copy()
             values = full_board
-            values[1:n+1, 1:n+1] = "."  # hide on board
+            values[1 : n + 1, 1 : n + 1] = "."  # hide on board
             # find num_beams from values
             num_beams = np.unique(values).size - 1  # don't count "."
             return cls(n, hidden_blocks, values, num_beams)
-        
+
     @classmethod
     def create_from_arrays(cls, hidden_blocks, beams):
         n = len(hidden_blocks)
@@ -86,8 +87,8 @@ class Board:
         # split into lines (ignore empty lines)
         lines = [line for line in rep.splitlines() if len(line) > 0]
         x = np.array(lines, dtype=bytes)
-        return x.view('S1').reshape((x.size, -1)).astype(str)
-    
+        return x.view("S1").reshape((x.size, -1)).astype(str)
+
     def _format(self):
         return "\n".join("".join(row) for row in self.values)
 
@@ -96,14 +97,16 @@ class Board:
 
     def _format_blocks(self):
         return "\n".join("".join(row) for row in self.hidden_blocks)
-    
+
     def copy(self):
-        return Board(self.n, self.hidden_blocks.copy(), self.values.copy(), self.num_beams)
-    
+        return Board(
+            self.n, self.hidden_blocks.copy(), self.values.copy(), self.num_beams
+        )
+
     def puzzle_string(self):
         """Return a string showing the puzzle"""
         return f"{self}\n\nBlocks: {''.join(self.pieces)}"
-    
+
     def on_edge(self, x, y):
         """Return True if x, y is on an outer edge (not the corners)"""
         return (x in (0, self.n + 1)) != (y in (0, self.n + 1))
@@ -119,11 +122,11 @@ class Board:
         p = p.flatten()
         p = np.sort(p)
         return p
-    
+
     @property
     def pieces_ints(self):
         return block_str_to_int_array(self.pieces)
-    
+
     @property
     def hidden_blocks_ints(self):
         return block_str_to_int_array(self.hidden_blocks)
@@ -155,7 +158,7 @@ class Board:
         if not self.on_inner_board(x, y):
             raise ValueError(f"Cannot set value at ({x}, {y})")
         self.values[y][x] = value
-    
+
     def beam(self, x, y):
         """Send a beam from edge (x, y)"""
         if not self.on_edge(x, y):
@@ -179,7 +182,7 @@ class Board:
         while True:
             if x in (0, n1) or y in (0, n1):
                 break
-            val = self.hidden_blocks[y - 1, x - 1] # hidden_blocks is stored as y,x
+            val = self.hidden_blocks[y - 1, x - 1]  # hidden_blocks is stored as y,x
             if val == "/":
                 dx, dy = -dy, -dx
             elif val == "\\":
@@ -192,12 +195,14 @@ class Board:
         self.num_beams += 1
         self.values[y][x] = label
         return path
-    
+
     def score(self):
         """Return a score for the values on the board, 1 if they match the hidden blocks, 0 otherwise."""
-        eq = np.array_equal(self.values[1:self.n+1, 1:self.n+1], self.hidden_blocks)
+        eq = np.array_equal(
+            self.values[1 : self.n + 1, 1 : self.n + 1], self.hidden_blocks
+        )
         return 1 if eq else 0
-    
+
     def rot90(self):
         """Rotate the board through 90 degrees"""
 
@@ -218,7 +223,6 @@ class Board:
         num_beams = self.num_beams  # number of beams doesn't change
         return Board(n, hidden_blocks, values, num_beams)
 
-
     def transpose(self):
         """Reflect the board in y=x"""
 
@@ -238,7 +242,7 @@ class Board:
         values = np.vectorize(transpose_val)(values)
         num_beams = self.num_beams  # number of beams doesn't change
         return Board(n, hidden_blocks, values, num_beams)
-    
+
     def transforms(self):
         """Return all the transforms of this board."""
         board = self
@@ -255,7 +259,7 @@ class Board:
         yield board
         board = board.rot90()
         yield board
-        board = board.rot90()        
+        board = board.rot90()
         yield board
 
 
@@ -264,14 +268,16 @@ def block_str_to_int_array(blocks):
     choicelist = [0, 1, 2, 3]
     return np.select(condlist, choicelist, 0).astype(np.int8)
 
+
 def block_int_to_str_array(blocks):
     condlist = [blocks == x for x in [0, 1, 2, 3]]
     choicelist = [".", "/", "\\", "o"]
     return np.select(condlist, choicelist, 0)
 
+
 def boards_are_unique(boards, include_transforms=True):
     """Test if all boards in a collection are unique.
-    
+
     This function is useful for checking if a puzzle has been set before.
     Uniqueness is based only on the hidden blocks, not on the beams, which are ignored.
     It might be useful to include beams in the test for uniqueness, but that would

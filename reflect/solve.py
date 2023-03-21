@@ -1,8 +1,7 @@
 import itertools
+
 import numba as nb
 import numpy as np
-
-from .board import *
 
 
 def solve(beams, pieces):
@@ -11,21 +10,23 @@ def solve(beams, pieces):
     Useful for a setter to see if a puzzle has a unique solution.
     """
     permutations = piece_permutations(pieces)
-    return _solve(beams, permutations)  
+    return _solve(beams, permutations)
 
 
 def piece_permutations(pieces):
     """Find the unique permutations for a multi-set (list) of block pieces, represented as integers."""
-    permutations = set(itertools.permutations(pieces))  # convert to a set for uniqueness
+    permutations = set(
+        itertools.permutations(pieces)
+    )  # convert to a set for uniqueness
     return np.array(list(permutations), dtype=np.int8)
 
 
 # adapted from https://stackoverflow.com/a/64234230
-@nb.njit(nb.int32[:,:](nb.int32[:]), cache=True)
+@nb.njit(nb.int32[:, :](nb.int32[:]), cache=True)
 def cproduct_idx(sizes: np.ndarray):
     """Generates ids tuples for a cartesian product"""
     # assert len(sizes) >= 2  # restriction not needed
-    tuples_count  = np.prod(sizes)
+    tuples_count = np.prod(sizes)
     tuples = np.zeros((tuples_count, len(sizes)), dtype=np.int32)
     tuple_idx = 0
     tuple_idx_max = 0
@@ -55,7 +56,7 @@ def cproduct_idx(sizes: np.ndarray):
     return tuples[:tuple_idx_max]  # only return ones actually stored
 
 
-@nb.njit(nb.boolean(nb.int8[:,:], nb.int8[:,:]), cache=True)
+@nb.njit(nb.boolean(nb.int8[:, :], nb.int8[:, :]), cache=True)
 def is_solution(beams, hidden_blocks):
     # beams is a array of shape (m, 4), where m is the number of beams
     # columns are: start x, start y, end x, end y
@@ -93,7 +94,7 @@ def is_solution(beams, hidden_blocks):
     return True
 
 
-@nb.njit(nb.int8[:,:,:](nb.int8[:,:], nb.int8[:,:]), cache=True)
+@nb.njit(nb.int8[:, :, :](nb.int8[:, :], nb.int8[:, :]), cache=True)
 def _solve(beams, permutations):
     solutions = np.zeros((10, 4, 4), dtype=np.int8)  # first 10 solutions only
     num_solutions = 0
@@ -103,7 +104,7 @@ def _solve(beams, permutations):
     length = permutations.shape[1]
     sizes = np.asarray([16] * length, dtype=np.int32)
     tuples = cproduct_idx(sizes)
-    
+
     for i in range(len(tuples)):
         for p in range(num_permutations):
             # set blocks for this tuple/permutation

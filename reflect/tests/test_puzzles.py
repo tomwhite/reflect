@@ -1,11 +1,14 @@
 import pytest
 
-from reflect import *
+from reflect import Board, boards_are_unique, solve
+
 
 def test_puzzles_have_unique_solution(request):
     for full_board_file in (request.config.rootdir / "puzzles").listdir():
         with open(full_board_file) as f:
-            full_board = "".join([line for line in f.readlines() if not line.startswith("#")])
+            full_board = "".join(
+                [line for line in f.readlines() if not line.startswith("#")]
+            )
             full_board = full_board.strip()
 
             board = Board.create(full_board=full_board)
@@ -16,8 +19,10 @@ def test_puzzles_have_unique_solution(request):
             assert len(solutions) == 1
 
 
-@pytest.mark.parametrize("full_board", [
-    """
+@pytest.mark.parametrize(
+    "full_board",
+    [
+        """
 ..B...
 ......
 Do\\..B
@@ -25,7 +30,7 @@ C./...
 ......
 .A....
 """,
-    """
+        """
 .AAC..
 B.\\.\\.
 B./..D
@@ -33,7 +38,7 @@ B./..D
 E....E
 ..DCF.
 """,
-    """
+        """
 .DEIL.
 H..\\oJ
 D//..G
@@ -41,7 +46,8 @@ C..o.K
 A.../B
 .EGFB.
 """,
-])
+    ],
+)
 def test_not_unique_solution(full_board):
     board = Board.create(full_board=full_board)
     beams = board.beams
@@ -58,7 +64,9 @@ def test_puzzle_boards_are_unique(request):
             # ignore this puzzle as it shows an example with the same hidden blocks as puzzle-002, but different clues
             continue
         with open(full_board_file) as f:
-            full_board = "".join([line for line in f.readlines() if not line.startswith("#")])
+            full_board = "".join(
+                [line for line in f.readlines() if not line.startswith("#")]
+            )
             full_board = full_board.strip()
 
             board = Board.create(full_board=full_board)

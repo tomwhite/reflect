@@ -1,6 +1,6 @@
-import sys
 from blessed import Terminal
-from reflect import *
+
+from reflect import Board
 
 
 class Game:
@@ -30,8 +30,8 @@ class Game:
         self.reverse_char()
 
     def get_char_at(self):
-        l = self.size + 1
-        return str(self.board)[self.y * l + self.x]
+        length = self.size + 1
+        return str(self.board)[self.y * length + self.x]
 
     def clear_char(self):
         print(self.term.move_xy(self.x, self.y) + self.get_char_at())
@@ -74,6 +74,7 @@ class Game:
                     elif val == "s":
                         s = self.board.score()
                         self.print_message(f"Score: {s}")
+
 
 if __name__ == "__main__":
     blocks = """

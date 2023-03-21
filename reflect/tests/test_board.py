@@ -1,7 +1,8 @@
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from reflect import *
+from reflect import Board
+
 
 def test_board():
     # note we have to escape a backslash
@@ -29,38 +30,39 @@ def test_board():
     # assert str(board).strip() == blocks.strip()
 
     # corners
-    assert board.on_edge(0, 0) == False
-    assert board.on_edge(0, 5) == False
-    assert board.on_edge(5, 0) == False
-    assert board.on_edge(5, 5) == False
+    assert board.on_edge(0, 0) is False
+    assert board.on_edge(0, 5) is False
+    assert board.on_edge(5, 0) is False
+    assert board.on_edge(5, 5) is False
 
-    assert board.on_inner_board(0, 0) == False
-    assert board.on_inner_board(0, 5) == False
-    assert board.on_inner_board(5, 0) == False
-    assert board.on_inner_board(5, 5) == False
+    assert board.on_inner_board(0, 0) is False
+    assert board.on_inner_board(0, 5) is False
+    assert board.on_inner_board(5, 0) is False
+    assert board.on_inner_board(5, 5) is False
 
     # inner board
-    assert board.on_edge(1, 1) == False
-    assert board.on_edge(2, 1) == False
+    assert board.on_edge(1, 1) is False
+    assert board.on_edge(2, 1) is False
 
-    assert board.on_inner_board(1, 1) == True
-    assert board.on_inner_board(2, 1) == True
+    assert board.on_inner_board(1, 1) is True
+    assert board.on_inner_board(2, 1) is True
 
     # edges
-    assert board.on_edge(1, 0) == True
-    assert board.on_edge(0, 1) == True
-    assert board.on_edge(4, 0) == True
-    assert board.on_edge(0, 4) == True
-    assert board.on_edge(1, 5) == True
-    assert board.on_edge(5, 1) == True
-    assert board.on_edge(4, 5) == True
-    assert board.on_edge(5, 4) == True
+    assert board.on_edge(1, 0) is True
+    assert board.on_edge(0, 1) is True
+    assert board.on_edge(4, 0) is True
+    assert board.on_edge(0, 4) is True
+    assert board.on_edge(1, 5) is True
+    assert board.on_edge(5, 1) is True
+    assert board.on_edge(4, 5) is True
+    assert board.on_edge(5, 4) is True
 
-    assert board.on_inner_board(1, 0) == False
-    assert board.on_inner_board(0, 1) == False
+    assert board.on_inner_board(1, 0) is False
+    assert board.on_inner_board(0, 1) is False
 
     # hidden_board_ints
-    assert_array_equal(board.hidden_blocks_ints,
+    assert_array_equal(
+        board.hidden_blocks_ints,
         np.array(
             [
                 [0, 0, 0, 0],
@@ -68,8 +70,9 @@ def test_board():
                 [0, 0, 0, 1],
                 [0, 0, 0, 0],
             ]
-        ), 
+        ),
     )
+
 
 def test_full_board():
     full_board = """
@@ -97,7 +100,9 @@ B....B
     )
 
     # note that the puzzle string doesn't show hidden blocks
-    assert board.puzzle_string() == """....A.
+    assert (
+        board.puzzle_string()
+        == """....A.
 ......
 ......
 .....A
@@ -105,9 +110,11 @@ B....B
 ...CC.
 
 Blocks: /\\"""
+    )
 
     boardRot90 = board.rot90()
 
+    # fmt: off
     assert_array_equal(
         boardRot90.values,
         np.array(
@@ -128,9 +135,9 @@ Blocks: /\\"""
         np.array(
             [
                 [".", ".", "/", "."],
-                [".", ".", "\\", ".",],
-                [".", ".", ".", ".",],
-                [".", ".", ".", ".",],
+                [".", ".", "\\", "."],
+                [".", ".", ".", "."],
+                [".", ".", ".", "."],
             ]
         ),
     )
@@ -143,7 +150,8 @@ Blocks: /\\"""
             [2, 4, 3, 4],
         ], dtype=np.int8),
     )
-    
+    # fmt: on
+
 
 def test_beam():
     blocks = """
@@ -157,12 +165,10 @@ def test_beam():
     path = board.beam(0, 1)
     assert_array_equal(path[-1], [5, 1])
     path = board.beam(0, 2)
-    assert_array_equal(path[-1], [3, 0]) 
+    assert_array_equal(path[-1], [3, 0])
     path = board.beam(0, 3)
-    assert_array_equal(path[-1], [3, 5]) 
+    assert_array_equal(path[-1], [3, 5])
     path = board.beam(1, 0)
-    assert_array_equal(path[-1], [1, 5]) 
+    assert_array_equal(path[-1], [1, 5])
     path = board.beam(4, 0)
     assert_array_equal(path[-1], [5, 2])
-
-
