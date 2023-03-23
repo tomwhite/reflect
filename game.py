@@ -1,11 +1,12 @@
 """
 Reflect puzzle.
 """
+import datetime
 import sys
 
 import arcade
 
-from reflect import Board
+from reflect import Board, generate
 
 # Screen title and size
 SCREEN_WIDTH = 240
@@ -21,8 +22,30 @@ SPRITE_NAMES = {
     "o": "mirror_ball",
 }
 
+COLOURS = [
+    arcade.color_from_hex_string(colour)
+    for colour in [
+        "#e6194B",
+        "#3cb44b",
+        "#ffe119",
+        "#4363d8",
+        "#f58231",
+        "#42d4f4",
+        "#f032e6",
+        "#fabed4",
+        "#469990",
+        "#dcbeff",
+        "#9A6324",
+        "#fffac8",
+        "#800000",
+        "#aaffc3",
+        "#000075",
+        "#a9a9a9",
+    ]
+]
 
-class Block(arcade.Sprite):
+
+class BlockSprite(arcade.Sprite):
     """Block sprite"""
 
     def __init__(self, piece, name, scale=1):
@@ -39,35 +62,44 @@ class ReflectPuzzle(arcade.Window):
     def __init__(self, board):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
-        self.board = board
-        n = board.n
+        self.original_board = board
+
+        self.shape_list = None
+        self.path_list = None
+
+        # block sprites
+        self.block_list = None
+        self.block_cells = None
+
+        # block currently being held (dragged)
+        self.held_block = None
+        self.held_block_original_position = None
+
+        # cell sprites
+        self.cell_list = None
+        # dict mapping cell to index on board
+        self.cell_indexes = None
+
+        self.game_over = False
+
+        arcade.set_background_color(arcade.color.WHITE)
+
+    def setup(self):
+        if self.original_board is not None:
+            self.board = self.original_board.copy()
+        else:
+            self.board = generate()
+
+        self.start_time = datetime.datetime.now()
 
         self.shape_list = arcade.ShapeElementList()
+        self.path_list = arcade.ShapeElementList()
 
-        colours = [
-            "#e6194B",
-            "#3cb44b",
-            "#ffe119",
-            "#4363d8",
-            "#f58231",
-            "#42d4f4",
-            "#f032e6",
-            "#fabed4",
-            "#469990",
-            "#dcbeff",
-            "#9A6324",
-            "#fffac8",
-            "#800000",
-            "#aaffc3",
-            "#000075",
-            "#a9a9a9",
-        ]
-        colours = [arcade.color_from_hex_string(colour) for colour in colours]
         n = self.board.n
         beams = self.board.beams
         m = beams.shape[0]
         for bi in range(m):
-            colour = colours[bi]
+            colour = COLOURS[bi]
             width = 5
             for off in range(0, 4, 2):
                 i = beams[bi, off]
@@ -90,6 +122,21 @@ class ReflectPuzzle(arcade.Window):
                     )
                 self.shape_list.append(line)
 
+        beam_paths = self.board.beam_paths
+        for bi, beam_path in enumerate(beam_paths):
+            colour = COLOURS[bi]
+            width = 5
+            beam_path = beam_paths[bi]
+            for bj in range(len(beam_path) - 1):
+                i = beam_path[bj]
+                j = beam_path[bj + 1]
+                x0 = 20 + i[0] * 40
+                y0 = flip_y(20 + i[1] * 40)
+                x1 = 20 + j[0] * 40
+                y1 = flip_y(20 + j[1] * 40)
+                line = arcade.create_line(x0, y0, x1, y1, colour, width)
+                self.path_list.append(line)
+
         for x in range(BLOCK_SIZE, BLOCK_SIZE * (n + 2), BLOCK_SIZE):
             line = arcade.create_line(
                 x,
@@ -111,22 +158,6 @@ class ReflectPuzzle(arcade.Window):
             )
             self.shape_list.append(line)
 
-        # block sprites
-        self.block_list = None
-        self.block_cells = None
-
-        # block currently being held (dragged)
-        self.held_block = None
-        self.held_block_original_position = None
-
-        # cell sprites
-        self.cell_list = None
-        # dict mapping cell to index on board
-        self.cell_indexes = None
-
-        arcade.set_background_color(arcade.color.WHITE)
-
-    def setup(self):
         self.block_list = arcade.SpriteList()
         self.block_cells = {}
 
@@ -134,7 +165,7 @@ class ReflectPuzzle(arcade.Window):
         self.cell_indexes = {}
 
         for i, piece in enumerate(self.board.pieces):
-            block = Block(piece, SPRITE_NAMES[piece])
+            block = BlockSprite(piece, SPRITE_NAMES[piece])
             x = 20 + ((i % 4) + 1) * 40
             y = flip_y((i // 4 * 40) + 240 + 20)
             block.position = x, y
@@ -159,10 +190,15 @@ class ReflectPuzzle(arcade.Window):
                 cell.position = x, y
                 self.cell_list.append(cell)
 
+        self.game_over = False
+
     def on_draw(self):
         self.clear()
         self.shape_list.draw()
-        self.cell_list.draw()
+        if self.game_over:
+            self.path_list.draw()
+        else:
+            self.cell_list.draw()
         self.block_list.draw()
 
     def pull_to_top(self, block: arcade.Sprite):
@@ -188,6 +224,9 @@ class ReflectPuzzle(arcade.Window):
             self.board.set_value(i + 1, j + 1, self.held_block.piece)
 
     def on_mouse_press(self, x, y, button, key_modifiers):
+        if self.game_over:
+            return
+
         blocks = arcade.get_sprites_at_point((x, y), self.block_list)
 
         if len(blocks) > 0:
@@ -213,6 +252,9 @@ class ReflectPuzzle(arcade.Window):
 
         self.held_block = None
 
+        if self.board.score() == 1:
+            self.game_over = True
+
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
         if self.held_block:
             self.held_block.center_x += dx
@@ -222,10 +264,23 @@ class ReflectPuzzle(arcade.Window):
         """User presses key"""
         if symbol == arcade.key.R:
             self.setup()
-        elif symbol == arcade.key.S:
-            print(self.board.score())
         elif symbol == arcade.key.D:  # debug
             print(self.board)
+        elif symbol in (
+            arcade.key.KEY_1,
+            arcade.key.KEY_2,
+            arcade.key.KEY_3,
+            arcade.key.KEY_4,
+            arcade.key.KEY_5,
+        ):
+            difficulty = symbol - 48
+            t = self.start_time.isoformat(timespec="seconds")
+            filename = f"puzzles/puzzle-{t}.txt"
+            print(f"Saving to {filename} with difficulty {difficulty}")
+            with open(filename, "w") as f:
+                f.write(f"# Difficulty: {difficulty}\n")
+                f.write(self.board.puzzle_solution())
+                f.write("\n")
 
 
 def flip_y(y):
@@ -233,18 +288,18 @@ def flip_y(y):
     return SCREEN_HEIGHT - y
 
 
-def main(full_board_file):
-    full_board_file = sys.argv[1]
-    with open(full_board_file) as f:
-        full_board = "".join(
-            [line for line in f.readlines() if not line.startswith("#")]
-        )
-        full_board = full_board.strip()
-        board = Board.create(full_board=full_board)
+def main(args):
+    if len(args) > 1:
+        full_board_file = args[1]
+        with open(full_board_file) as f:
+            full_board = "".join([line for line in f.readlines()])
+            board = Board.create(full_board=full_board)
+    else:
+        board = None
     window = ReflectPuzzle(board)
     window.setup()
     arcade.run()
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv)

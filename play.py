@@ -45,9 +45,9 @@ class Game:
             self.print_board()
             self.reverse_char()
 
-    def beam(self):
+    def add_beam(self):
         if board.on_edge(self.x, self.y):
-            self.board.beam(self.x, self.y)
+            self.board.add_beam(self.x, self.y)
             self.print_board()
             self.reverse_char()
 
@@ -68,7 +68,7 @@ class Game:
                     elif val.code == self.term.KEY_DOWN and self.y < self.size - 1:
                         self.move_cursor(0, 1)
                     elif val == " ":
-                        self.beam()
+                        self.add_beam()
                     elif val in (".", "/", "\\"):
                         self.set_value(val)
                     elif val == "s":

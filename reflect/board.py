@@ -1,4 +1,19 @@
+from enum import Enum
+
 import numpy as np
+
+
+class Block(Enum):
+    def __new__(cls, value, char):
+        obj = object.__new__(cls)
+        obj._value_ = value
+        obj.char = char
+        return obj
+
+    BLANK = (0, ".")
+    OBLIQUE_MIRROR = (1, "/")
+    REVERSE_OBLIQUE_MIRROR = (2, "\\")
+    MIRROR_BALL = (3, "o")
 
 
 class Board:
@@ -46,14 +61,13 @@ class Board:
             raise ValueError("Cannot specify both of hidden_blocks and full_board")
 
         # parse into arrays
-        if hidden_blocks is not None:
+        if isinstance(hidden_blocks, str):
             hidden_blocks = cls._parse(hidden_blocks)
-        if full_board is not None:
+        if isinstance(full_board, str):
             full_board = cls._parse(full_board)
 
         if hidden_blocks is not None:
             n = len(hidden_blocks)
-            hidden_blocks = hidden_blocks
             values = np.full((n + 2, n + 2), ".")
             num_beams = 0
             return cls(n, hidden_blocks, values, num_beams)
@@ -67,25 +81,13 @@ class Board:
             num_beams = np.unique(values).size - 1  # don't count "."
             return cls(n, hidden_blocks, values, num_beams)
 
-    @classmethod
-    def create_from_arrays(cls, hidden_blocks, beams):
-        n = len(hidden_blocks)
-        values = np.full((n + 2, n + 2), ".")
-        num_beams = len(beams)
-        for i in range(num_beams):
-            label = chr(ord("A") + i)
-            x = beams[i, 0] + 1
-            y = beams[i, 1] + 1
-            values[y, x] = label
-            x = beams[i, 2] + 1
-            y = beams[i, 3] + 1
-            values[y, x] = label
-        return cls(n, hidden_blocks, values, num_beams)
-
     @staticmethod
     def _parse(rep):
-        # split into lines (ignore empty lines)
-        lines = [line for line in rep.splitlines() if len(line) > 0]
+        # split into lines (ignore blank lines and comments)
+        def filter(line):
+            return len(line.strip()) == 0 or line.startswith("#")
+
+        lines = [line for line in rep.splitlines() if not filter(line)]
         x = np.array(lines, dtype=bytes)
         return x.view("S1").reshape((x.size, -1)).astype(str)
 
@@ -94,9 +96,6 @@ class Board:
 
     def __str__(self):
         return self._format()
-
-    def _format_blocks(self):
-        return "\n".join("".join(row) for row in self.hidden_blocks)
 
     def copy(self):
         return Board(
@@ -107,6 +106,12 @@ class Board:
         """Return a string showing the puzzle"""
         return f"{self}\n\nBlocks: {''.join(self.pieces)}"
 
+    def puzzle_solution(self):
+        """Return a string showing the puzzle and its solution"""
+        values = self.values.copy()
+        values[1 : self.n + 1, 1 : self.n + 1] = self.hidden_blocks
+        return "\n".join("".join(row) for row in values)
+
     def on_edge(self, x, y):
         """Return True if x, y is on an outer edge (not the corners)"""
         return (x in (0, self.n + 1)) != (y in (0, self.n + 1))
@@ -114,6 +119,17 @@ class Board:
     def on_inner_board(self, x, y):
         """Return True if x, y is on the inner board (not outer edge or corners)"""
         return 0 < x <= self.n and 0 < y <= self.n
+
+    def edge_locations(self):
+        """Return all the edge locations in a predictable order."""
+        for x in range(1, self.n + 1):
+            yield x, 0
+        for y in range(1, self.n + 1):
+            yield 0, y
+        for x in range(1, self.n + 1):
+            yield x, self.n + 1
+        for y in range(1, self.n + 1):
+            yield self.n + 1, y
 
     @property
     def pieces(self):
@@ -141,8 +157,13 @@ class Board:
         yv = yv - 1
 
         b = np.empty((self.num_beams, 4), dtype=np.int8)
-        for i in range(self.num_beams):
-            cond = self.values == chr(ord("A") + i)
+        beam_names = {self.values[y, x] for x, y in self.edge_locations()}
+        if "." in beam_names:
+            beam_names.remove(".")
+        beam_names = sorted(beam_names)
+        assert len(beam_names) == self.num_beams
+        for i, label in enumerate(beam_names):
+            cond = self.values == label
             xvc = xv[cond]
             yvc = yv[cond]
             xvc = np.broadcast_to(xvc, (2,))
@@ -153,20 +174,19 @@ class Board:
             b[i, 3] = yvc[1]
         return b
 
-    def set_value(self, x, y, value):
-        """Change block at position (x, y) to `value`"""
-        if not self.on_inner_board(x, y):
-            raise ValueError(f"Cannot set value at ({x}, {y})")
-        self.values[y][x] = value
+    @property
+    def beam_paths(self):
+        beams = self.beams
+        paths = []
+        m = beams.shape[0]
+        for i in range(m):
+            x = beams[i, 0]
+            y = beams[i, 1]
+            paths.append(self.get_path(x + 1, y + 1))
+        return paths
 
-    def beam(self, x, y):
-        """Send a beam from edge (x, y)"""
-        if not self.on_edge(x, y):
-            raise ValueError(f"Cannot beam from ({x}, {y})")
+    def get_path(self, x, y):
         n1 = self.n + 1
-        label = chr(ord("A") + self.num_beams)
-        self.values[y][x] = label
-
         path = []
         path.append((x, y))
         if x == 0:
@@ -183,18 +203,48 @@ class Board:
             if x in (0, n1) or y in (0, n1):
                 break
             val = self.hidden_blocks[y - 1, x - 1]  # hidden_blocks is stored as y,x
-            if val == "/":
+            if val == Block.OBLIQUE_MIRROR.char:
                 dx, dy = -dy, -dx
-            elif val == "\\":
+            elif val == Block.REVERSE_OBLIQUE_MIRROR.char:
                 dx, dy = dy, dx
-            elif val == "o":
+            elif val == Block.MIRROR_BALL.char:
                 dx, dy = -dx, -dy
             # otherwise if val == "." then don't change dx, dy
             x, y = x + dx, y + dy
             path.append((x, y))
+        return path
+
+    def set_value(self, x, y, value):
+        """Change block at position (x, y) to `value`"""
+        if not self.on_inner_board(x, y):
+            raise ValueError(f"Cannot set value at ({x}, {y})")
+        self.values[y][x] = value
+
+    def add_beam(self, x, y):
+        """Send a beam from edge (x, y)"""
+        if not self.on_edge(x, y):
+            raise ValueError(
+                f"Cannot add beam from location that's not on an edge: ({x}, {y})"
+            )
+        label = chr(ord("A") + self.num_beams)
+        self.values[y][x] = label
+        path = self.get_path(x, y)
+        x, y = path[-1]
         self.num_beams += 1
         self.values[y][x] = label
         return path
+
+    def remove_beam(self, x, y):
+        if not self.on_edge(x, y):
+            raise ValueError(
+                f"Cannot remove beam from location that's not on an edge: ({x}, {y})"
+            )
+        label = self.values[y][x]
+        if label == ".":
+            raise ValueError(f"No beam at ({x}, {y})")
+        cond = self.values == label
+        self.values[cond] = "."
+        self.num_beams -= 1
 
     def score(self):
         """Return a score for the values on the board, 1 if they match the hidden blocks, 0 otherwise."""
@@ -208,10 +258,10 @@ class Board:
 
         # rotate values themselves
         def rot90_val(val):
-            if val == "/":
-                return "\\"
-            elif val == "\\":
-                return "/"
+            if val == Block.OBLIQUE_MIRROR.char:
+                return Block.REVERSE_OBLIQUE_MIRROR.char
+            elif val == Block.REVERSE_OBLIQUE_MIRROR.char:
+                return Block.OBLIQUE_MIRROR.char
             else:
                 return val
 
@@ -228,10 +278,10 @@ class Board:
 
         # transpose values themselves
         def transpose_val(val):
-            if val == "/":
-                return "\\"
-            elif val == "\\":
-                return "/"
+            if val == Block.OBLIQUE_MIRROR.char:
+                return Block.REVERSE_OBLIQUE_MIRROR.char
+            elif val == Block.REVERSE_OBLIQUE_MIRROR.char:
+                return Block.OBLIQUE_MIRROR.char
             else:
                 return val
 
@@ -264,14 +314,14 @@ class Board:
 
 
 def block_str_to_int_array(blocks):
-    condlist = [blocks == x for x in [".", "/", "\\", "o"]]
-    choicelist = [0, 1, 2, 3]
+    condlist = [blocks == x.char for x in Block]
+    choicelist = [x.value for x in Block]
     return np.select(condlist, choicelist, 0).astype(np.int8)
 
 
 def block_int_to_str_array(blocks):
-    condlist = [blocks == x for x in [0, 1, 2, 3]]
-    choicelist = [".", "/", "\\", "o"]
+    condlist = [blocks == x.value for x in Block]
+    choicelist = [x.char for x in Block]
     return np.select(condlist, choicelist, 0)
 
 

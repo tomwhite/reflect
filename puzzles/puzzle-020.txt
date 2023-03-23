@@ -1,0 +1,7 @@
+# difficulty: medium
+......
+D\/\..
+E....E
+.\.\.H
+G...\.
+..HDG.

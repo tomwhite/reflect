@@ -1,0 +1,8 @@
+# Another generated puzzle where it works harder to remove as many beams
+# as possible. This one is quite hard.
+......
+Do...J
+E..\/H
+..\...
+G/../.
+.H.E..

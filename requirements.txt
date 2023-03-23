@@ -1,6 +1,8 @@
 arcade
 blessed
+click
 numba
 numpy
 pillow
 pytest
+pytest-cov

@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from reflect import cproduct_idx, is_solution, piece_permutations, solve
+from reflect import Board, cproduct_idx, is_solution, piece_permutations, solve
 
 
 def test_piece_permutations():
@@ -49,23 +49,15 @@ def test_is_solution():
 
 
 def test_solve():
-    beams = np.array(
-        [
-            [3, -1, 4, 2],
-            [-1, 3, 4, 3],
-            [2, 4, 3, 4],
-        ],
-        dtype=np.int8,
-    )
-    pieces = [1, 2]
-    solutions = solve(beams, pieces)
-    solution = np.array(
-        [
-            [0, 0, 0, 0],
-            [0, 0, 0, 0],
-            [0, 0, 1, 2],
-            [0, 0, 0, 0],
-        ],
-        dtype=np.int8,
-    )
-    assert_array_equal(solution, solutions[0])
+    full_board = """
+....A.
+......
+......
+.../\\A
+B....B
+...CC.
+"""
+    board = Board.create(full_board=full_board)
+    solutions = solve(board)
+    assert len(solutions) == 1
+    assert solutions[0].puzzle_solution() == board.puzzle_solution()

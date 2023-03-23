@@ -110,10 +110,6 @@ def print_svg(board):
 if __name__ == "__main__":
     full_board_file = sys.argv[1]
     with open(full_board_file) as f:
-        full_board = "".join(
-            [line for line in f.readlines() if not line.startswith("#")]
-        )
-        full_board = full_board.strip()
+        full_board = "".join([line for line in f.readlines()])
         board = Board.create(full_board=full_board)
-
         print_svg(board)

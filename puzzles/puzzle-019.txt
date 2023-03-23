@@ -1,0 +1,7 @@
+# difficulty: medium
+..B.D.
+B./...
+./.\..
+E..\.G
+F...\D
+.G.EF.

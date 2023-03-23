@@ -1,0 +1,7 @@
+# created by generate.py
+.ABCD.
+D.../J
+E..\\J
+E../.H
+Fo..\C
+.GBHI.

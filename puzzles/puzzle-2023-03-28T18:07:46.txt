@@ -1,0 +1,7 @@
+# Difficulty: 2
+.ABCD.
+..\..B
+A/./..
+....oJ
+G\...C
+.G....

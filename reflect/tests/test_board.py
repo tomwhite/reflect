@@ -112,6 +112,8 @@ B....B
 Blocks: /\\"""
     )
 
+    assert board.puzzle_solution().strip() == full_board.strip()
+
     boardRot90 = board.rot90()
 
     # fmt: off
@@ -153,7 +155,7 @@ Blocks: /\\"""
     # fmt: on
 
 
-def test_beam():
+def test_add_beam():
     blocks = """
 ....
 ../\\
@@ -162,13 +164,34 @@ def test_beam():
 """
     board = Board.create(hidden_blocks=blocks)
     assert_array_equal(board.pieces, ["/", "/", "\\"])
-    path = board.beam(0, 1)
+    path = board.add_beam(0, 1)
     assert_array_equal(path[-1], [5, 1])
-    path = board.beam(0, 2)
+    path = board.add_beam(0, 2)
     assert_array_equal(path[-1], [3, 0])
-    path = board.beam(0, 3)
+    path = board.add_beam(0, 3)
     assert_array_equal(path[-1], [3, 5])
-    path = board.beam(1, 0)
+    path = board.add_beam(1, 0)
     assert_array_equal(path[-1], [1, 5])
-    path = board.beam(4, 0)
+    path = board.add_beam(4, 0)
     assert_array_equal(path[-1], [5, 2])
+
+    assert board.num_beams == 5
+    assert len(board.beam_paths) == 5
+
+    board.remove_beam(0, 1)
+
+    assert board.num_beams == 4
+    assert len(board.beam_paths) == 4
+
+
+def test_edge_locations():
+    blocks = """
+....
+../\\
+.../
+....
+"""
+    board = Board.create(hidden_blocks=blocks)
+    for x, y in board.edge_locations():
+        assert board.on_edge(x, y)
+        assert not board.on_inner_board(x, y)

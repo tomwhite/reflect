@@ -3,14 +3,30 @@ import itertools
 import numba as nb
 import numpy as np
 
+from reflect.board import block_int_to_str_array
 
-def solve(beams, pieces):
+
+def solve(board):
     """Brute force search for all solutions to a puzzle.
 
     Useful for a setter to see if a puzzle has a unique solution.
     """
+    beams = board.beams
+    pieces = board.pieces_ints
     permutations = piece_permutations(pieces)
-    return _solve(beams, permutations)
+    solutions = _solve(beams, permutations)
+    solution_boards = []
+    for solution in solutions:
+        solution_board = board.copy()
+        solution_board.values[
+            1 : board.n + 1, 1 : board.n + 1
+        ] = block_int_to_str_array(solution)
+        solution_boards.append(solution_board)
+    return solution_boards
+
+
+def has_unique_solution(board):
+    return len(solve(board)) == 1
 
 
 def piece_permutations(pieces):
@@ -23,7 +39,7 @@ def piece_permutations(pieces):
 
 # adapted from https://stackoverflow.com/a/64234230
 @nb.njit(nb.int32[:, :](nb.int32[:]), cache=True)
-def cproduct_idx(sizes: np.ndarray):
+def cproduct_idx(sizes: np.ndarray):  # pragma: no cover
     """Generates ids tuples for a cartesian product"""
     # assert len(sizes) >= 2  # restriction not needed
     tuples_count = np.prod(sizes)
@@ -57,7 +73,7 @@ def cproduct_idx(sizes: np.ndarray):
 
 
 @nb.njit(nb.boolean(nb.int8[:, :], nb.int8[:, :]), cache=True)
-def is_solution(beams, hidden_blocks):
+def is_solution(beams, hidden_blocks):  # pragma: no cover
     # beams is a array of shape (m, 4), where m is the number of beams
     # columns are: start x, start y, end x, end y
     # hidden_blocks is an (n, n) array
@@ -95,7 +111,7 @@ def is_solution(beams, hidden_blocks):
 
 
 @nb.njit(nb.int8[:, :, :](nb.int8[:, :], nb.int8[:, :]), cache=True)
-def _solve(beams, permutations):
+def _solve(beams, permutations):  # pragma: no cover
     solutions = np.zeros((10, 4, 4), dtype=np.int8)  # first 10 solutions only
     num_solutions = 0
     hidden_blocks = np.zeros(16, dtype=np.int8)
