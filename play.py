@@ -1,6 +1,8 @@
+import sys
+
 from blessed import Terminal
 
-from reflect import Board
+from reflect import Board, generate
 
 
 class Game:
@@ -13,15 +15,16 @@ class Game:
         self.size = board.n + 2
         self.x = 0
         self.y = 0
+        self.game_over = False
 
     def print_board(self):
-        print(self.term.move_xy(0, 0) + str(self.board))
+        print(self.term.move_xy(0, 0) + self.board.puzzle_string())
 
     def print_message(self, message):
-        print(self.term.move_xy(0, self.n * 2 - 1) + f"{message:<{80}}")
+        print(self.term.move_xy(0, self.n * 2) + f"{message:<{80}}")
 
     def clear_message(self):
-        print(self.term.move_xy(0, self.n * 2 - 1) + (" " * 80))
+        print(self.term.move_xy(0, self.n * 2) + (" " * 80))
 
     def move_cursor(self, dx, dy):
         self.clear_char()
@@ -40,13 +43,14 @@ class Game:
         print(self.term.move_xy(self.x, self.y) + self.term.reverse(self.get_char_at()))
 
     def set_value(self, value):
-        if board.on_inner_board(self.x, self.y):
+        if self.board.on_inner_board(self.x, self.y):
             self.board.set_value(self.x, self.y, value)
             self.print_board()
             self.reverse_char()
 
+    # no longer used (this was used to add beams in an early version of the game)
     def add_beam(self):
-        if board.on_edge(self.x, self.y):
+        if self.board.on_edge(self.x, self.y):
             self.board.add_beam(self.x, self.y)
             self.print_board()
             self.reverse_char()
@@ -67,23 +71,29 @@ class Game:
                         self.move_cursor(0, -1)
                     elif val.code == self.term.KEY_DOWN and self.y < self.size - 1:
                         self.move_cursor(0, 1)
-                    elif val == " ":
-                        self.add_beam()
                     elif val in (".", "/", "\\"):
-                        self.set_value(val)
+                        if not self.game_over:
+                            self.set_value(val)
+                            if self.board.score() == 1:
+                                self.print_message("You win!")
+                                self.game_over = True
                     elif val == "s":
                         s = self.board.score()
                         self.print_message(f"Score: {s}")
 
 
-if __name__ == "__main__":
-    blocks = """
-....
-../\\
-.../
-....
-"""
-    board = Board.create(hidden_blocks=blocks)
+def main(args):
+    if len(args) > 1:
+        full_board_file = args[1]
+        with open(full_board_file) as f:
+            full_board = "".join([line for line in f.readlines()])
+            board = Board.create(full_board=full_board)
+    else:
+        board = generate()
     term = Terminal()
     game = Game(term, board)
     game.play()
+
+
+if __name__ == "__main__":
+    main(sys.argv)
