@@ -96,31 +96,6 @@ class ReflectPuzzle(arcade.Window):
         self.path_list = arcade.ShapeElementList()
 
         n = self.board.n
-        beams = self.board.beams
-        m = beams.shape[0]
-        for bi in range(m):
-            colour = COLOURS[bi]
-            width = 5
-            for off in range(0, 4, 2):
-                i = beams[bi, off]
-                j = beams[bi, off + 1]
-                if i == -1:
-                    y = flip_y(20 + (j + 1) * 40)
-                    line = arcade.create_line(5, y, 40, y, colour, width)
-                elif i == n:
-                    y = flip_y(20 + (j + 1) * 40)
-                    line = arcade.create_line(200, y, 235, y, colour, width)
-                elif j == -1:
-                    x = 20 + (i + 1) * 40
-                    line = arcade.create_line(
-                        x, flip_y(5), x, flip_y(40), colour, width
-                    )
-                elif j == n:
-                    x = 20 + (i + 1) * 40
-                    line = arcade.create_line(
-                        x, flip_y(200), x, flip_y(235), colour, width
-                    )
-                self.shape_list.append(line)
 
         beam_paths = self.board.beam_paths
         for bi, beam_path in enumerate(beam_paths):
@@ -128,14 +103,35 @@ class ReflectPuzzle(arcade.Window):
             width = 5
             beam_path = beam_paths[bi]
             for bj in range(len(beam_path) - 1):
-                i = beam_path[bj]
-                j = beam_path[bj + 1]
-                x0 = 20 + i[0] * 40
-                y0 = flip_y(20 + i[1] * 40)
-                x1 = 20 + j[0] * 40
-                y1 = flip_y(20 + j[1] * 40)
+                start = beam_path[bj]
+                end = beam_path[bj + 1]
+                x0 = 20 + start[0] * 40
+                y0 = flip_y(20 + start[1] * 40)
+                x1 = 20 + end[0] * 40
+                y1 = flip_y(20 + end[1] * 40)
                 line = arcade.create_line(x0, y0, x1, y1, colour, width)
                 self.path_list.append(line)
+
+            start = beam_path[0]
+            end = beam_path[-1]
+            for i, j in (start, end):
+                if i == 0:
+                    y = flip_y(20 + j * 40)
+                    line = arcade.create_line(5, y, 40, y, colour, width)
+                elif i == n + 1:
+                    y = flip_y(20 + j * 40)
+                    line = arcade.create_line(200, y, 235, y, colour, width)
+                elif j == 0:
+                    x = 20 + i * 40
+                    line = arcade.create_line(
+                        x, flip_y(5), x, flip_y(40), colour, width
+                    )
+                elif j == n + 1:
+                    x = 20 + i * 40
+                    line = arcade.create_line(
+                        x, flip_y(200), x, flip_y(235), colour, width
+                    )
+                self.shape_list.append(line)
 
         for x in range(BLOCK_SIZE, BLOCK_SIZE * (n + 2), BLOCK_SIZE):
             line = arcade.create_line(
