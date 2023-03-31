@@ -105,29 +105,24 @@ class ReflectPuzzle(arcade.Window):
             for bj in range(len(beam_path) - 1):
                 start = beam_path[bj]
                 end = beam_path[bj + 1]
-                x0 = 20 + start[0] * 40
-                y0 = flip_y(20 + start[1] * 40)
-                x1 = 20 + end[0] * 40
-                y1 = flip_y(20 + end[1] * 40)
+                x0, y0 = block_index_to_coord(start[0], start[1])
+                x1, y1 = block_index_to_coord(end[0], end[1])
                 line = arcade.create_line(x0, y0, x1, y1, colour, width)
                 self.path_list.append(line)
 
             start = beam_path[0]
             end = beam_path[-1]
             for i, j in (start, end):
+                x, y = block_index_to_coord(i, j)
                 if i == 0:
-                    y = flip_y(20 + j * 40)
                     line = arcade.create_line(5, y, 40, y, colour, width)
                 elif i == n + 1:
-                    y = flip_y(20 + j * 40)
                     line = arcade.create_line(200, y, 235, y, colour, width)
                 elif j == 0:
-                    x = 20 + i * 40
                     line = arcade.create_line(
                         x, flip_y(5), x, flip_y(40), colour, width
                     )
                 elif j == n + 1:
-                    x = 20 + i * 40
                     line = arcade.create_line(
                         x, flip_y(200), x, flip_y(235), colour, width
                     )
@@ -162,8 +157,8 @@ class ReflectPuzzle(arcade.Window):
 
         for i, piece in enumerate(self.board.pieces):
             block = BlockSprite(piece, SPRITE_NAMES[piece])
-            x = 20 + ((i % 4) + 1) * 40
-            y = flip_y((i // 4 * 40) + 240 + 20)
+            x, y = block_index_to_coord((i % 4) + 1, i // 4)
+            y -= 240
             block.position = x, y
             self.block_list.append(block)
             cell = arcade.SpriteSolidColor(
@@ -181,8 +176,7 @@ class ReflectPuzzle(arcade.Window):
                     SPRITE_SIZE, SPRITE_SIZE, arcade.color.ALICE_BLUE
                 )
                 self.cell_indexes[cell] = (i, j)
-                x = 20 + (i + 1) * 40
-                y = flip_y(20 + (j + 1) * 40)
+                x, y = block_index_to_coord(i + 1, j + 1)
                 cell.position = x, y
                 self.cell_list.append(cell)
 
@@ -277,6 +271,12 @@ class ReflectPuzzle(arcade.Window):
                 f.write(f"# Difficulty: {difficulty}\n")
                 f.write(self.board.puzzle_solution())
                 f.write("\n")
+
+
+def block_index_to_coord(i, j):
+    x = i * BLOCK_SIZE + BLOCK_SIZE // 2
+    y = flip_y(j * BLOCK_SIZE + BLOCK_SIZE // 2)
+    return x, y
 
 
 def flip_y(y):
