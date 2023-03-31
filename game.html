@@ -193,19 +193,8 @@
 
         // Beams
         const beamGraphics = this.add.graphics();
-        const beamPathGraphics = this.add.graphics();
-        beamPathGraphics.visible = false;
         for (var bi = 0; bi < beamPaths.length; bi++) {
           const beamPath = beamPaths[bi];
-          for (var bj = 0; bj < beamPath.length - 1; bj++) {
-            const start = beamPath[bj];
-            const end = beamPath[bj + 1];
-            const [x0, y0] = blockIndexToCoord(start[0], start[1]);
-            const [x1, y1] = blockIndexToCoord(end[0], end[1]);
-
-            beamPathGraphics.lineStyle(5, COLOURS[bi]);
-            beamPathGraphics.lineBetween(x0, y0, x1, y1);
-          }
           const start = beamPath[0];
           const end = beamPath[beamPath.length - 1];
           for (let [i, j] of [start, end]) {
@@ -242,6 +231,22 @@
             BLOCK_SIZE * (n + 1),
             y + 40
           );
+        }
+
+        // Beam paths
+        const beamPathGraphics = this.add.graphics();
+        beamPathGraphics.visible = false;
+        for (var bi = 0; bi < beamPaths.length; bi++) {
+          const beamPath = beamPaths[bi];
+          for (var bj = 0; bj < beamPath.length - 1; bj++) {
+            const start = beamPath[bj];
+            const end = beamPath[bj + 1];
+            const [x0, y0] = blockIndexToCoord(start[0], start[1]);
+            const [x1, y1] = blockIndexToCoord(end[0], end[1]);
+
+            beamPathGraphics.lineStyle(5, COLOURS[bi]);
+            beamPathGraphics.lineBetween(x0, y0, x1, y1);
+          }
         }
 
         // Cells
@@ -338,10 +343,21 @@
                 gameOver = true;
                 // disable dragging
                 let images = this.children.list.filter(
-                  (x) => x instanceof Phaser.GameObjects.Sprite
+                  (x) => x instanceof Phaser.GameObjects.Image
                 );
                 images.forEach((image) =>
-                  this.input.setDraggable(image, false)
+                  image.input ? this.input.setDraggable(image, false) : null
+                );
+                // save to local storage
+                const solvedHistoryJson = localStorage.getItem("solvedHistory");
+                const solvedHistory =
+                  solvedHistoryJson == null
+                    ? []
+                    : JSON.parse(solvedHistoryJson);
+                solvedHistory.push(today);
+                localStorage.setItem(
+                  "solvedHistory",
+                  JSON.stringify(solvedHistory)
                 );
               }
             } else if (gameObject.data.get("loc") !== undefined) {
