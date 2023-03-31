@@ -10,7 +10,7 @@ from reflect import Board, generate
 
 # Screen title and size
 SCREEN_WIDTH = 240
-SCREEN_HEIGHT = 320
+SCREEN_HEIGHT = 360
 SCREEN_TITLE = "Reflect"
 
 BLOCK_SIZE = 40
@@ -62,6 +62,8 @@ class ReflectPuzzle(arcade.Window):
     def __init__(self, board):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
+        self.background = None
+
         self.original_board = board
 
         self.shape_list = None
@@ -85,6 +87,9 @@ class ReflectPuzzle(arcade.Window):
         arcade.set_background_color(arcade.color.WHITE)
 
     def setup(self):
+
+        self.background = arcade.load_texture("sprites/reflect.png")
+
         if self.original_board is not None:
             self.board = self.original_board.copy()
         else:
@@ -120,20 +125,20 @@ class ReflectPuzzle(arcade.Window):
                     line = arcade.create_line(200, y, 235, y, colour, width)
                 elif j == 0:
                     line = arcade.create_line(
-                        x, flip_y(5), x, flip_y(40), colour, width
+                        x, flip_y(45), x, flip_y(80), colour, width
                     )
                 elif j == n + 1:
                     line = arcade.create_line(
-                        x, flip_y(200), x, flip_y(235), colour, width
+                        x, flip_y(240), x, flip_y(275), colour, width
                     )
                 self.shape_list.append(line)
 
         for x in range(BLOCK_SIZE, BLOCK_SIZE * (n + 2), BLOCK_SIZE):
             line = arcade.create_line(
                 x,
-                flip_y(BLOCK_SIZE),
+                flip_y(BLOCK_SIZE + 40),
                 x,
-                flip_y(BLOCK_SIZE * (n + 1)),
+                flip_y(BLOCK_SIZE * (n + 1) + 40),
                 arcade.color.BLACK,
                 1,
             )
@@ -141,9 +146,9 @@ class ReflectPuzzle(arcade.Window):
         for y in range(BLOCK_SIZE, BLOCK_SIZE * (n + 2), BLOCK_SIZE):
             line = arcade.create_line(
                 BLOCK_SIZE,
-                flip_y(y),
+                flip_y(y + 40),
                 BLOCK_SIZE * (n + 1),
-                flip_y(y),
+                flip_y(y + 40),
                 arcade.color.BLACK,
                 1,
             )
@@ -184,6 +189,9 @@ class ReflectPuzzle(arcade.Window):
 
     def on_draw(self):
         self.clear()
+        arcade.draw_lrwh_rectangle_textured(
+            0, flip_y(40), SCREEN_WIDTH, 40, self.background
+        )
         self.shape_list.draw()
         if self.game_over:
             self.path_list.draw()
@@ -273,9 +281,9 @@ class ReflectPuzzle(arcade.Window):
                 f.write("\n")
 
 
-def block_index_to_coord(i, j):
-    x = i * BLOCK_SIZE + BLOCK_SIZE // 2
-    y = flip_y(j * BLOCK_SIZE + BLOCK_SIZE // 2)
+def block_index_to_coord(i, j, x_offset=0, y_offset=40):
+    x = i * BLOCK_SIZE + BLOCK_SIZE // 2 + x_offset
+    y = flip_y(j * BLOCK_SIZE + BLOCK_SIZE // 2 + y_offset)
     return x, y
 
 
