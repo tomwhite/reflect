@@ -14,7 +14,7 @@ SCREEN_HEIGHT = 360
 SCREEN_TITLE = "Reflect"
 
 BLOCK_SIZE = 40
-SPRITE_SIZE = 32
+CELL_SIZE = 38
 
 SPRITE_NAMES = {
     "/": "oblique_mirror",
@@ -22,6 +22,7 @@ SPRITE_NAMES = {
     "o": "mirror_ball",
 }
 
+# https://sashamaps.net/docs/resources/20-colors/
 COLOURS = [
     arcade.color_from_hex_string(colour)
     for colour in [
@@ -167,7 +168,7 @@ class ReflectPuzzle(arcade.Window):
             block.position = x, y
             self.block_list.append(block)
             cell = arcade.SpriteSolidColor(
-                SPRITE_SIZE, SPRITE_SIZE, arcade.color.ALICE_BLUE
+                CELL_SIZE, CELL_SIZE, arcade.color.ALICE_BLUE
             )
             cell.position = block.position
             self.cell_list.append(cell)
@@ -178,7 +179,7 @@ class ReflectPuzzle(arcade.Window):
         for i in range(self.board.n):
             for j in range(self.board.n):
                 cell = arcade.SpriteSolidColor(
-                    SPRITE_SIZE, SPRITE_SIZE, arcade.color.ALICE_BLUE
+                    CELL_SIZE, CELL_SIZE, arcade.color.ALICE_BLUE
                 )
                 self.cell_indexes[cell] = (i, j)
                 x, y = block_index_to_coord(i + 1, j + 1)

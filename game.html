@@ -17,7 +17,7 @@
       const SCREEN_HEIGHT = 360;
 
       const BLOCK_SIZE = 40;
-      const SPRITE_SIZE = 32;
+      const CELL_SIZE = 38;
 
       const SPRITE_NAMES = {
         "/": "oblique_mirror",
@@ -25,6 +25,7 @@
         o: "mirror_ball",
       };
 
+      // https://sashamaps.net/docs/resources/20-colors/
       const COLOURS = [
         "#e6194B",
         "#3cb44b",
@@ -251,8 +252,8 @@
           for (var j = 0; j < n; j++) {
             const [x, y] = blockIndexToCoord(i + 1, j + 1);
             const zone = this.add
-              .zone(x, y, SPRITE_SIZE, SPRITE_SIZE)
-              .setRectangleDropZone(SPRITE_SIZE, SPRITE_SIZE)
+              .zone(x, y, CELL_SIZE, CELL_SIZE)
+              .setRectangleDropZone(CELL_SIZE, CELL_SIZE)
               .setData("loc", [i, j]);
 
             cellGraphics.fillRect(
@@ -269,8 +270,8 @@
           y += 240;
 
           const zone = this.add
-            .zone(x, y, SPRITE_SIZE, SPRITE_SIZE)
-            .setRectangleDropZone(SPRITE_SIZE, SPRITE_SIZE);
+            .zone(x, y, CELL_SIZE, CELL_SIZE)
+            .setRectangleDropZone(CELL_SIZE, CELL_SIZE);
 
           cellGraphics.fillRect(
             zone.x - zone.input.hitArea.width / 2,
