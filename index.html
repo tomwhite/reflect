@@ -7,7 +7,6 @@
     <style type="text/css">
       body {
         margin: 0;
-        background-color: lightgoldenrodyellow;
       }
     </style>
   </head>
@@ -158,6 +157,13 @@
         type: Phaser.AUTO,
         width: SCREEN_WIDTH,
         height: SCREEN_HEIGHT,
+        scale: {
+          mode: Phaser.Scale.FIT,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+        },
+        render: {
+          antialias: false,
+        },
         backgroundColor: "#FFFFFF",
         scene: {
           preload: preload,
