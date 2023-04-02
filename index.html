@@ -44,10 +44,9 @@
         "#a9a9a9",
       ].map((hex) => Phaser.Display.Color.HexStringToColor(hex).color);
 
-      function blockIndexToCoord(i, j) {
+      function blockIndexToCoord(i, j, y_offset = 40) {
         const x = i * BLOCK_SIZE + BLOCK_SIZE / 2;
         const y = j * BLOCK_SIZE + BLOCK_SIZE / 2;
-        const y_offset = 40;
         return [x, y + y_offset];
       }
 
@@ -153,119 +152,122 @@
         }
       }
 
-      const config = {
-        type: Phaser.AUTO,
-        width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT,
-        scale: {
-          mode: Phaser.Scale.FIT,
-          autoCenter: Phaser.Scale.CENTER_BOTH,
-        },
-        render: {
-          antialias: false,
-        },
-        backgroundColor: "#FFFFFF",
-        scene: {
-          preload: preload,
-          create: create,
-          update: update,
-        },
-      };
-
       const today = new Date().toISOString().split("T")[0];
-      const game = new Phaser.Game(config);
 
-      function preload() {
-        this.load.image("logo", "sprites/reflect.png");
-        for (const name of Object.values(SPRITE_NAMES)) {
-          this.load.image(name, `sprites/${name}_tr.png`);
+      class PlayScene extends Phaser.Scene {
+        constructor() {
+          super({ key: "PlayScene" });
         }
-        this.load.text("puzzle", `puzzles/puzzle-${today}.txt`);
-      }
 
-      function create() {
-        const puzzle = this.cache.text.get("puzzle");
-        const board = new Board(puzzle);
-        const n = board.n;
-        const hiddenBlocks = board.hiddenBlocks;
-        const beamPaths = board.beamPaths;
-        const pieces = board.pieces;
-        const boardValues = Array.from(Array(n), () => Array(n).fill("."));
+        preload() {
+          this.load.image("logo", "sprites/reflect.png");
+          for (const name of Object.values(SPRITE_NAMES)) {
+            this.load.image(name, `sprites/${name}_tr.png`);
+          }
+          this.load.image("help", "sprites/help.png");
+          this.load.text("puzzle", `puzzles/puzzle-${today}.txt`);
+        }
 
-        let gameOver = false;
+        create() {
+          const puzzle = this.cache.text.get("puzzle");
+          const board = new Board(puzzle);
+          const n = board.n;
+          const hiddenBlocks = board.hiddenBlocks;
+          const beamPaths = board.beamPaths;
+          const pieces = board.pieces;
+          const boardValues = Array.from(Array(n), () => Array(n).fill("."));
 
-        // Logo
-        this.add.image(120, 20, "logo");
+          let gameOver = false;
 
-        // Beams
-        const beamGraphics = this.add.graphics();
-        for (var bi = 0; bi < beamPaths.length; bi++) {
-          const beamPath = beamPaths[bi];
-          const start = beamPath[0];
-          const end = beamPath[beamPath.length - 1];
-          for (let [i, j] of [start, end]) {
-            beamGraphics.lineStyle(5, COLOURS[bi]);
-            const [x, y] = blockIndexToCoord(i, j);
-            if (i == 0) {
-              beamGraphics.lineBetween(5, y, 40, y);
-            } else if (i == n + 1) {
-              beamGraphics.lineBetween(200, y, 235, y);
-            } else if (j == 0) {
-              beamGraphics.lineBetween(x, 45, x, 80);
-            } else if (j == n + 1) {
-              beamGraphics.lineBetween(x, 240, x, 275);
+          // Logo
+          this.add.image(120, 20, "logo");
+
+          // Beams
+          const beamGraphics = this.add.graphics();
+          for (var bi = 0; bi < beamPaths.length; bi++) {
+            const beamPath = beamPaths[bi];
+            const start = beamPath[0];
+            const end = beamPath[beamPath.length - 1];
+            for (let [i, j] of [start, end]) {
+              beamGraphics.lineStyle(5, COLOURS[bi]);
+              const [x, y] = blockIndexToCoord(i, j);
+              if (i == 0) {
+                beamGraphics.lineBetween(5, y, 40, y);
+              } else if (i == n + 1) {
+                beamGraphics.lineBetween(200, y, 235, y);
+              } else if (j == 0) {
+                beamGraphics.lineBetween(x, 45, x, 80);
+              } else if (j == n + 1) {
+                beamGraphics.lineBetween(x, 240, x, 275);
+              }
             }
           }
-        }
 
-        // Board lines
-        const boardGraphics = this.add.graphics();
-        boardGraphics.lineStyle(1, "black");
+          // Board lines
+          const boardGraphics = this.add.graphics();
+          boardGraphics.lineStyle(1, "black");
 
-        for (var x = BLOCK_SIZE; x < BLOCK_SIZE * (n + 2); x += BLOCK_SIZE) {
-          boardGraphics.lineBetween(
-            x,
-            BLOCK_SIZE + 40,
-            x,
-            BLOCK_SIZE * (n + 1) + 40
-          );
-        }
-        for (var y = BLOCK_SIZE; y < BLOCK_SIZE * (n + 2); y += BLOCK_SIZE) {
-          boardGraphics.lineBetween(
-            BLOCK_SIZE,
-            y + 40,
-            BLOCK_SIZE * (n + 1),
-            y + 40
-          );
-        }
-
-        // Beam paths
-        const beamPathGraphics = this.add.graphics();
-        beamPathGraphics.visible = false;
-        for (var bi = 0; bi < beamPaths.length; bi++) {
-          const beamPath = beamPaths[bi];
-          for (var bj = 0; bj < beamPath.length - 1; bj++) {
-            const start = beamPath[bj];
-            const end = beamPath[bj + 1];
-            const [x0, y0] = blockIndexToCoord(start[0], start[1]);
-            const [x1, y1] = blockIndexToCoord(end[0], end[1]);
-
-            beamPathGraphics.lineStyle(5, COLOURS[bi]);
-            beamPathGraphics.lineBetween(x0, y0, x1, y1);
+          for (var x = BLOCK_SIZE; x < BLOCK_SIZE * (n + 2); x += BLOCK_SIZE) {
+            boardGraphics.lineBetween(
+              x,
+              BLOCK_SIZE + 40,
+              x,
+              BLOCK_SIZE * (n + 1) + 40
+            );
           }
-        }
+          for (var y = BLOCK_SIZE; y < BLOCK_SIZE * (n + 2); y += BLOCK_SIZE) {
+            boardGraphics.lineBetween(
+              BLOCK_SIZE,
+              y + 40,
+              BLOCK_SIZE * (n + 1),
+              y + 40
+            );
+          }
 
-        // Cells
-        const cellGraphics = this.add.graphics();
-        cellGraphics.fillStyle(0xf0f8ff);
+          // Beam paths
+          const beamPathGraphics = this.add.graphics();
+          beamPathGraphics.visible = false;
+          for (var bi = 0; bi < beamPaths.length; bi++) {
+            const beamPath = beamPaths[bi];
+            for (var bj = 0; bj < beamPath.length - 1; bj++) {
+              const start = beamPath[bj];
+              const end = beamPath[bj + 1];
+              const [x0, y0] = blockIndexToCoord(start[0], start[1]);
+              const [x1, y1] = blockIndexToCoord(end[0], end[1]);
 
-        for (var i = 0; i < n; i++) {
-          for (var j = 0; j < n; j++) {
-            const [x, y] = blockIndexToCoord(i + 1, j + 1);
+              beamPathGraphics.lineStyle(5, COLOURS[bi]);
+              beamPathGraphics.lineBetween(x0, y0, x1, y1);
+            }
+          }
+
+          // Cells
+          const cellGraphics = this.add.graphics();
+          cellGraphics.fillStyle(0xf0f8ff);
+
+          for (var i = 0; i < n; i++) {
+            for (var j = 0; j < n; j++) {
+              const [x, y] = blockIndexToCoord(i + 1, j + 1);
+              const zone = this.add
+                .zone(x, y, CELL_SIZE, CELL_SIZE)
+                .setRectangleDropZone(CELL_SIZE, CELL_SIZE)
+                .setData("loc", [i, j]);
+
+              cellGraphics.fillRect(
+                zone.x - zone.input.hitArea.width / 2,
+                zone.y - zone.input.hitArea.height / 2,
+                zone.input.hitArea.width,
+                zone.input.hitArea.height
+              );
+            }
+          }
+
+          for (var i = 0; i < pieces.length; i++) {
+            let [x, y] = blockIndexToCoord((i % 4) + 1, Math.floor(i / 4));
+            y += 240;
+
             const zone = this.add
               .zone(x, y, CELL_SIZE, CELL_SIZE)
-              .setRectangleDropZone(CELL_SIZE, CELL_SIZE)
-              .setData("loc", [i, j]);
+              .setRectangleDropZone(CELL_SIZE, CELL_SIZE);
 
             cellGraphics.fillRect(
               zone.x - zone.input.hitArea.width / 2,
@@ -274,119 +276,256 @@
               zone.input.hitArea.height
             );
           }
-        }
 
-        for (var i = 0; i < pieces.length; i++) {
-          let [x, y] = blockIndexToCoord((i % 4) + 1, Math.floor(i / 4));
-          y += 240;
+          for (var i = 0; i < pieces.length; i++) {
+            let [x, y] = blockIndexToCoord((i % 4) + 1, Math.floor(i / 4));
+            y += 240;
 
-          const zone = this.add
-            .zone(x, y, CELL_SIZE, CELL_SIZE)
-            .setRectangleDropZone(CELL_SIZE, CELL_SIZE);
-
-          cellGraphics.fillRect(
-            zone.x - zone.input.hitArea.width / 2,
-            zone.y - zone.input.hitArea.height / 2,
-            zone.input.hitArea.width,
-            zone.input.hitArea.height
-          );
-        }
-
-        for (var i = 0; i < pieces.length; i++) {
-          let [x, y] = blockIndexToCoord((i % 4) + 1, Math.floor(i / 4));
-          y += 240;
-
-          const image = this.add
-            .image(x, y, SPRITE_NAMES[pieces[i]])
-            .setInteractive();
-          image.setData("piece", pieces[i]);
-          this.input.setDraggable(image);
-        }
-
-        this.input.on("drag", function (pointer, gameObject, dragX, dragY) {
-          // update image coordinates as it is dragged
-          gameObject.x = dragX;
-          gameObject.y = dragY;
-        });
-
-        this.input.on("dragleave", function (pointer, gameObject, dropZone) {
-          // remove image from drop zone
-          if (dropZone.data && dropZone.data.get("image") === gameObject) {
-            dropZone.data.remove("image");
+            const image = this.add
+              .image(x, y, SPRITE_NAMES[pieces[i]])
+              .setInteractive();
+            image.setData("piece", pieces[i]);
+            this.input.setDraggable(image);
           }
-        });
 
-        this.input.on(
-          "drop",
-          function (pointer, gameObject, dropZone) {
-            if (dropZone.data && dropZone.data.get("image") !== undefined) {
-              // drop zone already occupied - reset position
-              gameObject.x = gameObject.input.dragStartX;
-              gameObject.y = gameObject.input.dragStartY;
-              return;
+          [x, y] = blockIndexToCoord(5, 0);
+          const help = this.add.image(x, y, "help").setInteractive();
+          help.on("pointerup", (e) => {
+            this.scene.setVisible(false, "PlayScene");
+            this.scene.launch("HelpScene");
+            this.scene.pause();
+          });
+
+          this.input.on("drag", function (pointer, gameObject, dragX, dragY) {
+            // update image coordinates as it is dragged
+            gameObject.x = dragX;
+            gameObject.y = dragY;
+          });
+
+          this.input.on("dragleave", function (pointer, gameObject, dropZone) {
+            // remove image from drop zone
+            if (dropZone.data && dropZone.data.get("image") === gameObject) {
+              dropZone.data.remove("image");
             }
+          });
 
-            gameObject.x = dropZone.x;
-            gameObject.y = dropZone.y;
-            dropZone.setData("image", gameObject);
-            if (dropZone.data.get("loc") !== undefined) {
-              // drop zone is on board
-              if (gameObject.data.get("loc") !== undefined) {
+          this.input.on(
+            "drop",
+            function (pointer, gameObject, dropZone) {
+              if (dropZone.data && dropZone.data.get("image") !== undefined) {
+                // drop zone already occupied - reset position
+                gameObject.x = gameObject.input.dragStartX;
+                gameObject.y = gameObject.input.dragStartY;
+                return;
+              }
+
+              gameObject.x = dropZone.x;
+              gameObject.y = dropZone.y;
+              dropZone.setData("image", gameObject);
+              if (dropZone.data.get("loc") !== undefined) {
+                // drop zone is on board
+                if (gameObject.data.get("loc") !== undefined) {
+                  // remove piece from board
+                  const [i, j] = gameObject.data.get("loc");
+                  boardValues[j][i] = ".";
+                  gameObject.data.remove("loc");
+                }
+                // add piece to the board
+                const [i, j] = dropZone.data.get("loc");
+                gameObject.setData("loc", [i, j]);
+                boardValues[j][i] = gameObject.data.get("piece");
+
+                // test if game over
+                if (
+                  JSON.stringify(boardValues) == JSON.stringify(hiddenBlocks)
+                ) {
+                  cellGraphics.visible = false;
+                  beamPathGraphics.visible = true;
+                  gameOver = true;
+                  // disable dragging
+                  let images = this.children.list.filter(
+                    (x) => x instanceof Phaser.GameObjects.Image
+                  );
+                  images.forEach((image) =>
+                    image.input ? this.input.setDraggable(image, false) : null
+                  );
+                  // save to local storage
+                  const solvedHistoryJson =
+                    localStorage.getItem("solvedHistory");
+                  const solvedHistory =
+                    solvedHistoryJson == null
+                      ? []
+                      : JSON.parse(solvedHistoryJson);
+                  solvedHistory.push(today);
+                  localStorage.setItem(
+                    "solvedHistory",
+                    JSON.stringify(solvedHistory)
+                  );
+                }
+              } else if (gameObject.data.get("loc") !== undefined) {
+                // drop zone is not on board, but piece was previously on board
                 // remove piece from board
                 const [i, j] = gameObject.data.get("loc");
                 boardValues[j][i] = ".";
                 gameObject.data.remove("loc");
               }
-              // add piece to the board
-              const [i, j] = dropZone.data.get("loc");
-              gameObject.setData("loc", [i, j]);
-              boardValues[j][i] = gameObject.data.get("piece");
+            },
+            this
+          );
 
-              // test if game over
-              if (JSON.stringify(boardValues) == JSON.stringify(hiddenBlocks)) {
-                cellGraphics.visible = false;
-                beamPathGraphics.visible = true;
-                gameOver = true;
-                // disable dragging
-                let images = this.children.list.filter(
-                  (x) => x instanceof Phaser.GameObjects.Image
-                );
-                images.forEach((image) =>
-                  image.input ? this.input.setDraggable(image, false) : null
-                );
-                // save to local storage
-                const solvedHistoryJson = localStorage.getItem("solvedHistory");
-                const solvedHistory =
-                  solvedHistoryJson == null
-                    ? []
-                    : JSON.parse(solvedHistoryJson);
-                solvedHistory.push(today);
-                localStorage.setItem(
-                  "solvedHistory",
-                  JSON.stringify(solvedHistory)
-                );
-              }
-            } else if (gameObject.data.get("loc") !== undefined) {
-              // drop zone is not on board, but piece was previously on board
-              // remove piece from board
-              const [i, j] = gameObject.data.get("loc");
-              boardValues[j][i] = ".";
-              gameObject.data.remove("loc");
+          this.input.on("dragend", function (pointer, gameObject, dropped) {
+            if (!dropped) {
+              // not dropped on drop zone - reset position
+              gameObject.x = gameObject.input.dragStartX;
+              gameObject.y = gameObject.input.dragStartY;
             }
-          },
-          this
-        );
-
-        this.input.on("dragend", function (pointer, gameObject, dropped) {
-          if (!dropped) {
-            // not dropped on drop zone - reset position
-            gameObject.x = gameObject.input.dragStartX;
-            gameObject.y = gameObject.input.dragStartY;
-          }
-        });
+          });
+        }
       }
 
-      function update() {}
+      class HelpScene extends Phaser.Scene {
+        constructor() {
+          super({ key: "HelpScene" });
+        }
+
+        preload() {
+          this.load.text("helpPuzzle", `puzzles/puzzle-help.txt`);
+        }
+
+        create() {
+          const puzzle = this.cache.text.get("helpPuzzle");
+          const board = new Board(puzzle);
+          const n = board.n;
+          const hiddenBlocks = board.hiddenBlocks;
+          const beamPaths = board.beamPaths;
+          const pieces = board.pieces;
+
+          // Logo
+          this.add.image(120, 20, "logo");
+
+          // Beams
+          const beamGraphics = this.add.graphics();
+          for (var bi = 0; bi < beamPaths.length; bi++) {
+            const beamPath = beamPaths[bi];
+            const start = beamPath[0];
+            const end = beamPath[beamPath.length - 1];
+            for (let [i, j] of [start, end]) {
+              beamGraphics.lineStyle(5, COLOURS[bi]);
+              const [x, y] = blockIndexToCoord(i, j, 80);
+              if (i == 0) {
+                beamGraphics.lineBetween(5, y, 40, y);
+              } else if (i == n + 1) {
+                beamGraphics.lineBetween(200, y, 235, y);
+              } else if (j == 0) {
+                beamGraphics.lineBetween(x, 45 + 40, x, 80 + 40);
+              } else if (j == n + 1) {
+                beamGraphics.lineBetween(x, 240 + 40, x, 275 + 40);
+              }
+            }
+          }
+
+          // Board lines
+          const boardGraphics = this.add.graphics();
+          boardGraphics.lineStyle(1, "black");
+
+          for (var x = BLOCK_SIZE; x < BLOCK_SIZE * (n + 2); x += BLOCK_SIZE) {
+            boardGraphics.lineBetween(
+              x,
+              BLOCK_SIZE + 80,
+              x,
+              BLOCK_SIZE * (n + 1) + 80
+            );
+          }
+          for (var y = BLOCK_SIZE; y < BLOCK_SIZE * (n + 2); y += BLOCK_SIZE) {
+            boardGraphics.lineBetween(
+              BLOCK_SIZE,
+              y + 80,
+              BLOCK_SIZE * (n + 1),
+              y + 80
+            );
+          }
+
+          // Beam paths
+          const beamPathGraphics = this.add.graphics();
+          for (var bi = 0; bi < beamPaths.length; bi++) {
+            const beamPath = beamPaths[bi];
+            for (var bj = 0; bj < beamPath.length - 1; bj++) {
+              const start = beamPath[bj];
+              const end = beamPath[bj + 1];
+              const [x0, y0] = blockIndexToCoord(start[0], start[1], 80);
+              const [x1, y1] = blockIndexToCoord(end[0], end[1], 80);
+
+              beamPathGraphics.lineStyle(5, COLOURS[bi]);
+              beamPathGraphics.lineBetween(x0, y0, x1, y1);
+            }
+          }
+
+          const [x0, y0] = blockIndexToCoord(3, 3, 80);
+          this.add.image(x0, y0, SPRITE_NAMES["/"]);
+          const [x1, y1] = blockIndexToCoord(4, 3, 80);
+          this.add.image(x1, y1, SPRITE_NAMES["\\"]);
+          const [x2, y2] = blockIndexToCoord(4, 1, 80);
+          this.add.image(x2, y2, SPRITE_NAMES["o"]);
+
+          this.add.text(0, 50, "Drag the mirrors onto the grid, so that", {
+            fontFamily: "Arial",
+            fontSize: 10,
+            color: "black",
+            padding: {
+              bottom: 2,
+            },
+          });
+          this.add.text(
+            0,
+            65,
+            "each beam of light connects to the same colour",
+            {
+              fontFamily: "Arial",
+              fontSize: 10,
+              color: "black",
+              padding: {
+                bottom: 2,
+              },
+            }
+          );
+          this.add.text(0, 95, "For example:", {
+            fontFamily: "Arial",
+            fontSize: 10,
+            color: "black",
+            padding: {
+              bottom: 2,
+            },
+          });
+          this.add.text(0, 320, "A new puzzle is released every day", {
+            fontFamily: "Arial",
+            fontSize: 10,
+            color: "black",
+            padding: {
+              bottom: 2,
+            },
+          });
+
+          this.input.on("pointerup", (e) => {
+            this.scene.resume("PlayScene");
+            this.scene.stop();
+            this.scene.setVisible(true, "PlayScene");
+          });
+        }
+      }
+
+      const config = {
+        type: Phaser.AUTO,
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT,
+        scale: {
+          mode: Phaser.Scale.FIT,
+          autoCenter: Phaser.Scale.CENTER_BOTH,
+        },
+        backgroundColor: "#FFFFFF",
+        scene: [PlayScene, HelpScene],
+      };
+
+      const game = new Phaser.Game(config);
     </script>
   </body>
 </html>
