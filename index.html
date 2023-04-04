@@ -154,7 +154,7 @@
 
       const today = new Date().toISOString().split("T")[0];
 
-      function stats() {
+      function getStats() {
         const solvedHistoryJson = localStorage.getItem("solvedHistory");
         const solvedHistory =
           solvedHistoryJson == null ? [] : JSON.parse(solvedHistoryJson);
@@ -172,6 +172,7 @@
             }
           });
         console.log(`Streak: ${currentStreak}`);
+        return { solved: solved, currentStreak: currentStreak };
       }
 
       class PlayScene extends Phaser.Scene {
@@ -381,7 +382,24 @@
                     "solvedHistory",
                     JSON.stringify(solvedHistory)
                   );
-                  stats();
+                  const stats = getStats();
+                  const screenCenterX =
+                    this.cameras.main.worldView.x + this.cameras.main.width / 2;
+                  this.add
+                    .text(
+                      screenCenterX,
+                      300,
+                      `Solved: ${stats.solved}, Streak: ${stats.currentStreak}`,
+                      {
+                        fontFamily: "Arial",
+                        fontSize: 14,
+                        color: "black",
+                        padding: {
+                          bottom: 2,
+                        },
+                      }
+                    )
+                    .setOrigin(0.5);
                 }
               } else if (gameObject.data.get("loc") !== undefined) {
                 // drop zone is not on board, but piece was previously on board
