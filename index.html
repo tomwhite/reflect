@@ -154,6 +154,26 @@
 
       const today = new Date().toISOString().split("T")[0];
 
+      function stats() {
+        const solvedHistoryJson = localStorage.getItem("solvedHistory");
+        const solvedHistory =
+          solvedHistoryJson == null ? [] : JSON.parse(solvedHistoryJson);
+        const solved = Array.from(new Set(solvedHistory)).length;
+        console.log(`Solved: ${solved}`);
+
+        let currentStreak = 0;
+        Array.from(new Set(solvedHistory))
+          .sort()
+          .reverse()
+          .map((d) => new Date(d))
+          .forEach((d, i) => {
+            if (new Date(today) - d === i * 60 * 60 * 24 * 1000) {
+              currentStreak++;
+            }
+          });
+        console.log(`Streak: ${currentStreak}`);
+      }
+
       class PlayScene extends Phaser.Scene {
         constructor() {
           super({ key: "PlayScene" });
@@ -361,6 +381,7 @@
                     "solvedHistory",
                     JSON.stringify(solvedHistory)
                   );
+                  stats();
                 }
               } else if (gameObject.data.get("loc") !== undefined) {
                 // drop zone is not on board, but piece was previously on board
