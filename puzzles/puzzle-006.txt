@@ -1,3 +1,4 @@
+# Difficulty: 3
 ...DA.
 ......
 D../.C

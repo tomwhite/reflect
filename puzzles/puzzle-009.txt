@@ -1,3 +1,4 @@
+# Difficulty: 5
 .A.CA.
 B.\...
 B./..D

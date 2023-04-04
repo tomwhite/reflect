@@ -1,4 +1,5 @@
 # generated (4 pieces)
+# Difficulty: 3
 .A.CD.
 ......
 F....F

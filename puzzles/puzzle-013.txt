@@ -1,6 +1,7 @@
 # A generated puzzle where one piece can only been found by process of elimination
 # I hadn't ever done this in any of my puzzles!
 # This makes it harder and more interesting.
+# Difficulty: 4
 ..BCD.
 B./...
 E....E

@@ -1,4 +1,5 @@
 # generated (7 pieces) very hard!
+# Difficulty: 5
 ..BCD.
 Eo...K
 F/../B

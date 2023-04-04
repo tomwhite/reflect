@@ -1,4 +1,4 @@
-A trivial one block puzzle. Basically just an introduction to the notation.
+A trivial one block puzzle. Basically just an introduction to the notation. (puzzle-001)
 
 ....A.
 ......
@@ -7,7 +7,7 @@ A.../.
 ......
 ......
 
-Two blocks. Again, trivial.
+Two blocks. Again, trivial. (puzzle-002)
 
 ...BA.
 ......
@@ -16,7 +16,7 @@ B../\A
 ......
 ......
 
-Same solution, different clues. This one is harder as you have to use A first, then B.
+Same solution, different clues. This one is harder as you have to use A first, then B. (puzzle-003)
 
 ....A.
 ......
@@ -44,7 +44,7 @@ A.../.  A..\/.
 ......  ......
 ...A..  ...A..
 
-OK, another go. \\\ This one seems unique. Not trivial, but pretty easy?
+OK, another go. \\\ This one seems unique. Not trivial, but pretty easy? (puzzle-004)
 (How can we find if a solution is unique? For 5 symbols there are 16*15*14*13*12 = 5*10^5 possibilities - may be possible to check them.)
 
 ....A.
@@ -54,7 +54,7 @@ C..\\A
 ......
 ...CB.
 
-Spacing. \\\
+Spacing. \\\ (puzzle-2023-04-03)
 
 ..CDA.
 B\....
@@ -66,7 +66,7 @@ B\....
 Note presence of C and D makes the puzzle easier. (But leaving them out makes it not unique, so need to include them.)
 
 More blocks - add a ball. /\o
-Interesting thing is that now A and B reflect onto themselves. But not in an obvious way!
+Interesting thing is that now A and B reflect onto themselves. But not in an obvious way! (puzzle-006)
 
 ...DA.
 ......
@@ -108,7 +108,7 @@ A/.\.A
 ......
 ......
 
-Better version?
+Better version? (2023-04-05, was puzzle-008)
 
 ...C..
 ./.\.C

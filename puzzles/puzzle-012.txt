@@ -1,4 +1,5 @@
 # created by generate.py
+# Difficulty: 3
 .ABCD.
 D.../J
 E..\\J

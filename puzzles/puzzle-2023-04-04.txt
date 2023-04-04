@@ -1,4 +1,4 @@
-# Difficulty: 1
+# Difficulty: 2
 ..BCB.
 C../..
 ......

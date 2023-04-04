@@ -1,5 +1,6 @@
 # Another generated puzzle where it works harder to remove as many beams
 # as possible. This one is quite hard.
+# Difficulty: 4
 ......
 Do...J
 E..\/H

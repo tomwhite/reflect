@@ -1,4 +1,4 @@
-# difficulty: medium
+# Difficulty: 3
 ..B.D.
 B./...
 ./.\..
