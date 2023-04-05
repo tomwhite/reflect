@@ -1,3 +1,5 @@
+import random
+
 import click
 
 from reflect import Board
@@ -34,6 +36,19 @@ def generate(filename):
     print(board.puzzle_string())
     with open(filename, "w") as f:
         f.write(board.puzzle_solution())
+
+
+@cli.command()
+@click.argument("input")
+@click.argument("output")
+def transform(input, output):
+    with open(input) as fin, open(output, "w") as fout:
+        lines = fin.readlines()
+        full_board = "".join([line for line in lines])
+        board = Board.create(full_board=full_board)
+        board = random.choice(list(board.transforms()))
+        fout.writelines([line for line in lines if line.startswith("#")])
+        fout.write(board.puzzle_solution())
 
 
 if __name__ == "__main__":

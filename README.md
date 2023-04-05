@@ -60,8 +60,22 @@ pytest -vs
 Solve a puzzle
 
 ```shell
-python solve.py puzzles/puzzle-010.txt
+puzzle solve puzzles/puzzle-010.txt
 ```
+
+Generate a new puzzle
+
+```shell
+puzzle generate puzzle.txt
+```
+
+Or run the interactive game to generate a new puzzle:
+
+```shell
+python game.py
+```
+
+You can press a number (1-5) to rate its difficulty and save the puzzle as a text file.
 
 Convert a puzzle to a static SVG image:
 
