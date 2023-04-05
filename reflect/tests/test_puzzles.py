@@ -5,10 +5,11 @@ from reflect import Board, boards_are_unique, has_unique_solution, solve
 
 def test_puzzles_have_unique_solution(request):
     for full_board_file in (request.config.rootdir / "puzzles").listdir():
-        with open(full_board_file) as f:
-            full_board = "".join([line for line in f.readlines()])
-            board = Board.create(full_board=full_board)
-            assert has_unique_solution(board)
+        if full_board_file.isfile():
+            with open(full_board_file) as f:
+                full_board = "".join([line for line in f.readlines()])
+                board = Board.create(full_board=full_board)
+                assert has_unique_solution(board)
 
 
 @pytest.mark.parametrize(
@@ -49,13 +50,11 @@ def test_not_unique_solution(full_board):
 def test_puzzle_boards_are_unique(request):
     boards = []
     for full_board_file in (request.config.rootdir / "puzzles").listdir():
-        if str(full_board_file).endswith("puzzle-003.txt"):
-            # ignore this puzzle as it shows an example with the same hidden blocks as puzzle-002, but different clues
-            continue
-        with open(full_board_file) as f:
-            full_board = "".join([line for line in f.readlines()])
-            board = Board.create(full_board=full_board)
-            boards.append(board)
+        if full_board_file.isfile():
+            with open(full_board_file) as f:
+                full_board = "".join([line for line in f.readlines()])
+                board = Board.create(full_board=full_board)
+                boards.append(board)
     assert boards_are_unique(boards)
 
 
