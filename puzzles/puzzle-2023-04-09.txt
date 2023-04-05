@@ -1,0 +1,9 @@
+# Difficulty: 3
+# Same as puzzle-006
+# First published puzzle with a ball (egg?) on Easter Sunday
+...DA.
+......
+D../.C
+...o\A
+......
+....B.

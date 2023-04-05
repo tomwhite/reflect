@@ -1,0 +1,9 @@
+# Generated at: 2023-04-05T15:10:32
+# Difficulty: 3
+# There are two (identical) bocks that have zero reflections!
+..B...
+D\.//.
+D/...G
+E.\..B
+..o..J
+.GH...

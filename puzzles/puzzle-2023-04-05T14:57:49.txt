@@ -1,0 +1,8 @@
+# Generated at: 2023-04-05T14:57:49
+# Difficulty: 3
+.ABBC.
+.o...K
+.\...L
+..\/.I
+Go..\C
+.H.I..

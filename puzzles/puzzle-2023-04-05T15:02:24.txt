@@ -1,0 +1,8 @@
+# Generated at: 2023-04-05T15:02:24
+# Difficulty: 2
+..BCC.
+D.\..B
+D./...
+E..\/.
+F...\.
+...EF.

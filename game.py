@@ -277,6 +277,7 @@ class ReflectPuzzle(arcade.Window):
             filename = f"puzzles/puzzle-{t}.txt"
             print(f"Saving to {filename} with difficulty {difficulty}")
             with open(filename, "w") as f:
+                f.write(f"# Generated at: {t}\n")
                 f.write(f"# Difficulty: {difficulty}\n")
                 f.write(self.board.puzzle_solution())
                 f.write("\n")
