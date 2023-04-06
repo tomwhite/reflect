@@ -18,6 +18,9 @@
       const BLOCK_SIZE = 40;
       const CELL_SIZE = 38;
 
+      const BEAM_WIDTH = 5;
+      const GRID_WIDTH = 1;
+
       const SPRITE_NAMES = {
         "/": "oblique_mirror",
         "\\": "reverse_oblique_mirror",
@@ -44,7 +47,7 @@
         "#a9a9a9",
       ].map((hex) => Phaser.Display.Color.HexStringToColor(hex).color);
 
-      function blockIndexToCoord(i, j, y_offset = 40) {
+      function blockIndexToCoord(i, j, y_offset = BLOCK_SIZE) {
         const x = i * BLOCK_SIZE + BLOCK_SIZE / 2;
         const y = j * BLOCK_SIZE + BLOCK_SIZE / 2;
         return [x, y + y_offset];
@@ -197,11 +200,12 @@
           const beamPaths = board.beamPaths;
           const pieces = board.pieces;
           const boardValues = Array.from(Array(n), () => Array(n).fill("."));
+          const board_y_offset = BLOCK_SIZE;
 
           let gameOver = false;
 
           // Logo
-          this.add.image(120, 20, "logo");
+          this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
 
           // Beams
           const beamGraphics = this.add.graphics();
@@ -210,38 +214,53 @@
             const start = beamPath[0];
             const end = beamPath[beamPath.length - 1];
             for (let [i, j] of [start, end]) {
-              beamGraphics.lineStyle(5, COLOURS[bi]);
+              beamGraphics.lineStyle(BEAM_WIDTH, COLOURS[bi]);
               const [x, y] = blockIndexToCoord(i, j);
               if (i == 0) {
-                beamGraphics.lineBetween(5, y, 40, y);
+                beamGraphics.lineBetween(BEAM_WIDTH, y, BLOCK_SIZE, y);
               } else if (i == n + 1) {
-                beamGraphics.lineBetween(200, y, 235, y);
+                beamGraphics.lineBetween(
+                  BLOCK_SIZE * (n + 1),
+                  y,
+                  BLOCK_SIZE * (n + 2) - BEAM_WIDTH,
+                  y
+                );
               } else if (j == 0) {
-                beamGraphics.lineBetween(x, 45, x, 80);
+                beamGraphics.lineBetween(
+                  x,
+                  BEAM_WIDTH + board_y_offset,
+                  x,
+                  BLOCK_SIZE + board_y_offset
+                );
               } else if (j == n + 1) {
-                beamGraphics.lineBetween(x, 240, x, 275);
+                beamGraphics.lineBetween(
+                  x,
+                  BLOCK_SIZE * (n + 1) + board_y_offset,
+                  x,
+                  BLOCK_SIZE * (n + 2) - BEAM_WIDTH + board_y_offset
+                );
               }
             }
           }
 
           // Board lines
           const boardGraphics = this.add.graphics();
-          boardGraphics.lineStyle(1, "black");
+          boardGraphics.lineStyle(GRID_WIDTH, "black");
 
           for (var x = BLOCK_SIZE; x < BLOCK_SIZE * (n + 2); x += BLOCK_SIZE) {
             boardGraphics.lineBetween(
               x,
-              BLOCK_SIZE + 40,
+              BLOCK_SIZE + board_y_offset,
               x,
-              BLOCK_SIZE * (n + 1) + 40
+              BLOCK_SIZE * (n + 1) + board_y_offset
             );
           }
           for (var y = BLOCK_SIZE; y < BLOCK_SIZE * (n + 2); y += BLOCK_SIZE) {
             boardGraphics.lineBetween(
               BLOCK_SIZE,
-              y + 40,
+              y + board_y_offset,
               BLOCK_SIZE * (n + 1),
-              y + 40
+              y + board_y_offset
             );
           }
 
@@ -256,7 +275,7 @@
               const [x0, y0] = blockIndexToCoord(start[0], start[1]);
               const [x1, y1] = blockIndexToCoord(end[0], end[1]);
 
-              beamPathGraphics.lineStyle(5, COLOURS[bi]);
+              beamPathGraphics.lineStyle(BEAM_WIDTH, COLOURS[bi]);
               beamPathGraphics.lineBetween(x0, y0, x1, y1);
             }
           }
@@ -283,8 +302,11 @@
           }
 
           for (var i = 0; i < pieces.length; i++) {
-            let [x, y] = blockIndexToCoord((i % 4) + 1, Math.floor(i / 4));
-            y += 240;
+            let [x, y] = blockIndexToCoord(
+              (i % 4) + 1,
+              Math.floor(i / 4),
+              BLOCK_SIZE * (n + 2) + board_y_offset
+            );
 
             const zone = this.add
               .zone(x, y, CELL_SIZE, CELL_SIZE)
@@ -298,9 +320,13 @@
             );
           }
 
+          // Blocks
           for (var i = 0; i < pieces.length; i++) {
-            let [x, y] = blockIndexToCoord((i % 4) + 1, Math.floor(i / 4));
-            y += 240;
+            let [x, y] = blockIndexToCoord(
+              (i % 4) + 1,
+              Math.floor(i / 4),
+              BLOCK_SIZE * (n + 2) + board_y_offset
+            );
 
             const image = this.add
               .image(x, y, SPRITE_NAMES[pieces[i]])
@@ -438,9 +464,10 @@
           const hiddenBlocks = board.hiddenBlocks;
           const beamPaths = board.beamPaths;
           const pieces = board.pieces;
+          const board_y_offset = BLOCK_SIZE * 2;
 
           // Logo
-          this.add.image(120, 20, "logo");
+          this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
 
           // Beams
           const beamGraphics = this.add.graphics();
@@ -449,38 +476,53 @@
             const start = beamPath[0];
             const end = beamPath[beamPath.length - 1];
             for (let [i, j] of [start, end]) {
-              beamGraphics.lineStyle(5, COLOURS[bi]);
-              const [x, y] = blockIndexToCoord(i, j, 80);
+              beamGraphics.lineStyle(BEAM_WIDTH, COLOURS[bi]);
+              const [x, y] = blockIndexToCoord(i, j, board_y_offset);
               if (i == 0) {
-                beamGraphics.lineBetween(5, y, 40, y);
+                beamGraphics.lineBetween(BEAM_WIDTH, y, BLOCK_SIZE, y);
               } else if (i == n + 1) {
-                beamGraphics.lineBetween(200, y, 235, y);
+                beamGraphics.lineBetween(
+                  BLOCK_SIZE * (n + 1),
+                  y,
+                  BLOCK_SIZE * (n + 2) - BEAM_WIDTH,
+                  y
+                );
               } else if (j == 0) {
-                beamGraphics.lineBetween(x, 45 + 40, x, 80 + 40);
+                beamGraphics.lineBetween(
+                  x,
+                  BEAM_WIDTH + board_y_offset,
+                  x,
+                  BLOCK_SIZE + board_y_offset
+                );
               } else if (j == n + 1) {
-                beamGraphics.lineBetween(x, 240 + 40, x, 275 + 40);
+                beamGraphics.lineBetween(
+                  x,
+                  BLOCK_SIZE * (n + 1) + board_y_offset,
+                  x,
+                  BLOCK_SIZE * (n + 2) - BEAM_WIDTH + board_y_offset
+                );
               }
             }
           }
 
           // Board lines
           const boardGraphics = this.add.graphics();
-          boardGraphics.lineStyle(1, "black");
+          boardGraphics.lineStyle(GRID_WIDTH, "black");
 
           for (var x = BLOCK_SIZE; x < BLOCK_SIZE * (n + 2); x += BLOCK_SIZE) {
             boardGraphics.lineBetween(
               x,
-              BLOCK_SIZE + 80,
+              BLOCK_SIZE + board_y_offset,
               x,
-              BLOCK_SIZE * (n + 1) + 80
+              BLOCK_SIZE * (n + 1) + board_y_offset
             );
           }
           for (var y = BLOCK_SIZE; y < BLOCK_SIZE * (n + 2); y += BLOCK_SIZE) {
             boardGraphics.lineBetween(
               BLOCK_SIZE,
-              y + 80,
+              y + board_y_offset,
               BLOCK_SIZE * (n + 1),
-              y + 80
+              y + board_y_offset
             );
           }
 
@@ -491,21 +533,31 @@
             for (var bj = 0; bj < beamPath.length - 1; bj++) {
               const start = beamPath[bj];
               const end = beamPath[bj + 1];
-              const [x0, y0] = blockIndexToCoord(start[0], start[1], 80);
-              const [x1, y1] = blockIndexToCoord(end[0], end[1], 80);
+              const [x0, y0] = blockIndexToCoord(
+                start[0],
+                start[1],
+                board_y_offset
+              );
+              const [x1, y1] = blockIndexToCoord(
+                end[0],
+                end[1],
+                board_y_offset
+              );
 
-              beamPathGraphics.lineStyle(5, COLOURS[bi]);
+              beamPathGraphics.lineStyle(BEAM_WIDTH, COLOURS[bi]);
               beamPathGraphics.lineBetween(x0, y0, x1, y1);
             }
           }
 
-          const [x0, y0] = blockIndexToCoord(3, 3, 80);
+          // Blocks
+          const [x0, y0] = blockIndexToCoord(3, 3, board_y_offset);
           this.add.image(x0, y0, SPRITE_NAMES["/"]);
-          const [x1, y1] = blockIndexToCoord(4, 3, 80);
+          const [x1, y1] = blockIndexToCoord(4, 3, board_y_offset);
           this.add.image(x1, y1, SPRITE_NAMES["\\"]);
-          const [x2, y2] = blockIndexToCoord(4, 1, 80);
+          const [x2, y2] = blockIndexToCoord(4, 1, board_y_offset);
           this.add.image(x2, y2, SPRITE_NAMES["o"]);
 
+          // Help text
           this.add.text(0, 50, "Drag the mirrors onto the grid, so that", {
             fontFamily: "Arial",
             fontSize: 10,
