@@ -12,14 +12,17 @@
   </head>
   <body>
     <script type="text/javascript">
-      const SCREEN_WIDTH = 240;
-      const SCREEN_HEIGHT = 400;
+      // Scale sprites so we can have a high resolution for other graphics (text, lines)
+      const SCALE = 2;
 
-      const BLOCK_SIZE = 40;
-      const CELL_SIZE = 38;
+      const SCREEN_WIDTH = 240 * SCALE;
+      const SCREEN_HEIGHT = 400 * SCALE;
 
-      const BEAM_WIDTH = 5;
-      const GRID_WIDTH = 1;
+      const BLOCK_SIZE = 40 * SCALE;
+      const CELL_SIZE = 38 * SCALE;
+
+      const BEAM_WIDTH = 5 * SCALE;
+      const GRID_WIDTH = 1 * SCALE;
 
       const SPRITE_NAMES = {
         "/": "oblique_mirror",
@@ -205,7 +208,8 @@
           let gameOver = false;
 
           // Logo
-          this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
+          const logo = this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
+          logo.setScale(SCALE);
 
           // Beams
           const beamGraphics = this.add.graphics();
@@ -331,12 +335,14 @@
             const image = this.add
               .image(x, y, SPRITE_NAMES[pieces[i]])
               .setInteractive();
+            image.setScale(SCALE);
             image.setData("piece", pieces[i]);
             this.input.setDraggable(image);
           }
 
           [x, y] = blockIndexToCoord(5, 0);
           const help = this.add.image(x, y, "help").setInteractive();
+          help.setScale(SCALE);
           help.on("pointerup", (e) => {
             this.scene.setVisible(false, "PlayScene");
             this.scene.launch("HelpScene");
@@ -414,11 +420,11 @@
                   this.add
                     .text(
                       screenCenterX,
-                      300,
+                      BLOCK_SIZE * (n + 2) + BLOCK_SIZE / 2 + board_y_offset,
                       `Solved: ${stats.solved}, Streak: ${stats.currentStreak}`,
                       {
                         fontFamily: "Arial",
-                        fontSize: 14,
+                        fontSize: 14 * SCALE,
                         color: "black",
                         padding: {
                           bottom: 2,
@@ -467,7 +473,8 @@
           const board_y_offset = BLOCK_SIZE * 2;
 
           // Logo
-          this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
+          const logo = this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
+          logo.setScale(SCALE);
 
           // Beams
           const beamGraphics = this.add.graphics();
@@ -551,50 +558,70 @@
 
           // Blocks
           const [x0, y0] = blockIndexToCoord(3, 3, board_y_offset);
-          this.add.image(x0, y0, SPRITE_NAMES["/"]);
+          this.add.image(x0, y0, SPRITE_NAMES["/"]).setScale(SCALE);
           const [x1, y1] = blockIndexToCoord(4, 3, board_y_offset);
-          this.add.image(x1, y1, SPRITE_NAMES["\\"]);
+          this.add.image(x1, y1, SPRITE_NAMES["\\"]).setScale(SCALE);
           const [x2, y2] = blockIndexToCoord(4, 1, board_y_offset);
-          this.add.image(x2, y2, SPRITE_NAMES["o"]);
+          this.add.image(x2, y2, SPRITE_NAMES["o"]).setScale(SCALE);
 
           // Help text
-          this.add.text(0, 50, "Drag the mirrors onto the grid, so that", {
-            fontFamily: "Arial",
-            fontSize: 10,
-            color: "black",
-            padding: {
-              bottom: 2,
-            },
-          });
           this.add.text(
             0,
-            65,
-            "each beam of light connects to the same colour",
+            BLOCK_SIZE * 1.25,
+            "Drag the mirrors onto the grid, so that",
             {
               fontFamily: "Arial",
-              fontSize: 10,
+              fontSize: 10 * SCALE,
               color: "black",
               padding: {
                 bottom: 2,
               },
             }
           );
-          this.add.text(0, 95, "For example:", {
+          this.add.text(
+            0,
+            BLOCK_SIZE * 1.625,
+            "each beam of light connects to the same colour",
+            {
+              fontFamily: "Arial",
+              fontSize: 10 * SCALE,
+              color: "black",
+              padding: {
+                bottom: 2,
+              },
+            }
+          );
+          this.add.text(0, BLOCK_SIZE * 2.375, "For example:", {
             fontFamily: "Arial",
-            fontSize: 10,
+            fontSize: 10 * SCALE,
             color: "black",
             padding: {
               bottom: 2,
             },
           });
-          this.add.text(0, 320, "A new puzzle is released every day", {
+          let y_offset = BLOCK_SIZE * (n + 2) + board_y_offset;
+          this.add.text(0, y_offset, "A new puzzle is released every day", {
             fontFamily: "Arial",
-            fontSize: 10,
+            fontSize: 10 * SCALE,
             color: "black",
             padding: {
               bottom: 2,
             },
           });
+          y_offset += BLOCK_SIZE * 0.375;
+          this.add.text(
+            0,
+            y_offset,
+            "© 2023 Tom White (tom.e.white@gmail.com)",
+            {
+              fontFamily: "Arial",
+              fontSize: 10 * SCALE,
+              color: "black",
+              padding: {
+                bottom: 2,
+              },
+            }
+          );
 
           this.input.on("pointerup", (e) => {
             this.scene.resume("PlayScene");
