@@ -1,5 +1,27 @@
 # Reflect: an optical puzzle
 
+A puzzle that is not too hard or too easy: just a small challenge every day.
+
+It is played on a 4x4 grid, and you have to move the mirrors so that the coloured beams of light all line up.
+
+Here is an example, with the initial board (left); after a few pieces have been moved onto the board (middle); and once the puzzle has been solved (right).
+
+![Reflect](images/reflect-demo.png)
+
+## Setting puzzles
+
+The challenge for the setter is to create puzzles that are challenging, but neither very easy nor virtually impossible. After some [initial explorations](puzzles/old/README.txt) I found that the number of blocks (pieces) roughly correlated with the difficulty of the puzzle, with 4, 5, or 6 pieces giving interesting puzzles of suitable difficulty.
+
+The number of beams in a puzzle has a more complex relationship with difficulty level, since if there is a beam at every edge of the board, then that gives more information (and generally makes for an easier puzzle) than one where some edges don't have a beam shown.
+
+The hardest thing about setting puzzles is ensuring that there is only one solution. I wrote a program early on to check that this is the case. Often I set a puzzle and found that it wasn't unique. It is often (but not always!) possible to remedy the situation by adding more beams.
+
+I have a puzzle generator that creates random puzzles with 4 to 6 pieces. It starts with all possible beams, then tries to gradually remove them (at random) until the solution is no longer unique. I then try to solve the puzzle myself, and if I like it I'll use it on the website.
+
+Puzzles with 7 pieces are not always very difficult, but the program for checking uniqueness runs very slowly.
+
+There is certainly more to discover about what makes a good puzzle.
+
 ## History
 
 I wrote a game in the 1980s on my Atari ST where you fire beams of light to deduce the placement and types of block hidden on an 8x8 grid.
@@ -9,7 +31,7 @@ I kept a number of printouts of the code, and recently I scanned them in and [go
 
 However, the game is a real challenge, and my poor brain struggled to solve the puzzle, and eventually I gave up. It seems I had spend a lot of time crafting sprites for the blocks, but I hadn't spent so much time on the gameplay. The last version I had a printout for doesn't generate a new game each time you run it, so I suspect that as the next thing I was going to do, before I stopped working on it. Perhaps I realised that generating good games was difficult.
 
-## Improvements
+### Improvements
 
 Over 30 years later I have some thoughts about how to make the game more compelling. The problem with the original is that it is too big: there are too many parameters to keep track of - even with the "notepad" facility where you can arrange blocks on a blank board to try different solutions - so it quickly becomes overwhelming.
 
