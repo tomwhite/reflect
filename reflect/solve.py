@@ -3,7 +3,7 @@ import itertools
 import numba as nb
 import numpy as np
 
-from reflect.board import block_int_to_str_array
+from reflect.board import Board, block_int_to_str_array
 
 
 def solve(board):
@@ -17,10 +17,9 @@ def solve(board):
     solutions = _solve(beams, permutations)
     solution_boards = []
     for solution in solutions:
-        solution_board = board.copy()
-        solution_board.values[
-            1 : board.n + 1, 1 : board.n + 1
-        ] = block_int_to_str_array(solution)
+        full_board = board.values.copy()
+        full_board[1 : board.n + 1, 1 : board.n + 1] = block_int_to_str_array(solution)
+        solution_board = Board.create(full_board=full_board)
         solution_boards.append(solution_board)
     return solution_boards
 
