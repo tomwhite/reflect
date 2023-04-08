@@ -104,3 +104,5 @@ Convert a puzzle to a static SVG image:
 ```shell
 python create-svg.py puzzles/puzzle-010.txt > puzzle-010.svg
 ```
+
+Copyright © 2023 Tom White
