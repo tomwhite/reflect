@@ -1,0 +1,8 @@
+# Generated at: 2023-04-08T14:22:50
+# Difficulty: 3
+.ABCD.
+A/oo.J
+E....E
+F....F
+G..\.K
+...GD.
