@@ -114,6 +114,30 @@ Blocks: /\\"""
 
     assert board.puzzle_solution().strip() == full_board.strip()
 
+    assert_array_equal(
+        board.beams,
+        np.array(
+            [
+                [3, -1, 4, 2],
+                [-1, 3, 4, 3],
+                [2, 4, 3, 4],
+            ],
+            dtype=np.int8,
+        ),
+    )
+
+
+def test_rot90():
+    full_board = """
+....A.
+......
+......
+.../\\A
+B....B
+...CC.
+"""
+
+    board = Board.create(full_board=full_board)
     boardRot90 = board.rot90()
 
     # fmt: off
@@ -144,14 +168,50 @@ Blocks: /\\"""
         ),
     )
 
+    # fmt: on
+
+
+def test_transpose():
+    full_board = """
+....A.
+......
+......
+.../\\A
+B....B
+...CC.
+"""
+
+    board = Board.create(full_board=full_board)
+    boardT = board.transpose()
+
+    # fmt: off
     assert_array_equal(
-        board.beams,
-        np.array([
-            [3, -1, 4, 2],
-            [-1, 3, 4, 3],
-            [2, 4, 3, 4],
-        ], dtype=np.int8),
+        boardT.values,
+        np.array(
+            [
+                [".", ".", ".", ".", "B", "."],
+                [".", ".", ".", ".", ".", "."],
+                [".", ".", ".", ".", ".", "."],
+                [".", ".", ".", ".", ".", "C"],
+                ["A", ".", ".", ".", ".", "C"],
+                [".", ".", ".", "A", "B", "."],
+            ]
+        ),
     )
+
+    # note that mirrors don't change orientation under reflection
+    assert_array_equal(
+        boardT.hidden_blocks,
+        np.array(
+            [
+                [".", ".", ".", "."],
+                [".", ".", ".", "."],
+                [".", ".", "/", "."],
+                [".", ".", "\\", "."],
+            ]
+        ),
+    )
+
     # fmt: on
 
 

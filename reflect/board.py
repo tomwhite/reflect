@@ -276,20 +276,11 @@ class Board:
     def transpose(self):
         """Reflect the board in y=x"""
 
-        # transpose values themselves
-        def transpose_val(val):
-            if val == Block.OBLIQUE_MIRROR.char:
-                return Block.REVERSE_OBLIQUE_MIRROR.char
-            elif val == Block.REVERSE_OBLIQUE_MIRROR.char:
-                return Block.OBLIQUE_MIRROR.char
-            else:
-                return val
+        # values don't change
 
         n = self.n  # size doesn't change
         hidden_blocks = self.hidden_blocks.copy().T
-        hidden_blocks = np.vectorize(transpose_val)(hidden_blocks)
         values = self.values.copy().T
-        values = np.vectorize(transpose_val)(values)
         num_beams = self.num_beams  # number of beams doesn't change
         return Board(n, hidden_blocks, values, num_beams)
 
