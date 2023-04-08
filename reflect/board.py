@@ -325,13 +325,18 @@ def boards_are_unique(boards, include_transforms=True):
     require that they are canonicalized somehow.
     """
     if include_transforms:
-        all_boards = []
+        board_arrs = []
         for board in boards:
-            all_boards.extend(board.transforms())
+            # ensure board transforms are unique
+            board_arr = np.stack(
+                [board.hidden_blocks.flatten() for board in board.transforms()]
+            )
+            board_arr = np.unique(board_arr, axis=0)
+            board_arrs.append(board_arr)
+        arr = np.concatenate(board_arrs)
     else:
-        all_boards = boards
+        arr = np.stack([board.hidden_blocks.flatten() for board in boards])
 
-    arr = np.stack([board.hidden_blocks.flatten() for board in all_boards])
     arr_unique = np.unique(arr, axis=0)
 
     return arr.shape[0] == arr_unique.shape[0]
