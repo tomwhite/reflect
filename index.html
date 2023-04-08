@@ -8,6 +8,13 @@
       data-domain="tom-e-white.com"
       src="https://plausible.io/js/script.js"
     ></script>
+    <script>
+      window.plausible =
+        window.plausible ||
+        function () {
+          (window.plausible.q = window.plausible.q || []).push(arguments);
+        };
+    </script>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
     <style type="text/css">
       body {
@@ -198,6 +205,7 @@
           }
           this.load.image("help", "sprites/help.png");
           this.load.text("puzzle", `puzzles/puzzle-${today}.txt`);
+          plausible("preload");
         }
 
         create() {
@@ -437,6 +445,7 @@
                       }
                     )
                     .setOrigin(0.5);
+                  plausible("solved");
                 }
               } else if (gameObject.data.get("loc") !== undefined) {
                 // drop zone is not on board, but piece was previously on board
