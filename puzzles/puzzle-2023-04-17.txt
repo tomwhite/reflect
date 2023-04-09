@@ -1,0 +1,9 @@
+# Generated at: 2023-04-09T21:47:12
+# Difficulty: 4
+# This is a great one - pretty hard, a nice pattern
+....C.
+./\/.D
+D/\/.H
+E.\..G
+......
+.GEHC.

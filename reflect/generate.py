@@ -9,7 +9,7 @@ from reflect.solve import has_unique_solution
 
 def generate(n_pieces=None):
     if n_pieces is None:
-        n_pieces = random.randrange(4, 7)
+        n_pieces = random.randrange(6, 8)
     for _ in range(20):
         a = choice(
             np.array(
