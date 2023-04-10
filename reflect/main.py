@@ -41,11 +41,12 @@ def generate(filename):
 
 @cli.command()
 @click.argument("filename")
-def svg(filename):
+@click.option("--solution", is_flag=True)
+def svg(filename, solution):
     with open(filename) as f:
         full_board = "".join([line for line in f.readlines()])
         board = Board.create(full_board=full_board)
-        print_svg(board)
+        print_svg(board, show_solution=solution)
 
 
 @cli.command()

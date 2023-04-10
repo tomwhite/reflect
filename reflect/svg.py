@@ -1,5 +1,4 @@
-SCREEN_WIDTH = 240
-SCREEN_HEIGHT = 360
+import base64
 
 BLOCK_SIZE = 40
 CELL_SIZE = 38
@@ -32,24 +31,41 @@ COLOURS = [
 ]
 
 
-def print_svg(board):
+def print_svg(board, show_solution=False):
+    n = board.n
+
     print(
         """<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
 "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="240" height="360" version="1.1" xmlns="http://www.w3.org/2000/svg">
 """
     )
 
-    # print the beams
-    n = board.n
+    width = BLOCK_SIZE * (n + 2)
+    height = BLOCK_SIZE * (n + 2)
 
+    if not show_solution:
+        height += BLOCK_SIZE * 2
+
+    print(
+        f'<svg width="{width}" height="{height}" version="1.1" xmlns="http://www.w3.org/2000/svg">'
+    )
+
+    # Sprites
+    print("    <defs>")
+    for sprite_name in SPRITE_NAMES.values():
+        data_uri = image_to_data_uri(f"sprites/{sprite_name}_tr.png")
+        print(
+            f'        <image id="{sprite_name}" href="{data_uri}" height="{SPRITE_SIZE}" width="{SPRITE_SIZE}"/>'
+        )
+    print("    </defs>")
+
+    # Beams
     beam_paths = board.beam_paths
     for bi, beam_path in enumerate(beam_paths):
         colour = COLOURS[bi]
         width = 5
         beam_path = beam_paths[bi]
-
         start = beam_path[0]
         end = beam_path[-1]
         for i, j in (start, end):
@@ -70,29 +86,65 @@ def print_svg(board):
                 f'    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{colour}" stroke-width="{width}" />'
             )
 
-    # print the pieces
-    for i, piece in enumerate(board.pieces):
-        x, y = block_index_to_coord((i % 4) + 1, i // 4)
-        x -= BLOCK_SIZE // 2
-        y += 240
-        print(
-            f'    <image href="sprites/{SPRITE_NAMES[piece]}.png" height="{SPRITE_SIZE}" width="{SPRITE_SIZE}" transform="translate({x}, {y})" />'
-        )
-
-    # print the grid
+    # Board lines
     for i in range(n):
         for j in range(n):
             print(
                 f'    <rect x="{(i + 1) * BLOCK_SIZE}" y="{(j + 1) * BLOCK_SIZE}" width="{BLOCK_SIZE}" height="{BLOCK_SIZE}" stroke="black" fill="transparent" />'
             )
 
-    print(
-        """
-</svg>"""
-    )
+    # Beam paths
+    if show_solution:
+        for bi, beam_path in enumerate(beam_paths):
+            colour = COLOURS[bi]
+            width = 5
+            beam_path = beam_paths[bi]
+            for bj in range(len(beam_path) - 1):
+                start = beam_path[bj]
+                end = beam_path[bj + 1]
+                x1, y1 = block_index_to_coord(start[0], start[1])
+                x2, y2 = block_index_to_coord(end[0], end[1])
+                print(
+                    f'    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{colour}" stroke-width="{width}" />'
+                )
+
+    # Blocks
+    if show_solution:
+        for i in range(n):
+            for j in range(n):
+                x, y = block_index_to_coord(
+                    j + 1, i + 1, x_offset=-SPRITE_SIZE // 2, y_offset=-SPRITE_SIZE // 2
+                )
+                piece = board.hidden_blocks[i, j]
+                if piece == ".":
+                    continue
+                print(
+                    f'    <use href="#{SPRITE_NAMES[piece]}" transform="translate({x}, {y})" />'
+                )
+    else:
+        for i, piece in enumerate(board.pieces):
+            x, y = block_index_to_coord(
+                (i % 4) + 1,
+                i // 4,
+                x_offset=-SPRITE_SIZE // 2,
+                y_offset=BLOCK_SIZE * (n + 2) - SPRITE_SIZE // 2,
+            )
+            print(
+                f'    <use href="#{SPRITE_NAMES[piece]}" transform="translate({x}, {y})" />'
+            )
+
+    print("</svg>")
 
 
 def block_index_to_coord(i, j, x_offset=0, y_offset=0):
     x = i * BLOCK_SIZE + BLOCK_SIZE // 2 + x_offset
     y = j * BLOCK_SIZE + BLOCK_SIZE // 2 + y_offset
     return x, y
+
+
+def image_to_data_uri(filename):
+    ext = filename.split(".")[-1]
+    prefix = f"data:image/{ext};base64,"
+    with open(filename, "rb") as f:
+        img = f.read()
+    return prefix + base64.b64encode(img).decode("utf-8")
