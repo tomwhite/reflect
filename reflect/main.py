@@ -4,6 +4,7 @@ import click
 
 from reflect import Board
 from reflect import generate as generate_board
+from reflect import print_svg
 from reflect import solve as solve_board
 
 
@@ -36,6 +37,15 @@ def generate(filename):
     print(board.puzzle_string())
     with open(filename, "w") as f:
         f.write(board.puzzle_solution())
+
+
+@cli.command()
+@click.argument("filename")
+def svg(filename):
+    with open(filename) as f:
+        full_board = "".join([line for line in f.readlines()])
+        board = Board.create(full_board=full_board)
+        print_svg(board)
 
 
 @cli.command()

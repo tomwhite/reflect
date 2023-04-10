@@ -82,7 +82,7 @@ pytest -vs
 Solve a puzzle
 
 ```shell
-puzzle solve puzzles/puzzle-010.txt
+puzzle solve puzzles/old/puzzle-010.txt
 ```
 
 Generate a new puzzle
@@ -102,7 +102,7 @@ You can press a number (1-5) to rate its difficulty and save the puzzle as a tex
 Convert a puzzle to a static SVG image:
 
 ```shell
-python create-svg.py puzzles/puzzle-010.txt > puzzle-010.svg
+puzzle svg puzzles/old/puzzle-010.txt > puzzle-010.svg
 ```
 
 Copyright © 2023 Tom White

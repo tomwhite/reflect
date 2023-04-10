@@ -14,3 +14,4 @@ from .solve import (
     piece_permutations,
     solve,
 )
+from .svg import print_svg
