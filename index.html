@@ -172,10 +172,41 @@
 
       const today = new Date().toISOString().split("T")[0];
 
+      function savePlayed() {
+        const solvedHistoryJson = localStorage.getItem("solvedHistory");
+        const solvedHistory =
+          solvedHistoryJson == null
+            ? []
+            : Array.from(new Set(JSON.parse(solvedHistoryJson))).sort();
+        const playedHistoryJson = localStorage.getItem("playedHistory");
+        const playedHistory =
+          playedHistoryJson == null
+            ? solvedHistory // init from solved history
+            : Array.from(new Set(JSON.parse(playedHistoryJson))).sort();
+        if (!playedHistory.includes(today)) {
+          playedHistory.push(today);
+          localStorage.setItem("playedHistory", JSON.stringify(playedHistory));
+        }
+      }
+
+      function saveSolved() {
+        const solvedHistoryJson = localStorage.getItem("solvedHistory");
+        const solvedHistory =
+          solvedHistoryJson == null
+            ? []
+            : Array.from(new Set(JSON.parse(solvedHistoryJson))).sort();
+        if (!solvedHistory.includes(today)) {
+          solvedHistory.push(today);
+          localStorage.setItem("solvedHistory", JSON.stringify(solvedHistory));
+        }
+      }
+
       function getStats() {
         const solvedHistoryJson = localStorage.getItem("solvedHistory");
         const solvedHistory =
-          solvedHistoryJson == null ? [] : JSON.parse(solvedHistoryJson);
+          solvedHistoryJson == null
+            ? []
+            : Array.from(new Set(JSON.parse(solvedHistoryJson))).sort();
         const solved = Array.from(new Set(solvedHistory)).length;
         console.log(`Solved: ${solved}`);
 
@@ -205,6 +236,7 @@
           }
           this.load.image("help", "sprites/help.png");
           this.load.text("puzzle", `puzzles/puzzle-${today}.txt`);
+          savePlayed(); // assume played if loaded today's puzzle
           plausible("preload");
         }
 
@@ -416,17 +448,7 @@
                     image.input ? this.input.setDraggable(image, false) : null
                   );
                   // save to local storage
-                  const solvedHistoryJson =
-                    localStorage.getItem("solvedHistory");
-                  const solvedHistory =
-                    solvedHistoryJson == null
-                      ? []
-                      : JSON.parse(solvedHistoryJson);
-                  solvedHistory.push(today);
-                  localStorage.setItem(
-                    "solvedHistory",
-                    JSON.stringify(solvedHistory)
-                  );
+                  saveSolved();
                   const stats = getStats();
                   const screenCenterX =
                     this.cameras.main.worldView.x + this.cameras.main.width / 2;
