@@ -274,7 +274,7 @@ class ReflectPuzzle(arcade.Window):
         ):
             difficulty = symbol - 48
             t = self.start_time.isoformat(timespec="seconds")
-            filename = f"puzzles/puzzle-{t}.txt"
+            filename = f"puzzles/generated/puzzle-{t}.txt"
             print(f"Saving to {filename} with difficulty {difficulty}")
             with open(filename, "w") as f:
                 f.write(f"# Generated at: {t}\n")

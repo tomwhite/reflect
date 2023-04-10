@@ -1,8 +1,0 @@
-# Generated at: 2023-04-05T15:08:47
-# Difficulty: 3
-.A.C..
-E....E
-A/...G
-F..ooK
-G/...H
-.H..J.
