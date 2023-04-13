@@ -222,7 +222,17 @@
         );
       }
 
+      function getDeviceId() {
+        let deviceId = localStorage.getItem("deviceId");
+        if (deviceId == null) {
+          deviceId = uuidv4();
+          localStorage.setItem("deviceId", deviceId);
+        }
+        return deviceId;
+      }
+
       const today = formatDate(new Date());
+      const deviceId = getDeviceId();
 
       function saveEvent(name) {
         const eventHistoryJson = localStorage.getItem("eventHistory");
