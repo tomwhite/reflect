@@ -198,6 +198,19 @@
 
       const today = formatDate(new Date());
 
+      function saveEvent(name) {
+        const eventHistoryJson = localStorage.getItem("eventHistory");
+        const eventHistory =
+          eventHistoryJson == null ? [] : JSON.parse(eventHistoryJson);
+        const event = {
+          puzzle: today,
+          name: name,
+          timestamp: Date.now(),
+        };
+        eventHistory.push(event);
+        localStorage.setItem("eventHistory", JSON.stringify(eventHistory));
+      }
+
       function savePlayed() {
         const solvedHistoryJson = localStorage.getItem("solvedHistory");
         const solvedHistory =
@@ -264,6 +277,7 @@
           this.load.text("puzzle", `puzzles/puzzle-${today}.txt`);
           savePlayed(); // assume played if loaded today's puzzle
           plausible("preload");
+          saveEvent("preload");
         }
 
         create() {
@@ -277,6 +291,7 @@
           const board_y_offset = BLOCK_SIZE;
 
           let gameOver = false;
+          let seenFirstMove = false;
 
           // Logo
           const logo = this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
@@ -494,6 +509,7 @@
                     )
                     .setOrigin(0.5);
                   plausible("solved");
+                  saveEvent("solved");
                 }
               } else if (gameObject.data.get("loc") !== undefined) {
                 // drop zone is not on board, but piece was previously on board
@@ -511,6 +527,10 @@
               // not dropped on drop zone - reset position
               gameObject.x = gameObject.input.dragStartX;
               gameObject.y = gameObject.input.dragStartY;
+            }
+            if (!seenFirstMove) {
+              saveEvent("firstMove");
+              seenFirstMove = true;
             }
           });
         }
