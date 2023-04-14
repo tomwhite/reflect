@@ -91,10 +91,10 @@ Generate a new puzzle
 puzzle generate puzzle.txt
 ```
 
-Or run the interactive game to generate a new puzzle:
+Or play an interactive game to generate a new puzzle:
 
 ```shell
-python game.py
+puzzle play
 ```
 
 You can press a number (1-5) to rate its difficulty and save the puzzle as a text file.

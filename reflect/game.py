@@ -6,7 +6,8 @@ import sys
 
 import arcade
 
-from reflect import Board, generate
+from reflect.board import Board
+from reflect.generate import generate
 
 # Screen title and size
 SCREEN_WIDTH = 240
@@ -292,6 +293,12 @@ def block_index_to_coord(i, j, x_offset=0, y_offset=40):
 def flip_y(y):
     # convenience to flip y coordinate
     return SCREEN_HEIGHT - y
+
+
+def play_game(board):
+    window = ReflectPuzzle(board)
+    window.setup()
+    arcade.run()
 
 
 def main(args):

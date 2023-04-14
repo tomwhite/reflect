@@ -6,6 +6,7 @@ from .board import (
     block_str_to_int_array,
     boards_are_unique,
 )
+from .game import play_game
 from .generate import generate
 from .solve import (
     cproduct_idx,
