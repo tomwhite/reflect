@@ -20,9 +20,16 @@ def generate(n_pieces=None):
                     Block.MIRROR_BALL.char,
                 ]
             ),
-            p=np.array([2 / 5, 2 / 5, 1 / 5]),
+            p=np.array(
+                [
+                    (n_pieces - 1) / (2 * n_pieces),
+                    (n_pieces - 1) / (2 * n_pieces),
+                    1 / n_pieces,
+                ]
+            ),
             size=n_pieces,
         )
+        print(a)
         a = np.concatenate([a, np.full(16 - n_pieces, ".")])
         shuffle(a)
         a = a.reshape(4, 4)
