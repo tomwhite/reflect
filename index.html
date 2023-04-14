@@ -15,6 +15,8 @@
           (window.plausible.q = window.plausible.q || []).push(arguments);
         };
     </script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
     <style type="text/css">
       body {
@@ -231,6 +233,19 @@
         return deviceId;
       }
 
+      const firebaseConfig = {
+        apiKey: "AIzaSyBgI928NCooaWIQNtNU1beD25Nzg7B6W50",
+        authDomain: "reflect-826a3.firebaseapp.com",
+        projectId: "reflect-826a3",
+        storageBucket: "reflect-826a3.appspot.com",
+        messagingSenderId: "694197574513",
+        appId: "1:694197574513:web:908d805861beec1db1b4d0",
+      };
+
+      firebase.initializeApp(firebaseConfig);
+
+      const db = firebase.firestore();
+
       const today = formatDate(new Date());
       const deviceId = getDeviceId();
 
@@ -245,6 +260,18 @@
         };
         eventHistory.push(event);
         localStorage.setItem("eventHistory", JSON.stringify(eventHistory));
+
+        event.device = deviceId;
+        db.collection("puzzles")
+          .doc(today)
+          .collection("events")
+          .add(event)
+          .then((docRef) => {
+            console.log("Event written to firestore with ID: ", docRef.id);
+          })
+          .catch((error) => {
+            console.error("Error adding event to firestore: ", error);
+          });
       }
 
       function savePlayed() {
