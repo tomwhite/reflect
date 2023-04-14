@@ -46,7 +46,7 @@ def minimise(board):
     n_trials = 10
 
     for i in range(n_trials):
-        print(f"Trial {i+1} of {n_trials}")
+        print(f"Trial {i+1} of {n_trials}. Best board has {best_board.num_beams} beams")
         prev_board = board
         while True:
             # find a location with a beam
@@ -61,11 +61,17 @@ def minimise(board):
 
             # if removing the beam means it is no longer unique
             # then see if the previous (unique) board is the best so far
-            print("Finding unique solutions")
+            print(
+                f"Finding if new board with {new_board.num_beams} beams has unique solution...",
+                end=" ",
+            )
             if not has_unique_solution(new_board):
+                print("no")
                 if prev_board.num_beams < best_board.num_beams:
                     best_board = prev_board
                 break
+            else:
+                print("yes")
 
             prev_board = new_board
 
