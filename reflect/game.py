@@ -2,7 +2,9 @@
 Reflect puzzle.
 """
 import datetime
+import math
 import sys
+from time import time
 
 import arcade
 
@@ -84,6 +86,9 @@ class ReflectPuzzle(arcade.Window):
         # dict mapping cell to index on board
         self.cell_indexes = None
 
+        self.start_time = None
+        self.solve_duration = math.inf
+        self.first_click = False
         self.game_over = False
 
         arcade.set_background_color(arcade.color.WHITE)
@@ -97,7 +102,7 @@ class ReflectPuzzle(arcade.Window):
         else:
             self.board = generate()
 
-        self.start_time = datetime.datetime.now()
+        self.start_timestamp = datetime.datetime.now()
 
         self.shape_list = arcade.ShapeElementList()
         self.path_list = arcade.ShapeElementList()
@@ -187,6 +192,9 @@ class ReflectPuzzle(arcade.Window):
                 cell.position = x, y
                 self.cell_list.append(cell)
 
+        self.start_time = None
+        self.solve_duration = math.inf
+        self.first_click = False
         self.game_over = False
 
     def on_draw(self):
@@ -224,6 +232,9 @@ class ReflectPuzzle(arcade.Window):
             self.board.set_value(i + 1, j + 1, self.held_block.piece)
 
     def on_mouse_press(self, x, y, button, key_modifiers):
+        if not self.first_click:
+            self.start_time = time()
+            self.first_click = True
         if self.game_over:
             return
 
@@ -253,6 +264,7 @@ class ReflectPuzzle(arcade.Window):
         self.held_block = None
 
         if self.board.score() == 1:
+            self.solve_duration = time() - self.start_time
             self.game_over = True
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
@@ -274,12 +286,15 @@ class ReflectPuzzle(arcade.Window):
             arcade.key.KEY_5,
         ):
             difficulty = symbol - 48
-            t = self.start_time.isoformat(timespec="seconds")
+            t = self.start_timestamp.isoformat(timespec="seconds")
             filename = f"puzzles/generated/puzzle-{t}.txt"
-            print(f"Saving to {filename} with difficulty {difficulty}")
+            print(
+                f"Saving to {filename} with difficulty {difficulty} with solve duration {self.solve_duration:.1f}"
+            )
             with open(filename, "w") as f:
                 f.write(f"# Generated at: {t}\n")
                 f.write(f"# Difficulty: {difficulty}\n")
+                f.write(f"# Solve duration: {self.solve_duration:.1f}\n")
                 f.write(self.board.puzzle_solution())
                 f.write("\n")
 
