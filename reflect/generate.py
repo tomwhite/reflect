@@ -11,6 +11,7 @@ def generate(n_pieces=None):
     if n_pieces is None:
         n_pieces = random.randrange(4, 8)
     for _ in range(20):
+        print(f"Generating board with {n_pieces} blocks...")
         a = choice(
             np.array(
                 [
@@ -31,6 +32,7 @@ def generate(n_pieces=None):
                 board.add_beam(x, y)
 
         if has_unique_solution(board):
+            print("Minimising board...")
             return minimise(board)
 
     # can't generate a board!
@@ -41,8 +43,10 @@ def minimise(board):
     # try to remove beams at random while still having a unique solution
 
     best_board = board
+    n_trials = 10
 
-    for _ in range(10):
+    for i in range(n_trials):
+        print(f"Trial {i+1} of {n_trials}")
         prev_board = board
         while True:
             # find a location with a beam
@@ -57,6 +61,7 @@ def minimise(board):
 
             # if removing the beam means it is no longer unique
             # then see if the previous (unique) board is the best so far
+            print("Finding unique solutions")
             if not has_unique_solution(new_board):
                 if prev_board.num_beams < best_board.num_beams:
                     best_board = prev_board
