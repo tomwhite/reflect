@@ -1,12 +1,8 @@
-import sys
-
 from blessed import Terminal
-
-from reflect import Board, generate
 
 
 class Game:
-    """Play an interactive game of reflect"""
+    """Play an interactive game of reflect on a terminal"""
 
     def __init__(self, term, board):
         self.term = term
@@ -82,18 +78,7 @@ class Game:
                         self.print_message(f"Score: {s}")
 
 
-def main(args):
-    if len(args) > 1:
-        full_board_file = args[1]
-        with open(full_board_file) as f:
-            full_board = "".join([line for line in f.readlines()])
-            board = Board.create(full_board=full_board)
-    else:
-        board = generate()
+def play_game_on_terminal(board):
     term = Terminal()
     game = Game(term, board)
     game.play()
-
-
-if __name__ == "__main__":
-    main(sys.argv)

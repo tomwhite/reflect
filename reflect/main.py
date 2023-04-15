@@ -4,7 +4,7 @@ import click
 
 from reflect import Board
 from reflect import generate as generate_board
-from reflect import play_game, print_svg
+from reflect import play_game, play_game_on_terminal, print_svg
 from reflect import solve as solve_board
 
 
@@ -41,14 +41,18 @@ def generate(filename):
 
 @cli.command()
 @click.argument("filename", required=False)
-def play(filename):
+@click.option("--terminal", is_flag=True)
+def play(filename, terminal):
     if filename is not None:
         with open(filename) as f:
             full_board = "".join([line for line in f.readlines()])
             board = Board.create(full_board=full_board)
     else:
         board = None
-    play_game(board)
+    if terminal:
+        play_game_on_terminal(board)
+    else:
+        play_game(board)
 
 
 @cli.command()

@@ -16,3 +16,4 @@ from .solve import (
     solve,
 )
 from .svg import print_svg
+from .terminal import play_game_on_terminal

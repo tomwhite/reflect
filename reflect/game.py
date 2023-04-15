@@ -3,12 +3,10 @@ Reflect puzzle.
 """
 import datetime
 import math
-import sys
 from time import time
 
 import arcade
 
-from reflect.board import Board
 from reflect.generate import generate
 
 # Screen title and size
@@ -314,20 +312,3 @@ def play_game(board):
     window = ReflectPuzzle(board)
     window.setup()
     arcade.run()
-
-
-def main(args):
-    if len(args) > 1:
-        full_board_file = args[1]
-        with open(full_board_file) as f:
-            full_board = "".join([line for line in f.readlines()])
-            board = Board.create(full_board=full_board)
-    else:
-        board = None
-    window = ReflectPuzzle(board)
-    window.setup()
-    arcade.run()
-
-
-if __name__ == "__main__":
-    main(sys.argv)
