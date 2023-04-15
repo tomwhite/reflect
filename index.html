@@ -233,6 +233,12 @@
         return deviceId;
       }
 
+      function isLocalhost() {
+        return (
+          location.hostname === "localhost" || location.hostname === "127.0.0.1"
+        );
+      }
+
       const firebaseConfig = {
         apiKey: "AIzaSyBgI928NCooaWIQNtNU1beD25Nzg7B6W50",
         authDomain: "reflect-826a3.firebaseapp.com",
@@ -262,16 +268,20 @@
         localStorage.setItem("eventHistory", JSON.stringify(eventHistory));
 
         event.device = deviceId;
-        db.collection("puzzles")
-          .doc(today)
-          .collection("events")
-          .add(event)
-          .then((docRef) => {
-            console.log("Event written to firestore with ID: ", docRef.id);
-          })
-          .catch((error) => {
-            console.error("Error adding event to firestore: ", error);
-          });
+        if (isLocalhost()) {
+          console.log("Ignoring event on localhost");
+        } else {
+          db.collection("puzzles")
+            .doc(today)
+            .collection("events")
+            .add(event)
+            .then((docRef) => {
+              console.log("Event written to firestore with ID: ", docRef.id);
+            })
+            .catch((error) => {
+              console.error("Error adding event to firestore: ", error);
+            });
+        }
       }
 
       function savePlayed() {
