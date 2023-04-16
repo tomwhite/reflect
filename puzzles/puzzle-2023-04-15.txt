@@ -1,6 +1,9 @@
 # Generated at: 2023-04-14T11:24:28
 # Difficulty: 4
-# Nice balance
+# Nice balance (TW)
+# Feedback from friends and family was that this was hard.
+# Probably because the B beam was not obvious, and it is easy
+# to put in a single mirror for it and get stuck
 .AB...
 ..../B
 E..o.I
