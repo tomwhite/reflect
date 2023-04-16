@@ -1,9 +1,9 @@
-# Generated at: 2023-04-09T22:06:39
+# Generated at: 2023-04-09T22:28:56
 # Difficulty: 4
-# Nice reasoning to find position of ball
-..BCD.
-......
-F..\\D
-./...G
-G/\.o.
-.HHF..
+# Nice routing to the ball
+.A.CD.
+../.oI
+E./...
+.\...A
+G..\\J
+...GC.

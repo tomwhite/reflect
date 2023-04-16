@@ -1,0 +1,10 @@
+# Generated at: 2023-04-16T14:48:18
+# Difficulty: 4
+# Solve duration: 160.3
+# Quite tricky, had one long beam that wasn't obvious (E) - a good Saturday puzzle.
+.ABC..
+E...\.
+.\...A
+B././H
+E./.\H
+..GCG.

@@ -1,0 +1,11 @@
+# Generated at: 2023-04-16T15:27:30
+# Difficulty: 4
+# Solve duration: 247.9
+# This took a while to solve, even though it's pretty straightforward. Needs a bit of lateral thinking.
+# A good one to set.
+....D.
+./...H
+E....E
+D.../H
+F\../.
+.F....
