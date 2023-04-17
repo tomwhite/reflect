@@ -1,15 +1,26 @@
+from pathlib import Path
+
 import pytest
 
 from reflect import Board, boards_are_unique, has_unique_solution, solve
 
 
 def test_puzzles_have_unique_solution(request):
-    for full_board_file in (request.config.rootdir / "puzzles").listdir():
+    for full_board_file in sorted((request.config.rootdir / "puzzles").listdir()):
         if full_board_file.isfile():
             with open(full_board_file) as f:
                 full_board = "".join([line for line in f.readlines()])
                 board = Board.create(full_board=full_board)
                 assert has_unique_solution(board)
+
+                filename = Path(full_board_file).name
+                # these are the days that the puzzle could be solved with fewer pieces
+                if filename not in (
+                    "puzzle-2023-04-08.txt",
+                    "puzzle-2023-04-14.txt",
+                    "puzzle-2023-04-17.txt",
+                ):
+                    assert has_unique_solution(board, fewer_pieces_allowed=True)
 
 
 @pytest.mark.parametrize(

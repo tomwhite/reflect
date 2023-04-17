@@ -1,4 +1,5 @@
 import itertools
+from itertools import chain, combinations
 
 import numba as nb
 import numpy as np
@@ -6,26 +7,48 @@ import numpy as np
 from reflect.board import Board, block_int_to_str_array
 
 
-def solve(board):
+# from https://docs.python.org/3/library/itertools.html#itertools-recipes
+def powerset(iterable):
+    s = list(iterable)
+    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
+
+def solve(board, *, fewer_pieces_allowed=False):
     """Brute force search for all solutions to a puzzle.
 
     Useful for a setter to see if a puzzle has a unique solution.
+
+    Parameters
+    ----------
+    board : Board
+        A board object.
+    fewer_pieces_allowed : bool, optional
+        If True, allow solutions that use fewer pieces.
+
     """
     beams = board.beams
     pieces = board.pieces_ints
-    permutations = piece_permutations(pieces)
-    solutions = _solve(beams, permutations)
     solution_boards = []
-    for solution in solutions:
-        full_board = board.values.copy()
-        full_board[1 : board.n + 1, 1 : board.n + 1] = block_int_to_str_array(solution)
-        solution_board = Board.create(full_board=full_board)
-        solution_boards.append(solution_board)
+    if fewer_pieces_allowed:
+        # `pieces` is a multiset so wrap in a set to remove duplicates
+        pieces_subsets = set(powerset(pieces))
+    else:
+        pieces_subsets = [pieces]
+    for pieces_subset in pieces_subsets:
+        permutations = piece_permutations(pieces_subset)
+        solutions = _solve(beams, permutations)
+        for solution in solutions:
+            full_board = board.values.copy()
+            full_board[1 : board.n + 1, 1 : board.n + 1] = block_int_to_str_array(
+                solution
+            )
+            solution_board = Board.create(full_board=full_board)
+            solution_boards.append(solution_board)
     return solution_boards
 
 
-def has_unique_solution(board):
-    return len(solve(board)) == 1
+def has_unique_solution(board, *, fewer_pieces_allowed=False):
+    return len(solve(board, fewer_pieces_allowed=fewer_pieces_allowed)) == 1
 
 
 def piece_permutations(pieces):
