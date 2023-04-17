@@ -1,0 +1,9 @@
+# Generated at: 2023-04-08T14:43:57
+# Difficulty: 4
+# Not unique under Lottie's rule - so fixed up with beam E
+.ABCA.
+D\../J
+..\..B
+E..o/.
+.\...D
+......
