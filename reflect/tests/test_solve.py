@@ -44,8 +44,8 @@ def test_is_solution():
         ],
         dtype=np.int8,
     )
-    assert is_solution(beams, hidden_blocks)
-    assert not is_solution(beams, np.zeros((4, 4), dtype=np.int8))
+    assert is_solution(beams, hidden_blocks, False)
+    assert not is_solution(beams, np.zeros((4, 4), dtype=np.int8), False)
 
 
 def test_solve():

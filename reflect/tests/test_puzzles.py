@@ -14,13 +14,13 @@ def test_puzzles_have_unique_solution(request):
                 assert has_unique_solution(board)
 
                 filename = Path(full_board_file).name
-                # these are the days that the puzzle could be solved with fewer pieces
-                if filename not in (
-                    "puzzle-2023-04-08.txt",
-                    "puzzle-2023-04-14.txt",
-                    "puzzle-2023-04-17.txt",
-                ):
-                    assert has_unique_solution(board, fewer_pieces_allowed=True)
+                # extra stringent checks for later puzzles
+                if filename > "puzzle-2023-04-17.txt" and filename != "puzzle-help.txt":
+                    assert has_unique_solution(
+                        board,
+                        fewer_pieces_allowed=True,
+                        check_beams_in_both_direction=True,
+                    )
 
 
 @pytest.mark.parametrize(

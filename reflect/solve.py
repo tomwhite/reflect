@@ -13,7 +13,7 @@ def powerset(iterable):
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
 
-def solve(board, *, fewer_pieces_allowed=False):
+def solve(board, *, fewer_pieces_allowed=False, check_beams_in_both_direction=False):
     """Brute force search for all solutions to a puzzle.
 
     Useful for a setter to see if a puzzle has a unique solution.
@@ -36,7 +36,7 @@ def solve(board, *, fewer_pieces_allowed=False):
         pieces_subsets = [pieces]
     for pieces_subset in pieces_subsets:
         permutations = piece_permutations(pieces_subset)
-        solutions = _solve(beams, permutations)
+        solutions = _solve(beams, permutations, check_beams_in_both_direction)
         for solution in solutions:
             full_board = board.values.copy()
             full_board[1 : board.n + 1, 1 : board.n + 1] = block_int_to_str_array(
@@ -47,8 +47,19 @@ def solve(board, *, fewer_pieces_allowed=False):
     return solution_boards
 
 
-def has_unique_solution(board, *, fewer_pieces_allowed=False):
-    return len(solve(board, fewer_pieces_allowed=fewer_pieces_allowed)) == 1
+def has_unique_solution(
+    board, *, fewer_pieces_allowed=False, check_beams_in_both_direction=False
+):
+    return (
+        len(
+            solve(
+                board,
+                fewer_pieces_allowed=fewer_pieces_allowed,
+                check_beams_in_both_direction=check_beams_in_both_direction,
+            )
+        )
+        == 1
+    )
 
 
 def piece_permutations(pieces):
@@ -94,46 +105,60 @@ def cproduct_idx(sizes: np.ndarray):  # pragma: no cover
     return tuples[:tuple_idx_max]  # only return ones actually stored
 
 
-@nb.njit(nb.boolean(nb.int8[:, :], nb.int8[:, :]), cache=True)
-def is_solution(beams, hidden_blocks):  # pragma: no cover
+@nb.njit(nb.boolean(nb.int8[:, :], nb.int8[:, :], nb.boolean), cache=True)
+def is_solution(
+    beams, hidden_blocks, check_beams_in_both_directions
+):  # pragma: no cover
     # beams is a array of shape (m, 4), where m is the number of beams
     # columns are: start x, start y, end x, end y
     # hidden_blocks is an (n, n) array
     m = beams.shape[0]
     n = hidden_blocks.shape[0]
+    max_j = 2 if check_beams_in_both_directions else 1
     for i in range(m):
-        x = beams[i, 0]
-        y = beams[i, 1]
-        end_x = beams[i, 2]
-        end_y = beams[i, 3]
-        if x == -1:
-            dx, dy = 1, 0
-        elif x == n:
-            dx, dy = -1, 0
-        elif y == -1:
-            dx, dy = 0, 1
-        elif y == n:
-            dx, dy = 0, -1
-        x, y = x + dx, y + dy
-        # update x, y until we fall off board, and check if it's at end_x, end_y
-        while True:
-            if x == -1 or x == n or y == -1 or y == n:
-                if x != end_x or y != end_y:
-                    return False
-                break  # next beam
-            val = hidden_blocks[y, x]
-            if val == 1:  # /
-                dx, dy = -dy, -dx
-            elif val == 2:  # \
-                dx, dy = dy, dx
-            elif val == 3:  # o
-                dx, dy = -dx, -dy
+        for j in range(max_j):
+            if j == 0:
+                x = beams[i, 0]
+                y = beams[i, 1]
+                end_x = beams[i, 2]
+                end_y = beams[i, 3]
+            else:
+                x = beams[i, 2]
+                y = beams[i, 3]
+                end_x = beams[i, 0]
+                end_y = beams[i, 1]
+            if x == -1:
+                dx, dy = 1, 0
+            elif x == n:
+                dx, dy = -1, 0
+            elif y == -1:
+                dx, dy = 0, 1
+            elif y == n:
+                dx, dy = 0, -1
             x, y = x + dx, y + dy
+            # update x, y until we fall off board, and check if it's at end_x, end_y
+            while True:
+                if x == -1 or x == n or y == -1 or y == n:
+                    if x != end_x or y != end_y:
+                        return False
+                    break  # next beam
+                val = hidden_blocks[y, x]
+                if val == 1:  # /
+                    dx, dy = -dy, -dx
+                elif val == 2:  # \
+                    dx, dy = dy, dx
+                elif val == 3:  # o
+                    if check_beams_in_both_directions:
+                        # we know it's reflected back to start
+                        break  # next beam
+                    else:
+                        dx, dy = -dx, -dy
+                x, y = x + dx, y + dy
     return True
 
 
-@nb.njit(nb.int8[:, :, :](nb.int8[:, :], nb.int8[:, :]), cache=True)
-def _solve(beams, permutations):  # pragma: no cover
+@nb.njit(nb.int8[:, :, :](nb.int8[:, :], nb.int8[:, :], nb.boolean), cache=True)
+def _solve(beams, permutations, check_beams_in_both_directions):  # pragma: no cover
     solutions = np.zeros((10, 4, 4), dtype=np.int8)  # first 10 solutions only
     num_solutions = 0
     hidden_blocks = np.zeros(16, dtype=np.int8)
@@ -150,7 +175,7 @@ def _solve(beams, permutations):  # pragma: no cover
                 hidden_blocks[tuples[i, j]] = permutations[p][j]
 
             # test if these blocks form a solution
-            if is_solution(beams, hidden_blocks_square):
+            if is_solution(beams, hidden_blocks_square, check_beams_in_both_directions):
                 if num_solutions < len(solutions):
                     solutions[num_solutions] = hidden_blocks_square.copy()
                 num_solutions += 1
