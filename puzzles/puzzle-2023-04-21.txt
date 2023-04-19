@@ -1,0 +1,9 @@
+# Generated at: 2023-04-18T15:37:32
+# Difficulty: 3
+# Solve duration: 63.1
+...CD.
+././.H
+E\..o.
+......
+G\...E
+.G.HI.
