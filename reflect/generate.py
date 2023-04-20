@@ -9,7 +9,7 @@ from reflect.solve import has_unique_solution
 
 def generate(n_pieces=None, debug=False):
     if n_pieces is None:
-        n_pieces = random.randrange(4, 5)
+        n_pieces = random.randrange(4, 8)
     for _ in range(20):
         if debug:
             print(f"Generating board with {n_pieces} blocks...")
