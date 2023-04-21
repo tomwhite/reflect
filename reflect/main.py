@@ -24,7 +24,9 @@ def solve(filename):
 
         print("Solutions:")
         print()
-        solutions = solve_board(board)
+        solutions = solve_board(
+            board, fewer_pieces_allowed=True, check_beams_in_both_direction=True
+        )
         for solution in solutions:
             print(solution.puzzle_solution())
             print()

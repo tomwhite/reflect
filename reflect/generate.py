@@ -38,7 +38,9 @@ def generate(n_pieces=None):
             if board.values[y, x] == ".":
                 board.add_beam(x, y)
 
-        if has_unique_solution(board):
+        if has_unique_solution(
+            board, fewer_pieces_allowed=True, check_beams_in_both_direction=True
+        ):
             print("Minimising board...")
             return minimise(board)
 
@@ -72,7 +74,9 @@ def minimise(board):
                 f"Finding if new board with {new_board.num_beams} beams has unique solution...",
                 end=" ",
             )
-            if not has_unique_solution(new_board):
+            if not has_unique_solution(
+                new_board, fewer_pieces_allowed=True, check_beams_in_both_direction=True
+            ):
                 print("no")
                 if prev_board.num_beams < best_board.num_beams:
                     best_board = prev_board
