@@ -7,11 +7,12 @@ from reflect.board import Block, Board
 from reflect.solve import has_unique_solution
 
 
-def generate(n_pieces=None):
+def generate(n_pieces=None, debug=False):
     if n_pieces is None:
-        n_pieces = random.randrange(4, 8)
+        n_pieces = random.randrange(4, 5)
     for _ in range(20):
-        print(f"Generating board with {n_pieces} blocks...")
+        if debug:
+            print(f"Generating board with {n_pieces} blocks...")
         a = choice(
             np.array(
                 [
@@ -29,7 +30,8 @@ def generate(n_pieces=None):
             ),
             size=n_pieces,
         )
-        print(a)
+        if debug:
+            print(a)
         a = np.concatenate([a, np.full(16 - n_pieces, ".")])
         shuffle(a)
         a = a.reshape(4, 4)
@@ -41,21 +43,25 @@ def generate(n_pieces=None):
         if has_unique_solution(
             board, fewer_pieces_allowed=True, check_beams_in_both_direction=True
         ):
-            print("Minimising board...")
-            return minimise(board)
+            if debug:
+                print("Minimising board...")
+            return minimise(board, debug=debug)
 
     # can't generate a board!
     raise ValueError("Failed to generate!")
 
 
-def minimise(board):
+def minimise(board, debug=False):
     # try to remove beams at random while still having a unique solution
 
     best_board = board
     n_trials = 10
 
     for i in range(n_trials):
-        print(f"Trial {i+1} of {n_trials}. Best board has {best_board.num_beams} beams")
+        if debug:
+            print(
+                f"Trial {i+1} of {n_trials}. Best board has {best_board.num_beams} beams"
+            )
         prev_board = board
         while True:
             # find a location with a beam
@@ -70,19 +76,22 @@ def minimise(board):
 
             # if removing the beam means it is no longer unique
             # then see if the previous (unique) board is the best so far
-            print(
-                f"Finding if new board with {new_board.num_beams} beams has unique solution...",
-                end=" ",
-            )
+            if debug:
+                print(
+                    f"Finding if new board with {new_board.num_beams} beams has unique solution...",
+                    end=" ",
+                )
             if not has_unique_solution(
                 new_board, fewer_pieces_allowed=True, check_beams_in_both_direction=True
             ):
-                print("no")
+                if debug:
+                    print("no")
                 if prev_board.num_beams < best_board.num_beams:
                     best_board = prev_board
                 break
             else:
-                print("yes")
+                if debug:
+                    print("yes")
 
             prev_board = new_board
 

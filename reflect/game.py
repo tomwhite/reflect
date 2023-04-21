@@ -98,7 +98,8 @@ class ReflectPuzzle(arcade.Window):
         if self.original_board is not None:
             self.board = self.original_board.copy()
         else:
-            self.board = generate()
+            self.board = generate(debug=True)
+            print(self.board.puzzle_string())
 
         self.start_timestamp = datetime.datetime.now()
 
