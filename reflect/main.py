@@ -1,8 +1,11 @@
+import csv
 import random
+import re
+from pathlib import Path
 
 import click
 
-from reflect import Board
+from reflect import Board, board_features
 from reflect import generate as generate_board
 from reflect import play_game, play_game_on_terminal, print_svg
 from reflect import solve as solve_board
@@ -78,6 +81,45 @@ def transform(input, output):
         board = random.choice(list(board.transforms()))
         fout.writelines([line for line in lines if line.startswith("#")])
         fout.write(board.puzzle_solution())
+
+
+@cli.command()
+@click.argument("directory", type=click.Path(exists=True, file_okay=False))
+@click.argument("output")
+def features(directory, output):
+    all_features = []
+    files = Path(directory).glob("*.txt")
+    for full_board_file in sorted(files):
+        with open(full_board_file) as f:
+            lines = f.readlines()
+            for line in lines:
+                if match := re.search("Difficulty: (\\d+)", line):
+                    difficulty = match.group(1)
+            full_board = "".join([line for line in lines])
+            board = Board.create(full_board=full_board)
+            features = board_features(board)
+            features["filename"] = full_board_file.name
+            features["difficulty"] = difficulty
+            all_features.append(features)
+
+    with open(output, "w", newline="") as csvfile:
+        fieldnames = [
+            "filename",
+            "difficulty",
+            "num_blocks",
+            "num_beams",
+            "mean_blocks_per_beam",
+            "max_blocks_per_beam",
+            "mean_beams_per_block",
+            "max_beams_per_block",
+            "mean_beam_distance",
+            "max_beam_distance",
+            "num_zero_reflection_blocks",
+        ]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for feature in all_features:
+            writer.writerow(feature)
 
 
 if __name__ == "__main__":
