@@ -1,0 +1,11 @@
+# Generated at: 2023-04-20T22:09:52
+# Difficulty: 4
+# Game duration: 292.6
+# Solve duration: 273.5
+# Good ball channelling
+...CD.
+././..
+E...\D
+Fo...I
+G\...J
+.G..E.
