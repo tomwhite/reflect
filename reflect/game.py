@@ -7,6 +7,7 @@ from time import time
 
 import arcade
 
+from reflect.difficulty import predict_solve_duration
 from reflect.generate import generate
 
 # Screen title and size
@@ -100,6 +101,7 @@ class ReflectPuzzle(arcade.Window):
         else:
             self.board = generate(debug=True)
             print(self.board.puzzle_string())
+            print(f"Predicted solve duration: {predict_solve_duration(self.board)}")
 
         self.start_timestamp = datetime.datetime.now()
 

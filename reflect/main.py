@@ -7,7 +7,7 @@ import click
 
 from reflect import Board, board_features
 from reflect import generate as generate_board
-from reflect import play_game, play_game_on_terminal, print_svg
+from reflect import play_game, play_game_on_terminal, predict_solve_duration, print_svg
 from reflect import solve as solve_board
 
 
@@ -129,15 +129,9 @@ def predict(input):
         lines = fin.readlines()
         full_board = "".join([line for line in lines])
         board = Board.create(full_board=full_board)
-        features = board_features(board)
-        max_blocks_per_beam = features["max_blocks_per_beam"]
 
-        from joblib import load
-
-        X = [[max_blocks_per_beam]]
-        model = load("model.joblib")
-        y_pred = model.predict(X)
-        print(y_pred[0, 0])
+        predicted_solve_duration = predict_solve_duration(board)
+        print(predicted_solve_duration)
 
 
 if __name__ == "__main__":

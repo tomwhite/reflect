@@ -48,3 +48,15 @@ def board_features(board):
         max_beam_distance=max_beam_distance,
         num_zero_reflection_blocks=num_zero_reflection_blocks,
     )
+
+
+def predict_solve_duration(board):
+    features = board_features(board)
+    max_blocks_per_beam = features["max_blocks_per_beam"]
+
+    from joblib import load
+
+    X = [[max_blocks_per_beam]]
+    model = load("model.joblib")
+    y_pred = model.predict(X)
+    return y_pred[0, 0]
