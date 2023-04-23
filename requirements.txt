@@ -6,3 +6,4 @@ numpy
 pillow
 pytest
 pytest-cov
+scikit-learn

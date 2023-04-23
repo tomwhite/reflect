@@ -122,5 +122,23 @@ def features(directory, output):
             writer.writerow(feature)
 
 
+@cli.command()
+@click.argument("input")
+def predict(input):
+    with open(input) as fin:
+        lines = fin.readlines()
+        full_board = "".join([line for line in lines])
+        board = Board.create(full_board=full_board)
+        features = board_features(board)
+        max_blocks_per_beam = features["max_blocks_per_beam"]
+
+        from joblib import load
+
+        X = [[max_blocks_per_beam]]
+        model = load("model.joblib")
+        y_pred = model.predict(X)
+        print(y_pred[0, 0])
+
+
 if __name__ == "__main__":
     cli()
