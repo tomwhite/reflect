@@ -1,6 +1,8 @@
 import collections
 from statistics import mean
 
+from reflect.board import Block
+
 
 def board_features(board):
     """
@@ -8,6 +10,10 @@ def board_features(board):
     the difficulty of the puzzle.
     """
     num_blocks = len(board.pieces)
+    num_mirror_balls = len(
+        [piece for piece in board.pieces if piece == Block.MIRROR_BALL.char]
+    )
+
     beam_paths = board.beam_paths
     num_beams = len(beam_paths)
 
@@ -39,6 +45,7 @@ def board_features(board):
 
     return dict(
         num_blocks=num_blocks,
+        num_mirror_balls=num_mirror_balls,
         num_beams=num_beams,
         mean_blocks_per_beam=mean_blocks_per_beam,
         max_blocks_per_beam=max_blocks_per_beam,

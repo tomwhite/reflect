@@ -107,6 +107,7 @@ def features(directory, output):
             "filename",
             "difficulty",
             "num_blocks",
+            "num_mirror_balls",
             "num_beams",
             "mean_blocks_per_beam",
             "max_blocks_per_beam",

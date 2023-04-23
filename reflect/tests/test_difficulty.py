@@ -16,4 +16,7 @@ G/../.
     features = board_features(board)
 
     assert features["num_blocks"] == 6
+    assert features["num_mirror_balls"] == 1
+    assert features["max_blocks_per_beam"] == 3
+    assert features["max_beams_per_block"] == 3
     assert features["num_zero_reflection_blocks"] == 1
