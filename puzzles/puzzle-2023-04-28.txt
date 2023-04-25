@@ -1,0 +1,10 @@
+# Generated at: 2023-04-16T15:37:06
+# Difficulty: 4
+# Solve duration: 159.4
+# A good challenge
+..BC..
+E.\\\.
+F...\C
+G\....
+B../..
+.GE.F.
