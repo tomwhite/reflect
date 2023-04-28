@@ -1,0 +1,11 @@
+# Generated at: 2023-04-16T15:08:25
+# Difficulty: 5
+# Solve duration: inf
+# Only 5 pieces, but couldn't solve it after a few minutes
+# The G beam eluded me!
+..BCD.
+E....E
+./.\\D
+......
+B.//..
+.GG.C.
