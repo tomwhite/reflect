@@ -197,15 +197,42 @@ def canonicalize_board(val):
     )
 
 
-def distinct_boards(num_pieces):
-    """Return an array containing all the distinct boards containing `num_pieces`."""
+def all_boards(num_pieces):
+    """Return an array containing all the boards containing `num_pieces`."""
     product = itertools.product([1, 2, 3], repeat=num_pieces)
     selections = np.array(list(product), dtype=np.int8)
-    return _distinct_boards(selections)
+    return _all_boards(selections)
 
 
 @nb.njit(nb.uint32[:](nb.int8[:, :]), cache=True)
-def _distinct_boards(selections):
+def _all_boards(selections):
+    num_selections = selections.shape[0]
+    length = selections.shape[1]
+    sizes = np.asarray([16] * length, dtype=np.int32)
+    tuples = cproduct_idx(sizes)
+
+    boards = np.empty(len(tuples) * num_selections, dtype=np.uint32)
+
+    for i in range(len(tuples)):
+        for p in range(num_selections):
+            val = 0
+            # set blocks for this tuple/selection
+            for j in range(length):
+                val |= selections[p][j] << (tuples[i, j] * 2)
+            boards[i * num_selections + p] = val
+
+    return boards
+
+
+def canonical_boards(num_pieces):
+    """Return an array containing all the canonical boards containing `num_pieces`."""
+    product = itertools.product([1, 2, 3], repeat=num_pieces)
+    selections = np.array(list(product), dtype=np.int8)
+    return _canonical_boards(selections)
+
+
+@nb.njit(nb.uint32[:](nb.int8[:, :]), cache=True)
+def _canonical_boards(selections):
     num_selections = selections.shape[0]
     length = selections.shape[1]
     sizes = np.asarray([16] * length, dtype=np.int32)
@@ -335,6 +362,29 @@ def encode_beams_from_board(board):
     return val
 
 
+def encode_beams_from_partial_board(board):
+    assert board.n == 4
+
+    ind_to_xy = {}
+    xy_to_ind = {}
+    for i, (x, y) in enumerate(board.edge_locations_alt()):
+        ind_to_xy[i] = (x, y)
+        xy_to_ind[(x, y)] = i
+
+    shift = 15 * 4
+    val = 0
+    mask = 0
+    for i, (x, y) in ind_to_xy.items():
+        if board.values[y, x] == ".":
+            mask |= 0b0000 << shift
+        else:
+            mask |= 0b1111 << shift
+            ind = xy_to_ind[board.get_path(x, y)[-1]]
+            val |= ind << shift
+        shift -= 4
+    return val, mask
+
+
 @nb.njit(nb.uint64(nb.uint64), cache=True)
 def reflect_beams_horizontally(val):
     """Reflect the encoded beams horizontally"""
@@ -402,6 +452,14 @@ def encode_pieces(board_val):
             r2 += 1
         elif r == 3:
             r3 += 1
+    return r1 | (r2 << 4) | (r3 << 8)
+
+
+@nb.njit(nb.uint32(nb.int8[:]), cache=True)
+def encode_pieces_from_ints(pieces):
+    r1 = np.sum(pieces == 1)  # count of /
+    r2 = np.sum(pieces == 2)  # count of \
+    r3 = np.sum(pieces == 3)  # count of o
     return r1 | (r2 << 4) | (r3 << 8)
 
 
@@ -485,22 +543,52 @@ def canonicalize_puzzle(beams, pieces):
     return canonical_beams, canonical_pieces
 
 
-def distinct_puzzles(num_pieces):
-    """Return a pair of arrays (beams and pieces) containing all the distinct puzzles containing `num_pieces`."""
-    board_vals = distinct_boards(num_pieces=num_pieces)
-    n_boards = len(board_vals)
-    canonical_beams = np.empty(n_boards, dtype=np.uint64)
-    canonical_pieces = np.empty(n_boards, dtype=np.uint32)
-    for i, board_val in enumerate(board_vals):
-        beams = encode_beams(board_val)
-        pieces = encode_pieces(board_val)
+def canonical_puzzles_with_unique_solution(num_pieces):
+    """Compute all canonical puzzles with a unique solution containing `num_pieces`, taking symmetries into account."""
+
+    duplicate_groups, _, sorted_beams, sorted_pieces = all_puzzles(num_pieces)
+
+    # remove duplicate groups (non-unique solutions)
+    single_solution_beams = sorted_beams[duplicate_groups == 0]
+    single_solution_pieces = sorted_pieces[duplicate_groups == 0]
+
+    # canonicalize
+    n_puzzles = len(single_solution_beams)
+    canonical_beams = np.empty(n_puzzles, dtype=np.uint64)
+    canonical_pieces = np.empty(n_puzzles, dtype=np.uint32)
+    for i, (beams, pieces) in enumerate(
+        zip(single_solution_beams, single_solution_pieces)
+    ):
         canonical_beams[i], canonical_pieces[i] = canonicalize_puzzle(beams, pieces)
 
-    # we want to find duplicate beams-pieces pairs, so sort by beams first
-    ind = np.argsort(canonical_beams)
+    # remove duplicate canonical puzzles
+    canonical_puzzles = np.stack((canonical_beams, canonical_pieces), axis=1)
+    canonical_puzzles = np.unique(canonical_puzzles, axis=0)
+    canonical_beams = canonical_puzzles[:, 0]
+    canonical_pieces = canonical_puzzles[:, 1].astype(np.uint32)
+
+    return canonical_beams, canonical_pieces
+
+
+def all_puzzles(num_pieces):
+    """Compute all the puzzles containing `num_pieces`.
+
+    Note that symmetries are _not_ taken into account, so puzzles that can be transformed into one another
+    will all be returned.
+    """
+    board_vals = all_boards(num_pieces=num_pieces)
+    n_boards = len(board_vals)
+    beams_vals = np.empty(n_boards, dtype=np.uint64)
+    pieces_vals = np.empty(n_boards, dtype=np.uint32)
+    for i, board_val in enumerate(board_vals):
+        beams_vals[i] = encode_beams(board_val)
+        pieces_vals[i] = encode_pieces(board_val)
+
+    # sort by beams then pieces then board (note that args to lexsort are reversed)
+    ind = np.lexsort((board_vals, pieces_vals, beams_vals))
     sorted_boards = board_vals[ind]
-    sorted_beams = canonical_beams[ind]
-    sorted_pieces = canonical_pieces[ind]
+    sorted_beams = beams_vals[ind]
+    sorted_pieces = pieces_vals[ind]
 
     # at this point pieces may not be sorted, but we can check for duplicates
     duplicate_groups = np.zeros(n_boards, dtype=np.uint32)
@@ -519,3 +607,18 @@ def distinct_puzzles(num_pieces):
                 dup_group_index += 1
 
     return duplicate_groups, sorted_boards, sorted_beams, sorted_pieces
+
+
+# TODO: this is only quick if we pass in pre-computed `all_puzzles`` result
+def quick_solve(board):
+    beams_val, beams_mask = encode_beams_from_partial_board(board)
+    pieces_val = encode_pieces_from_ints(board.pieces_ints)
+    _, all_boards, all_beams, all_pieces = all_puzzles(num_pieces=len(board.pieces))
+
+    # restrict to boards and beams with desired pieces
+    boards_with_pieces = all_boards[all_pieces == pieces_val]
+    beams_with_pieces = all_beams[all_pieces == pieces_val]
+    # match beams using the mask (key line!)
+    matching_boards = boards_with_pieces[beams_with_pieces & beams_mask == beams_val]
+
+    return [decode_board(b) for b in matching_boards]

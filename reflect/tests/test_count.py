@@ -1,19 +1,19 @@
-import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from reflect import Board
+from reflect import Board, solve
 from reflect.count import (
     beam_end_pos,
+    canonical_boards,
+    canonical_puzzles_with_unique_solution,
     canonicalize_board,
     canonicalize_puzzle,
     decode_board,
-    distinct_boards,
-    distinct_puzzles,
     encode_beams,
     encode_beams_from_board,
     encode_board,
     encode_pieces,
+    quick_solve,
     reflect_beams_horizontally,
     reflect_beams_vertically,
     reflect_horizontally,
@@ -88,8 +88,8 @@ def test_canonicalize_board(board):
     assert canonicalize_board(val) in transforms(val)
 
 
-def test_distinct_boards():
-    assert len(distinct_boards(num_pieces=1)) == 9
+def test_canonical_boards():
+    assert len(canonical_boards(num_pieces=1)) == 9
 
 
 def test_beam_end_pos():
@@ -228,36 +228,81 @@ def test_canonicalize_puzzle():
     assert canonicalize_puzzle(beams1, pieces1) == canonicalize_puzzle(beams2, pieces2)
 
 
-def test_distinct_puzzles():
-    (
-        duplicate_groups,
-        distinct_boards,
-        canonical_beams,
-        canonical_pieces,
-    ) = distinct_puzzles(num_pieces=1)
-    assert np.all(duplicate_groups == 0)  # no duplicate puzzles with 1 piece
+def test_canonical_puzzles_with_unique_solution():
+    canonical_beams, canonical_pieces = canonical_puzzles_with_unique_solution(
+        num_pieces=1
+    )
     assert len(canonical_beams) == len(canonical_pieces)
     assert len(canonical_beams) == 9
 
-    (
-        duplicate_groups,
-        distinct_boards,
-        canonical_beams,
-        canonical_pieces,
-    ) = distinct_puzzles(num_pieces=2)
-    assert max(duplicate_groups) == 3  # 3 duplicate groups with 2 pieces
-    # check they all have two balls
-    for grp in range(1, 3):
-        for b in distinct_boards[duplicate_groups == grp]:
-            assert decode_board(b).pieces.tolist() == ["o", "o"]
+    canonical_beams, canonical_pieces = canonical_puzzles_with_unique_solution(
+        num_pieces=2
+    )
     assert len(canonical_beams) == len(canonical_pieces)
-    assert (
-        sum(duplicate_groups == 0) == 162 - 6
-    )  # number of distinct boards, minus duplicate boards
+    assert len(canonical_beams) == 149  # TODO: can we check this?
 
 
 @pytest.mark.skip()
-def test_number_distinct_puzzles():
+def test_number_canonical_puzzles_with_unique_solution():
     for num_pieces in range(1, 8):
-        duplicate_groups, _, _, _ = distinct_puzzles(num_pieces=num_pieces)
-        print(num_pieces, sum(duplicate_groups == 0))
+        canonical_beams, canonical_pieces = canonical_puzzles_with_unique_solution(
+            num_pieces=num_pieces
+        )
+        assert len(canonical_beams) == len(canonical_pieces)
+        print(num_pieces, len(canonical_beams))
+
+
+@pytest.mark.parametrize(
+    "full_board",
+    [
+        # unique
+        """
+..CDA.
+B\\....
+......
+.\\..\\A
+......
+..CDB.
+""",
+        # not unique
+        """
+..B...
+......
+Do\\..B
+C./...
+......
+.A....
+""",
+        """
+..B...
+......
+Do\\..B
+C./...
+......
+.A....
+""",
+        """
+.AAC..
+B.\\.\\.
+B./..D
+.\\../F
+E....E
+..DCF.
+""",
+        """
+.DEIL.
+H..\\oJ
+D//..G
+C..o.K
+A.../B
+.EGFB.
+""",
+    ],
+)
+def test_quick_solve(full_board):
+    board = Board.create(full_board=full_board)
+
+    solutions = quick_solve(board)
+
+    # compare with regular solve
+    assert len(solve(board)) == len(solutions)
