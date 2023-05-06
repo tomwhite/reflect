@@ -9,6 +9,7 @@ from reflect import Board, board_features
 from reflect import generate as generate_board
 from reflect import play_game, play_game_on_terminal, predict_solve_duration, print_svg
 from reflect import solve as solve_board
+from reflect.count import compute_and_save_all_puzzles
 
 
 @click.group()
@@ -137,6 +138,12 @@ def predict(input):
 
         predicted_solve_duration = predict_solve_duration(board)
         print(predicted_solve_duration)
+
+
+@cli.command()
+@click.argument("output")
+def save_all_puzzles(output):
+    compute_and_save_all_puzzles(max_pieces=7, filename=output)
 
 
 if __name__ == "__main__":

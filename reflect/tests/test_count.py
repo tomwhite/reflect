@@ -8,11 +8,13 @@ from reflect.count import (
     canonical_puzzles_with_unique_solution,
     canonicalize_board,
     canonicalize_puzzle,
+    compute_and_save_all_puzzles,
     decode_board,
     encode_beams,
     encode_beams_from_board,
     encode_board,
     encode_pieces,
+    load_all_puzzles,
     quick_solve,
     reflect_beams_horizontally,
     reflect_beams_vertically,
@@ -306,3 +308,49 @@ def test_quick_solve(full_board):
 
     # compare with regular solve
     assert len(solve(board)) == len(solutions)
+
+
+def test_load_and_save_puzzles(tmp_path):
+    filename = tmp_path / "puzzles.bin"
+    compute_and_save_all_puzzles(max_pieces=3, filename=filename)
+    num_pieces_to_puzzles = load_all_puzzles(filename)
+
+    full_board = """
+..CDA.
+B\\....
+......
+.\\..\\A
+......
+..CDB.
+"""
+
+    board = Board.create(full_board=full_board)
+
+    solutions = quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
+
+    assert len(solutions) == 1
+
+
+def test_has_unique_solution_comparison():
+    num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
+
+    full_board = """
+.ABCD.
+Eo..oK
+F....F
+Go../J
+H..\\.C
+.IBHJ.
+    """
+
+    board = Board.create(full_board=full_board)
+
+    solutions = quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
+
+    for solution in solutions:
+        print(solution.puzzle_solution())
+
+    solutions = solve(board, fewer_pieces_allowed=True)
+
+    for solution in solutions:
+        print(solution.puzzle_solution())

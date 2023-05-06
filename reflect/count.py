@@ -1,4 +1,5 @@
 import itertools
+import pickle
 
 import numba as nb
 import numpy as np
@@ -609,11 +610,28 @@ def all_puzzles(num_pieces):
     return duplicate_groups, sorted_boards, sorted_beams, sorted_pieces
 
 
-# TODO: this is only quick if we pass in pre-computed `all_puzzles`` result
-def quick_solve(board):
+def compute_and_save_all_puzzles(max_pieces, filename):
+    num_pieces_to_puzzles = {}
+    for num_pieces in range(1, max_pieces + 1):
+        num_pieces_to_puzzles[num_pieces] = all_puzzles(num_pieces)
+    with open(filename, mode="wb") as file:
+        pickle.dump(num_pieces_to_puzzles, file)
+
+
+def load_all_puzzles(filename):
+    with open(filename, mode="rb") as file:
+        return pickle.load(file)
+
+
+def quick_solve(board, *, num_pieces_to_puzzles=None):
     beams_val, beams_mask = encode_beams_from_partial_board(board)
     pieces_val = encode_pieces_from_ints(board.pieces_ints)
-    _, all_boards, all_beams, all_pieces = all_puzzles(num_pieces=len(board.pieces))
+    num_pieces = len(board.pieces)
+
+    if num_pieces_to_puzzles is not None and num_pieces in num_pieces_to_puzzles:
+        _, all_boards, all_beams, all_pieces = num_pieces_to_puzzles[num_pieces]
+    else:
+        _, all_boards, all_beams, all_pieces = all_puzzles(num_pieces)
 
     # restrict to boards and beams with desired pieces
     boards_with_pieces = all_boards[all_pieces == pieces_val]
@@ -622,3 +640,7 @@ def quick_solve(board):
     matching_boards = boards_with_pieces[beams_with_pieces & beams_mask == beams_val]
 
     return [decode_board(b) for b in matching_boards]
+
+
+def quick_has_unique_solution(board, *, num_pieces_to_puzzles=None):
+    return len(quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)) == 1

@@ -4,7 +4,11 @@ import numpy as np
 from numpy.random import choice, shuffle
 
 from reflect.board import Block, Board
-from reflect.solve import has_unique_solution
+from reflect.count import load_all_puzzles, quick_has_unique_solution
+from reflect.solve import has_unique_solution as slow_has_unique_solution
+
+# TODO: do this lazily?
+num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
 
 
 def generate(n_pieces=None, min_pieces=4, max_pieces=7, debug=False):
@@ -40,9 +44,7 @@ def generate(n_pieces=None, min_pieces=4, max_pieces=7, debug=False):
             if board.values[y, x] == ".":
                 board.add_beam(x, y)
 
-        if has_unique_solution(
-            board, fewer_pieces_allowed=True, ball_on_two_ended_beam_allowed=True
-        ):
+        if has_unique_solution(board):
             if debug:
                 print("Minimising board...")
             return minimise(board, debug=debug)
@@ -81,11 +83,7 @@ def minimise(board, debug=False):
                     f"Finding if new board with {new_board.num_beams} beams has unique solution...",
                     end=" ",
                 )
-            if not has_unique_solution(
-                new_board,
-                fewer_pieces_allowed=True,
-                ball_on_two_ended_beam_allowed=True,
-            ):
+            if not has_unique_solution(new_board):
                 if debug:
                     print("no")
                 if prev_board.num_beams < best_board.num_beams:
@@ -98,3 +96,23 @@ def minimise(board, debug=False):
             prev_board = new_board
 
     return best_board
+
+
+def has_unique_solution(board):
+    slow_unique = slow_has_unique_solution(
+        board, fewer_pieces_allowed=True, ball_on_two_ended_beam_allowed=True
+    )
+    # ball_on_two_ended_beam_allowed is not supported by quick_has_unique_solution
+    # so we can't use it to check uniqueness for boards with a 'o' piece
+    if "o" in board.pieces:
+        return slow_unique
+    quick_unique = quick_has_unique_solution(
+        board,
+        num_pieces_to_puzzles=num_pieces_to_puzzles,
+        fewer_pieces_allowed=True,
+    )
+    if slow_unique != quick_unique:
+        raise ValueError(
+            f"Uniqueness mismatch, slow says {slow_unique}, quick says {quick_unique} for uniqueness of board {board.puzzle_solution()}"
+        )
+    return slow_unique
