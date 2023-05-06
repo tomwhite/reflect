@@ -1,0 +1,11 @@
+# Generated at: 2023-05-06T12:12:16
+# Difficulty: 4
+# Game duration: 86.7
+# Solve duration: 77.7
+# Green beam is fun
+.ABC..
+E....E
+F.\.\.
+A/.\.C
+G..\/.
+.BFG..
