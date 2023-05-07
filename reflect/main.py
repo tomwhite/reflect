@@ -1,4 +1,5 @@
 import csv
+import math
 import random
 import re
 from pathlib import Path
@@ -10,6 +11,13 @@ from reflect import generate as generate_board
 from reflect import play_game, play_game_on_terminal, predict_solve_duration, print_svg
 from reflect import solve as solve_board
 from reflect.count import compute_and_save_all_puzzles
+from reflect.stats import (
+    compute_per_device_stats,
+    compute_stats,
+    load_features,
+    load_firebase_events,
+    merge_stats_and_features,
+)
 
 
 @click.group()
@@ -97,35 +105,40 @@ def features(directory, output):
     for full_board_file in sorted(files):
         with open(full_board_file) as f:
             lines = f.readlines()
+            setter_solve_duration = math.nan
             for line in lines:
                 if match := re.search("Difficulty: (\\d+)", line):
                     difficulty = match.group(1)
+                if match := re.search("Solve duration: (.+)", line):
+                    setter_solve_duration = match.group(1)
             full_board = "".join([line for line in lines])
             board = Board.create(full_board=full_board)
             features = board_features(board)
             features["filename"] = full_board_file.name
             features["difficulty"] = difficulty
+            features["setter_solve_duration_s"] = setter_solve_duration
             all_features.append(features)
 
     with open(output, "w", newline="") as csvfile:
-        fieldnames = [
-            "filename",
-            "difficulty",
-            "num_blocks",
-            "num_mirror_balls",
-            "num_beams",
-            "mean_blocks_per_beam",
-            "max_blocks_per_beam",
-            "mean_beams_per_block",
-            "max_beams_per_block",
-            "mean_beam_distance",
-            "max_beam_distance",
-            "num_zero_reflection_blocks",
-        ]
+        fieldnames = list(all_features[0].keys())
+        # make sure "filename is first
+        fieldnames.remove("filename")
+        fieldnames.insert(0, "filename")
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for feature in all_features:
             writer.writerow(feature)
+
+
+@cli.command()
+@click.argument("output")
+def stats(output):
+    events_df = load_firebase_events()
+    device_df = compute_per_device_stats(events_df)
+    stats_df = compute_stats(events_df, device_df)
+    features_df = load_features()
+    all_df = merge_stats_and_features(stats_df, features_df)
+    all_df.to_csv(output, index=False)
 
 
 @cli.command()
