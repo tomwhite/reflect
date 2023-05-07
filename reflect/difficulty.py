@@ -29,6 +29,9 @@ def board_features(board):
                 if board.hidden_blocks[j - 1, i - 1] != ".":
                     count += 1
                     block_counts.update([loc])
+                    # treat ball as end of path for purposes of difficulty rating
+                    if board.hidden_blocks[j - 1, i - 1] == "o":
+                        break
         blocks_per_beam.append(count)
     mean_blocks_per_beam = mean(blocks_per_beam)
     max_blocks_per_beam = max(blocks_per_beam)
@@ -37,7 +40,20 @@ def board_features(board):
     mean_beams_per_block = mean(beams_per_block)
     max_beams_per_block = max(beams_per_block)
 
-    beam_distances = [len(path) - 1 for path in beam_paths]
+    # treat ball as end of path for purposes of difficulty rating
+    def distance(path):
+        contains_ball = False
+        for loc in path:
+            i, j = loc
+            if board.on_inner_board(i, j):
+                if board.hidden_blocks[j - 1, i - 1] == "o":
+                    contains_ball = True
+        if contains_ball:
+            return (len(path) - 1) // 2
+        else:
+            return len(path) - 1
+
+    beam_distances = [distance(path) for path in beam_paths]
     mean_beam_distance = mean(beam_distances)
     max_beam_distance = max(beam_distances)
 
