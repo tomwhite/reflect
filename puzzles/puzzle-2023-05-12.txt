@@ -1,0 +1,10 @@
+# Generated at: 2023-05-09T22:22:10
+# Difficulty: 3
+# Game duration: 149.4
+# Solve duration: 135.3
+.ABB..
+..../E
+D.\/..
+E.../A
+.\../H
+..D.H.
