@@ -1,0 +1,11 @@
+# Generated at: 2023-05-11T22:04:41
+# Difficulty: 4
+# Game duration: 201.0
+# Solve duration: 171.5
+# Yellow was unexpected
+.A..D.
+A/.\..
+......
+F/..\D
+F../.H
+.G.HG.
