@@ -1,0 +1,10 @@
+# Generated at: 2023-05-11T22:12:34
+# Difficulty: 3
+# Game duration: 135.0
+# Solve duration: 108.9
+....D.
+../o.J
+......
+F./..H
+G..//I
+..HDI.
