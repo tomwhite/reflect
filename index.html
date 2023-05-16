@@ -248,6 +248,14 @@
         );
       }
 
+      // Return "today" in YYYY-MM-DD
+      // Allow overriding with url param ?date=YYYY-MM-DD
+      function getEffectiveDate() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dateParam = urlParams.get("date");
+        return dateParam ? dateParam : formatDate(new Date());
+      }
+
       const firebaseConfig = {
         apiKey: "AIzaSyBgI928NCooaWIQNtNU1beD25Nzg7B6W50",
         authDomain: "reflect-826a3.firebaseapp.com",
@@ -261,7 +269,7 @@
 
       const db = firebase.firestore();
 
-      const today = formatDate(new Date());
+      const today = getEffectiveDate();
       const deviceId = getDeviceId();
 
       function saveEvent(name) {
