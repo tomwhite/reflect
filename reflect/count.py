@@ -5,7 +5,7 @@ import numba as nb
 import numpy as np
 
 from reflect.board import Board, block_int_to_str_array
-from reflect.solve import cproduct_idx
+from reflect.solve import cproduct_idx, powerset
 
 
 def encode_board(board):
@@ -623,10 +623,12 @@ def load_all_puzzles(filename):
         return pickle.load(file)
 
 
-def quick_solve(board, *, num_pieces_to_puzzles=None):
+def _quick_solve(board, *, num_pieces_to_puzzles=None, pieces_ints=None):
     beams_val, beams_mask = encode_beams_from_partial_board(board)
-    pieces_val = encode_pieces_from_ints(board.pieces_ints)
-    num_pieces = len(board.pieces)
+    if pieces_ints is None:
+        pieces_ints = board.pieces_ints
+    pieces_val = encode_pieces_from_ints(pieces_ints)
+    num_pieces = len(pieces_ints)
 
     if num_pieces_to_puzzles is not None and num_pieces in num_pieces_to_puzzles:
         _, all_boards, all_beams, all_pieces = num_pieces_to_puzzles[num_pieces]
@@ -642,5 +644,36 @@ def quick_solve(board, *, num_pieces_to_puzzles=None):
     return [decode_board(b) for b in matching_boards]
 
 
-def quick_has_unique_solution(board, *, num_pieces_to_puzzles=None):
-    return len(quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)) == 1
+def quick_solve(board, *, num_pieces_to_puzzles=None, fewer_pieces_allowed=False):
+    if not fewer_pieces_allowed:
+        return _quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
+
+    pieces = board.pieces_ints
+    # `pieces` is a multiset so wrap in a set to remove duplicates
+    pieces_subsets = set(powerset(pieces))
+    solutions = []
+    for pieces_subset in pieces_subsets:
+        pieces_ints_subset = np.array(list(pieces_subset), dtype=np.int8)
+        solutions.extend(
+            _quick_solve(
+                board,
+                num_pieces_to_puzzles=num_pieces_to_puzzles,
+                pieces_ints=pieces_ints_subset,
+            )
+        )
+    return solutions
+
+
+def quick_has_unique_solution(
+    board, *, num_pieces_to_puzzles=None, fewer_pieces_allowed=False
+):
+    return (
+        len(
+            quick_solve(
+                board,
+                num_pieces_to_puzzles=num_pieces_to_puzzles,
+                fewer_pieces_allowed=fewer_pieces_allowed,
+            )
+        )
+        == 1
+    )

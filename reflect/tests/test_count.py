@@ -354,3 +354,28 @@ H..\\.C
 
     for solution in solutions:
         print(solution.puzzle_solution())
+
+
+# TODO: refactor to share code with test_solve__fewer_pieces_allowed
+def test_quick_solve__fewer_pieces_allowed():
+    num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
+
+    # set on 2023-04-14
+    full_board = """
+.ABCD.
+B./..E
+E./o..
+F....F
+A/o\\..
+.GHID.
+"""
+    board = Board.create(full_board=full_board)
+    solutions = quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
+
+    assert len(solutions) == 1
+
+    solutions = quick_solve(
+        board, num_pieces_to_puzzles=num_pieces_to_puzzles, fewer_pieces_allowed=True
+    )
+
+    assert len(solutions) == 4
