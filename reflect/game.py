@@ -62,12 +62,14 @@ class BlockSprite(arcade.Sprite):
 
 
 class ReflectPuzzle(arcade.Window):
-    def __init__(self, board):
+    def __init__(self, board, min_pieces, max_pieces):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
         self.background = None
 
         self.original_board = board
+        self.min_pieces = min_pieces
+        self.max_pieces = max_pieces
 
         self.shape_list = None
         self.path_list = None
@@ -99,7 +101,9 @@ class ReflectPuzzle(arcade.Window):
         if self.original_board is not None:
             self.board = self.original_board.copy()
         else:
-            self.board = generate(debug=True)
+            self.board = generate(
+                min_pieces=self.min_pieces, max_pieces=self.max_pieces, debug=True
+            )
             print(self.board.puzzle_string())
             print(f"Predicted solve duration: {predict_solve_duration(self.board)}")
 
@@ -313,7 +317,7 @@ def flip_y(y):
     return SCREEN_HEIGHT - y
 
 
-def play_game(board):
-    window = ReflectPuzzle(board)
+def play_game(board, min_pieces, max_pieces):
+    window = ReflectPuzzle(board, min_pieces=min_pieces, max_pieces=max_pieces)
     window.setup()
     arcade.run()

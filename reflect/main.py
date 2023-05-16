@@ -37,8 +37,10 @@ def solve(filename):
 
 @cli.command()
 @click.argument("filename")
-def generate(filename):
-    board = generate_board()
+@click.option("--min-pieces", default=4)
+@click.option("--max-pieces", default=7)
+def generate(filename, min_pieces, max_pieces):
+    board = generate_board(min_pieces=min_pieces, max_pieces=max_pieces)
     print(board.puzzle_string())
     with open(filename, "w") as f:
         f.write(board.puzzle_solution())
@@ -47,7 +49,9 @@ def generate(filename):
 @cli.command()
 @click.argument("filename", required=False)
 @click.option("--terminal", is_flag=True)
-def play(filename, terminal):
+@click.option("--min-pieces", default=4)
+@click.option("--max-pieces", default=7)
+def play(filename, terminal, min_pieces, max_pieces):
     if filename is not None:
         with open(filename) as f:
             full_board = "".join([line for line in f.readlines()])
@@ -57,7 +61,7 @@ def play(filename, terminal):
     if terminal:
         play_game_on_terminal(board)
     else:
-        play_game(board)
+        play_game(board, min_pieces=min_pieces, max_pieces=max_pieces)
 
 
 @cli.command()

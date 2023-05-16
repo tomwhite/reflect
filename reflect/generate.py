@@ -7,9 +7,9 @@ from reflect.board import Block, Board
 from reflect.solve import has_unique_solution
 
 
-def generate(n_pieces=None, debug=False):
+def generate(n_pieces=None, min_pieces=4, max_pieces=7, debug=False):
     if n_pieces is None:
-        n_pieces = random.randrange(4, 8)
+        n_pieces = random.randrange(min_pieces, max_pieces + 1)
     for _ in range(20):
         if debug:
             print(f"Generating board with {n_pieces} blocks...")
