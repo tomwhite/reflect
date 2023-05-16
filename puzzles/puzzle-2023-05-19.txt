@@ -1,0 +1,11 @@
+# Generated at: 2023-05-16T18:24:48
+# Difficulty: 4
+# Game duration: 129.0
+# Solve duration: 100.1
+# Small number of pieces (5) and beams (3), but satisfying!
+..B...
+E...\.
+F.\\..
+B../\E
+......
+..F...
