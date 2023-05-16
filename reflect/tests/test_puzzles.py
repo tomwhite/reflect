@@ -19,7 +19,7 @@ def test_puzzles_have_unique_solution(request):
                     assert has_unique_solution(
                         board,
                         fewer_pieces_allowed=True,
-                        check_beams_in_both_direction=True,
+                        ball_on_two_ended_beam_allowed=True,
                     )
 
 

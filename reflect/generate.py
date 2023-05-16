@@ -41,7 +41,7 @@ def generate(n_pieces=None, min_pieces=4, max_pieces=7, debug=False):
                 board.add_beam(x, y)
 
         if has_unique_solution(
-            board, fewer_pieces_allowed=True, check_beams_in_both_direction=True
+            board, fewer_pieces_allowed=True, ball_on_two_ended_beam_allowed=True
         ):
             if debug:
                 print("Minimising board...")
@@ -82,7 +82,9 @@ def minimise(board, debug=False):
                     end=" ",
                 )
             if not has_unique_solution(
-                new_board, fewer_pieces_allowed=True, check_beams_in_both_direction=True
+                new_board,
+                fewer_pieces_allowed=True,
+                ball_on_two_ended_beam_allowed=True,
             ):
                 if debug:
                     print("no")

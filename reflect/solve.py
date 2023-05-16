@@ -13,7 +13,7 @@ def powerset(iterable):
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
 
-def solve(board, *, fewer_pieces_allowed=False, check_beams_in_both_direction=False):
+def solve(board, *, fewer_pieces_allowed=False, ball_on_two_ended_beam_allowed=False):
     """Brute force search for all solutions to a puzzle.
 
     Useful for a setter to see if a puzzle has a unique solution.
@@ -24,7 +24,8 @@ def solve(board, *, fewer_pieces_allowed=False, check_beams_in_both_direction=Fa
         A board object.
     fewer_pieces_allowed : bool, optional
         If True, allow solutions that use fewer pieces.
-
+    ball_on_two_ended_beam_allowed : bool, optional
+        If True, allow solutions where a ball blocks a two-ended beam
     """
     beams = board.beams
     pieces = board.pieces_ints
@@ -36,7 +37,7 @@ def solve(board, *, fewer_pieces_allowed=False, check_beams_in_both_direction=Fa
         pieces_subsets = [pieces]
     for pieces_subset in pieces_subsets:
         permutations = piece_permutations(pieces_subset)
-        solutions = _solve(beams, permutations, check_beams_in_both_direction)
+        solutions = _solve(beams, permutations, ball_on_two_ended_beam_allowed)
         for solution in solutions:
             full_board = board.values.copy()
             full_board[1 : board.n + 1, 1 : board.n + 1] = block_int_to_str_array(
@@ -48,14 +49,14 @@ def solve(board, *, fewer_pieces_allowed=False, check_beams_in_both_direction=Fa
 
 
 def has_unique_solution(
-    board, *, fewer_pieces_allowed=False, check_beams_in_both_direction=False
+    board, *, fewer_pieces_allowed=False, ball_on_two_ended_beam_allowed=False
 ):
     return (
         len(
             solve(
                 board,
                 fewer_pieces_allowed=fewer_pieces_allowed,
-                check_beams_in_both_direction=check_beams_in_both_direction,
+                ball_on_two_ended_beam_allowed=ball_on_two_ended_beam_allowed,
             )
         )
         == 1
@@ -107,14 +108,14 @@ def cproduct_idx(sizes: np.ndarray):  # pragma: no cover
 
 @nb.njit(nb.boolean(nb.int8[:, :], nb.int8[:, :], nb.boolean), cache=True)
 def is_solution(
-    beams, hidden_blocks, check_beams_in_both_directions
+    beams, hidden_blocks, ball_on_two_ended_beam_allowed
 ):  # pragma: no cover
     # beams is a array of shape (m, 4), where m is the number of beams
     # columns are: start x, start y, end x, end y
     # hidden_blocks is an (n, n) array
     m = beams.shape[0]
     n = hidden_blocks.shape[0]
-    max_j = 2 if check_beams_in_both_directions else 1
+    max_j = 2 if ball_on_two_ended_beam_allowed else 1
     for i in range(m):
         for j in range(max_j):
             if j == 0:
@@ -148,7 +149,7 @@ def is_solution(
                 elif val == 2:  # \
                     dx, dy = dy, dx
                 elif val == 3:  # o
-                    if check_beams_in_both_directions:
+                    if ball_on_two_ended_beam_allowed:
                         # we know it's reflected back to start
                         break  # next beam
                     else:
@@ -158,7 +159,7 @@ def is_solution(
 
 
 @nb.njit(nb.int8[:, :, :](nb.int8[:, :], nb.int8[:, :], nb.boolean), cache=True)
-def _solve(beams, permutations, check_beams_in_both_directions):  # pragma: no cover
+def _solve(beams, permutations, ball_on_two_ended_beam_allowed):  # pragma: no cover
     solutions = np.zeros((10, 4, 4), dtype=np.int8)  # first 10 solutions only
     num_solutions = 0
     hidden_blocks = np.zeros(16, dtype=np.int8)
@@ -175,7 +176,7 @@ def _solve(beams, permutations, check_beams_in_both_directions):  # pragma: no c
                 hidden_blocks[tuples[i, j]] = permutations[p][j]
 
             # test if these blocks form a solution
-            if is_solution(beams, hidden_blocks_square, check_beams_in_both_directions):
+            if is_solution(beams, hidden_blocks_square, ball_on_two_ended_beam_allowed):
                 if num_solutions < len(solutions):
                     solutions[num_solutions] = hidden_blocks_square.copy()
                 num_solutions += 1

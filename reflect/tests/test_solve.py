@@ -113,3 +113,55 @@ A/o\\..
     assert (
         set(solution.puzzle_solution() for solution in solutions) == expected_solutions
     )
+
+
+def test_solve__ball_on_two_ended_beam_allowed():
+    # set on 2023-04-16
+    full_board = """
+.AA.C.
+D\\/./I
+D/...G
+...o.J
+..\\..C
+.G..I.
+"""
+    board = Board.create(full_board=full_board)
+    solutions = solve(board)
+    assert len(solutions) == 1
+    assert solutions[0].puzzle_solution() == board.puzzle_solution()
+
+    # first three have a 'o' piece blocking a two-ended beam
+    expected_solutions = set(
+        [
+            """.AA.C.
+D\\/./I
+D/...G
+.o...J
+..\\..C
+.G..I.""",
+            """.AA.C.
+D\\/./I
+D/...G
+..o..J
+..\\..C
+.G..I.""",
+            """.AA.C.
+D\\/./I
+D/...G
+....oJ
+..\\..C
+.G..I.""",
+            """.AA.C.
+D\\/./I
+D/...G
+...o.J
+..\\..C
+.G..I.""",
+        ]
+    )
+
+    solutions = solve(board, ball_on_two_ended_beam_allowed=True)
+    assert len(solutions) == 4
+    assert (
+        set(solution.puzzle_solution() for solution in solutions) == expected_solutions
+    )
