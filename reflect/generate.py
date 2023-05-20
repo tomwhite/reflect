@@ -4,7 +4,7 @@ import numpy as np
 from numpy.random import choice, shuffle
 
 from reflect.board import Block, Board
-from reflect.count import load_all_puzzles, quick_has_unique_solution
+from reflect.count import decode_board, load_all_puzzles, quick_has_unique_solution
 from reflect.solve import has_unique_solution as slow_has_unique_solution
 
 # TODO: do this lazily?
@@ -14,32 +14,21 @@ num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
 def generate(n_pieces=None, min_pieces=4, max_pieces=7, debug=False):
     if n_pieces is None:
         n_pieces = random.randrange(min_pieces, max_pieces + 1)
+
+    duplicate_groups, all_boards, _, _ = num_pieces_to_puzzles[n_pieces]
+    # remove duplicate groups (non-unique solutions)
+    single_solution_boards = all_boards[duplicate_groups == 0]
+
     for _ in range(20):
         if debug:
             print(f"Generating board with {n_pieces} blocks...")
-        a = choice(
-            np.array(
-                [
-                    Block.OBLIQUE_MIRROR.char,
-                    Block.REVERSE_OBLIQUE_MIRROR.char,
-                    Block.MIRROR_BALL.char,
-                ]
-            ),
-            p=np.array(
-                [
-                    (n_pieces - 1) / (2 * n_pieces),
-                    (n_pieces - 1) / (2 * n_pieces),
-                    1 / n_pieces,
-                ]
-            ),
-            size=n_pieces,
-        )
+
+        board = decode_board(choice(single_solution_boards))
+
         if debug:
-            print(a)
-        a = np.concatenate([a, np.full(16 - n_pieces, ".")])
-        shuffle(a)
-        a = a.reshape(4, 4)
-        board = Board.create(hidden_blocks=a)
+            print(board.pieces)
+
+        # turn on all beams
         for x, y in board.edge_locations():
             if board.values[y, x] == ".":
                 board.add_beam(x, y)
@@ -48,9 +37,40 @@ def generate(n_pieces=None, min_pieces=4, max_pieces=7, debug=False):
             if debug:
                 print("Minimising board...")
             return minimise(board, debug=debug)
+        else:
+            if debug:
+                print("Not unique...")
 
     # can't generate a board!
     raise ValueError("Failed to generate!")
+
+
+# TODO: this is no longer used since we have pre-generated all boards
+# which we know have unique solutions and can sample at random
+def generate_board(n_pieces, debug=False):
+    a = choice(
+        np.array(
+            [
+                Block.OBLIQUE_MIRROR.char,
+                Block.REVERSE_OBLIQUE_MIRROR.char,
+                Block.MIRROR_BALL.char,
+            ]
+        ),
+        p=np.array(
+            [
+                (n_pieces - 1) / (2 * n_pieces),
+                (n_pieces - 1) / (2 * n_pieces),
+                1 / n_pieces,
+            ]
+        ),
+        size=n_pieces,
+    )
+    if debug:
+        print(a)
+    a = np.concatenate([a, np.full(16 - n_pieces, ".")])
+    shuffle(a)
+    a = a.reshape(4, 4)
+    return Board.create(hidden_blocks=a)
 
 
 def minimise(board, debug=False):
