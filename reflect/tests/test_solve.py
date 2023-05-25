@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_array_equal
 
-from reflect import Board, cproduct_idx, is_solution, piece_permutations, solve
+from reflect import Board, Puzzle, cproduct_idx, is_solution, piece_permutations, solve
 
 
 def test_piece_permutations():
@@ -49,7 +49,20 @@ def test_is_solution():
 
 
 def test_solve():
-    full_board = """
+    values = """
+....A.
+......
+......
+.....A
+B....B
+...CC.
+"""
+    pieces = ["/", "\\"]
+    puzzle = Puzzle.create(values, pieces)
+    solutions = solve(puzzle)
+    assert len(solutions) == 1
+
+    expected_solution = """
 ....A.
 ......
 ......
@@ -57,15 +70,27 @@ def test_solve():
 B....B
 ...CC.
 """
-    board = Board.create(full_board=full_board)
-    solutions = solve(board)
-    assert len(solutions) == 1
+    board = Board.create(full_board=expected_solution)
     assert solutions[0].puzzle_solution() == board.puzzle_solution()
 
 
 def test_solve__fewer_pieces_allowed():
     # set on 2023-04-14
-    full_board = """
+    values = """
+.ABCD.
+B....E
+E.....
+F....F
+A.....
+.GHID.
+"""
+    pieces = ["/", "/", "/", "\\", "o", "o"]
+    puzzle = Puzzle.create(values, pieces)
+
+    solutions = solve(puzzle)
+    assert len(solutions) == 1
+
+    expected_solution = """
 .ABCD.
 B./..E
 E./o..
@@ -73,9 +98,7 @@ F....F
 A/o\\..
 .GHID.
 """
-    board = Board.create(full_board=full_board)
-    solutions = solve(board)
-    assert len(solutions) == 1
+    board = Board.create(full_board=expected_solution)
     assert solutions[0].puzzle_solution() == board.puzzle_solution()
 
     # first three don't use a \ piece
@@ -108,7 +131,7 @@ A/o\\..
         ]
     )
 
-    solutions = solve(board, fewer_pieces_allowed=True)
+    solutions = solve(puzzle, fewer_pieces_allowed=True)
     assert len(solutions) == 4
     assert (
         set(solution.puzzle_solution() for solution in solutions) == expected_solutions
@@ -117,7 +140,21 @@ A/o\\..
 
 def test_solve__ball_on_two_ended_beam_allowed():
     # set on 2023-04-16
-    full_board = """
+    values = """
+.AA.C.
+D....I
+D....G
+.....J
+.....C
+.G..I.
+"""
+    pieces = ["/", "/", "/", "\\", "\\", "o"]
+    puzzle = Puzzle.create(values, pieces)
+
+    solutions = solve(puzzle)
+    assert len(solutions) == 1
+
+    expected_solution = """
 .AA.C.
 D\\/./I
 D/...G
@@ -125,9 +162,7 @@ D/...G
 ..\\..C
 .G..I.
 """
-    board = Board.create(full_board=full_board)
-    solutions = solve(board)
-    assert len(solutions) == 1
+    board = Board.create(full_board=expected_solution)
     assert solutions[0].puzzle_solution() == board.puzzle_solution()
 
     # first three have a 'o' piece blocking a two-ended beam
@@ -160,7 +195,7 @@ D/...G
         ]
     )
 
-    solutions = solve(board, ball_on_two_ended_beam_allowed=True)
+    solutions = solve(puzzle, ball_on_two_ended_beam_allowed=True)
     assert len(solutions) == 4
     assert (
         set(solution.puzzle_solution() for solution in solutions) == expected_solutions

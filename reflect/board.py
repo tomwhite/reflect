@@ -16,6 +16,84 @@ class Block(Enum):
     MIRROR_BALL = (3, "o")
 
 
+# TODO: remove duplication from Board
+class Puzzle:
+    """A Reflect puzzle consisting of beams on the edge of a board, and a set of pieces."""
+
+    def __init__(self, n, values, pieces, num_beams):
+        self.n = n
+        self.values = values
+        self.pieces = pieces
+        self.num_beams = num_beams
+
+    @classmethod
+    def create(cls, values, pieces):
+        if isinstance(values, str):
+            values = cls._parse(values)
+
+        # get hidden blocks from full board
+        n = len(values) - 2
+
+        pieces = np.array(pieces)
+        pieces = np.sort(pieces)
+
+        # find num_beams from values
+        num_beams = np.unique(values).size - 1  # don't count "."
+        return cls(n, values, pieces, num_beams)
+
+    @staticmethod
+    def _parse(rep):
+        # split into lines (ignore blank lines and comments)
+        def filter(line):
+            return len(line.strip()) == 0 or line.startswith("#")
+
+        lines = [line for line in rep.splitlines() if not filter(line)]
+        x = np.array(lines, dtype=bytes)
+        return x.view("S1").reshape((x.size, -1)).astype(str)
+
+    @property
+    def pieces_ints(self):
+        return block_str_to_int_array(self.pieces)
+
+    def edge_locations(self):
+        """Return all the edge locations in a predictable order."""
+        for x in range(1, self.n + 1):
+            yield x, 0
+        for y in range(1, self.n + 1):
+            yield 0, y
+        for x in range(1, self.n + 1):
+            yield x, self.n + 1
+        for y in range(1, self.n + 1):
+            yield self.n + 1, y
+
+    @property
+    def beams(self):
+        x = list(range(self.n + 2))
+        y = list(range(self.n + 2))
+        xv, yv = np.meshgrid(x, y, indexing="xy")
+        # adjust indexing so top of inner board is at 0, 0
+        xv = xv - 1
+        yv = yv - 1
+
+        b = np.empty((self.num_beams, 4), dtype=np.int8)
+        beam_names = {self.values[y, x] for x, y in self.edge_locations()}
+        if "." in beam_names:
+            beam_names.remove(".")
+        beam_names = sorted(beam_names)
+        assert len(beam_names) == self.num_beams
+        for i, label in enumerate(beam_names):
+            cond = self.values == label
+            xvc = xv[cond]
+            yvc = yv[cond]
+            xvc = np.broadcast_to(xvc, (2,))
+            yvc = np.broadcast_to(yvc, (2,))
+            b[i, 0] = xvc[0]
+            b[i, 1] = yvc[0]
+            b[i, 2] = xvc[1]
+            b[i, 3] = yvc[1]
+        return b
+
+
 class Board:
     """A board for Reflect.
 

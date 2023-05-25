@@ -2,6 +2,7 @@
 from .board import (
     Block,
     Board,
+    Puzzle,
     block_int_to_str_array,
     block_str_to_int_array,
     boards_are_unique,

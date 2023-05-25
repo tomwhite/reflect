@@ -13,22 +13,22 @@ def powerset(iterable):
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
 
-def solve(board, *, fewer_pieces_allowed=False, ball_on_two_ended_beam_allowed=False):
+def solve(puzzle, *, fewer_pieces_allowed=False, ball_on_two_ended_beam_allowed=False):
     """Brute force search for all solutions to a puzzle.
 
     Useful for a setter to see if a puzzle has a unique solution.
 
     Parameters
     ----------
-    board : Board
-        A board object.
+    puzzle : Puzzle
+        A puzzle object.
     fewer_pieces_allowed : bool, optional
         If True, allow solutions that use fewer pieces.
     ball_on_two_ended_beam_allowed : bool, optional
         If True, allow solutions where a ball blocks a two-ended beam
     """
-    beams = board.beams
-    pieces = board.pieces_ints
+    beams = puzzle.beams
+    pieces = puzzle.pieces_ints
     solution_boards = []
     if fewer_pieces_allowed:
         # `pieces` is a multiset so wrap in a set to remove duplicates
@@ -39,8 +39,8 @@ def solve(board, *, fewer_pieces_allowed=False, ball_on_two_ended_beam_allowed=F
         permutations = piece_permutations(pieces_subset)
         solutions = _solve(beams, permutations, ball_on_two_ended_beam_allowed)
         for solution in solutions:
-            full_board = board.values.copy()
-            full_board[1 : board.n + 1, 1 : board.n + 1] = block_int_to_str_array(
+            full_board = puzzle.values.copy()  # contains beam letters on edge
+            full_board[1 : puzzle.n + 1, 1 : puzzle.n + 1] = block_int_to_str_array(
                 solution
             )
             solution_board = Board.create(full_board=full_board)
