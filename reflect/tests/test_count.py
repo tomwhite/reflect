@@ -115,13 +115,15 @@ def test_beam_end_pos():
 
 
 def test_encode_beams():
-    blocks = """
-....
-../.
-..\\/
-....
+    full_board = """
+.EFBH.
+A....A
+B../.H
+C..\\/G
+D....D
+.EFCG.
 """
-    board = Board.create(hidden_blocks=blocks)
+    board = Board.create(full_board=full_board)
 
     #  FEDC
     # 0....B

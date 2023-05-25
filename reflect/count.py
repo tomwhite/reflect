@@ -348,6 +348,16 @@ def encode_beams_from_board(board):
     # equivalent to encode_beams, but from a board object - useful for testing
     assert board.n == 4
 
+    beams = board.beams + 1  # adjust coordinates
+    startxy_to_endxy = {}
+    for i in range(beams.shape[0]):
+        x = beams[i, 0]
+        y = beams[i, 1]
+        end_x = beams[i, 2]
+        end_y = beams[i, 3]
+        startxy_to_endxy[(x, y)] = (end_x, end_y)
+        startxy_to_endxy[(end_x, end_y)] = (x, y)
+
     ind_to_xy = {}
     xy_to_ind = {}
     for i, (x, y) in enumerate(board.edge_locations_alt()):
@@ -357,7 +367,7 @@ def encode_beams_from_board(board):
     shift = 15 * 4
     val = 0
     for i, (x, y) in ind_to_xy.items():
-        ind = xy_to_ind[board.get_path(x, y)[-1]]
+        ind = xy_to_ind[startxy_to_endxy[(x, y)]]
         val |= ind << shift
         shift -= 4
     return val
@@ -365,6 +375,16 @@ def encode_beams_from_board(board):
 
 def encode_beams_from_partial_board(board):
     assert board.n == 4
+
+    beams = board.beams + 1  # adjust coordinates
+    startxy_to_endxy = {}
+    for i in range(beams.shape[0]):
+        x = beams[i, 0]
+        y = beams[i, 1]
+        end_x = beams[i, 2]
+        end_y = beams[i, 3]
+        startxy_to_endxy[(x, y)] = (end_x, end_y)
+        startxy_to_endxy[(end_x, end_y)] = (x, y)
 
     ind_to_xy = {}
     xy_to_ind = {}
@@ -380,7 +400,7 @@ def encode_beams_from_partial_board(board):
             mask |= 0b0000 << shift
         else:
             mask |= 0b1111 << shift
-            ind = xy_to_ind[board.get_path(x, y)[-1]]
+            ind = xy_to_ind[startxy_to_endxy[(x, y)]]
             val |= ind << shift
         shift -= 4
     return val, mask
