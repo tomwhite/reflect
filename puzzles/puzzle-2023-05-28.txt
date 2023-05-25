@@ -1,0 +1,11 @@
+# Generated at: 2023-05-23T21:41:58
+# Difficulty: 4
+# Game duration: 214.6
+# Solve duration: 170.5
+# The challenge is placing the two balls
+.A.CD.
+Eo...K
+...\.C
+../..G
+G./.oL
+.HI.J.
