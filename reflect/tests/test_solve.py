@@ -11,7 +11,6 @@ from reflect import (
     quick_solve,
     solve,
 )
-from reflect.count import load_all_puzzles
 
 
 def test_piece_permutations():
@@ -132,19 +131,15 @@ A.../B
     ],
 )
 def test_quick_solve(full_board):
-    num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
-
     board = Board.create(full_board=full_board)
 
-    solutions = quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
+    solutions = quick_solve(board)
 
     # compare with regular solve
     assert len(solve(board)) == len(solutions)
 
 
 def test_has_unique_solution_comparison():
-    num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
-
     full_board = """
 .ABCD.
 Eo..oK
@@ -156,7 +151,7 @@ H..\\.C
 
     board = Board.create(full_board=full_board)
 
-    solutions = quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
+    solutions = quick_solve(board)
 
     for solution in solutions:
         print(solution.puzzle_solution())

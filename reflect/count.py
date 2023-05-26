@@ -638,7 +638,7 @@ def all_puzzles(num_pieces):
 
 def compute_and_save_all_puzzles(max_pieces, filename):
     num_pieces_to_puzzles = {}
-    for num_pieces in range(1, max_pieces + 1):
+    for num_pieces in range(max_pieces + 1):
         num_pieces_to_puzzles[num_pieces] = all_puzzles(num_pieces)
     with open(filename, mode="wb") as file:
         pickle.dump(num_pieces_to_puzzles, file)

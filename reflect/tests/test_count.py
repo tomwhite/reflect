@@ -3,6 +3,7 @@ from numpy.testing import assert_array_equal
 
 from reflect import Board
 from reflect.count import (
+    all_puzzles,
     beam_end_pos,
     canonical_boards,
     canonical_puzzles_with_unique_solution,
@@ -26,7 +27,6 @@ from reflect.count import (
     transpose_beams,
     transpose_pieces,
 )
-from reflect.solve import quick_solve
 
 # This looks a bit like an "F", which is helpful for visualizing transforms
 BLOCKS = """
@@ -261,17 +261,10 @@ def test_load_and_save_puzzles(tmp_path):
     compute_and_save_all_puzzles(max_pieces=3, filename=filename)
     num_pieces_to_puzzles = load_all_puzzles(filename)
 
-    full_board = """
-..CDA.
-B\\....
-......
-.\\..\\A
-......
-..CDB.
-"""
+    duplicate_groups, all_boards, all_beams, all_pieces = num_pieces_to_puzzles[3]
+    exp_duplicate_groups, exp_all_boards, exp_all_beams, exp_all_pieces = all_puzzles(3)
 
-    board = Board.create(full_board=full_board)
-
-    solutions = quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
-
-    assert len(solutions) == 1
+    assert_array_equal(duplicate_groups, exp_duplicate_groups)
+    assert_array_equal(all_boards, exp_all_boards)
+    assert_array_equal(all_beams, exp_all_beams)
+    assert_array_equal(all_pieces, exp_all_pieces)

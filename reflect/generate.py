@@ -127,11 +127,7 @@ def has_unique_solution(board):
     # so we can't use it to check uniqueness for boards with a 'o' piece
     if "o" in board.pieces:
         return slow_unique
-    quick_unique = quick_has_unique_solution(
-        board,
-        num_pieces_to_puzzles=num_pieces_to_puzzles,
-        fewer_pieces_allowed=True,
-    )
+    quick_unique = quick_has_unique_solution(board, fewer_pieces_allowed=True)
     if slow_unique != quick_unique:
         raise ValueError(
             f"Uniqueness mismatch, slow says {slow_unique}, quick says {quick_unique} for uniqueness of board {board.puzzle_solution()}"
