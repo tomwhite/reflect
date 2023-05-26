@@ -1,3 +1,4 @@
+import itertools
 import random
 
 import numpy as np
@@ -5,6 +6,7 @@ from numpy.random import choice, shuffle
 
 from reflect.board import Block, Board
 from reflect.count import decode_board, load_all_puzzles
+from reflect.solve import _boards_and_beams_for_pieces, _boards_for_beams
 from reflect.solve import has_unique_solution as slow_has_unique_solution
 from reflect.solve import quick_has_unique_solution
 
@@ -133,3 +135,58 @@ def has_unique_solution(board):
             f"Uniqueness mismatch, slow says {slow_unique}, quick says {quick_unique} for uniqueness of board {board.puzzle_solution()}"
         )
     return slow_unique
+
+
+# The "quick" generate functions use the code from count.py which pre-compute all boards
+# of a certain size.
+
+
+def quick_generate(n_pieces=None, min_pieces=4, max_pieces=7, debug=False):
+    if n_pieces is None:
+        n_pieces = random.randrange(min_pieces, max_pieces + 1)
+    duplicate_groups, all_boards, _, _ = num_pieces_to_puzzles[n_pieces]
+
+    # remove duplicate groups (non-unique solutions)
+    single_solution_boards = all_boards[duplicate_groups == 0]
+
+    val = choice(single_solution_boards)
+    board = decode_board(val)
+
+    # turn on all beams
+    for x, y in board.edge_locations():
+        if board.values[y, x] == ".":
+            board.add_beam(x, y)
+
+    if debug:
+        print("Minimising board...")
+    return quick_minimise(board)
+
+
+def quick_minimise(board):
+    # restrict to boards and beams with desired pieces
+    boards_with_pieces, beams_with_pieces = _boards_and_beams_for_pieces(
+        board, fewer_pieces_allowed=True
+    )
+
+    # Turn each beam on and off
+    min_board = board
+    num_beams = len(board.beams)
+    ball_on_two_ended_beam_allowed = "o" in board.pieces
+    for ind in itertools.product((False, True), repeat=num_beams):
+        new_board = board.copy()
+        for x, y in board.beams[list(ind)][:, :2]:
+            new_board.remove_beam(x + 1, y + 1)
+
+        # and find matching boards
+        matching_boards = _boards_for_beams(
+            new_board,
+            boards_with_pieces,
+            beams_with_pieces,
+            ball_on_two_ended_beam_allowed=ball_on_two_ended_beam_allowed,
+        )
+        unique = len(matching_boards) == 1
+        if unique:
+            len(new_board.beams) < len(min_board.beams)
+            min_board = new_board
+
+    return min_board

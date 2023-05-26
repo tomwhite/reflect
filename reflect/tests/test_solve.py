@@ -227,7 +227,8 @@ A/o\\..
     )
 
 
-def test_solve__ball_on_two_ended_beam_allowed():
+@pytest.mark.parametrize("solve_function", (solve, quick_solve))
+def test_solve__ball_on_two_ended_beam_allowed(solve_function):
     # set on 2023-04-16
     values = """
 .AA.C.
@@ -240,7 +241,7 @@ D....G
     pieces = ["/", "/", "/", "\\", "\\", "o"]
     puzzle = Puzzle.create(values, pieces)
 
-    solutions = solve(puzzle)
+    solutions = solve_function(puzzle)
     assert len(solutions) == 1
 
     expected_solution = """
@@ -284,7 +285,7 @@ D/...G
         ]
     )
 
-    solutions = solve(puzzle, ball_on_two_ended_beam_allowed=True)
+    solutions = solve_function(puzzle, ball_on_two_ended_beam_allowed=True)
     assert len(solutions) == 4
     assert (
         set(solution.puzzle_solution() for solution in solutions) == expected_solutions

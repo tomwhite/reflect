@@ -412,6 +412,67 @@ def encode_beams_from_puzzle(puzzle):
     return val, mask
 
 
+def encode_beams_from_puzzle_with_balls(puzzle):
+    # Like encode_beams_from_puzzle but takes mirror balls into account.
+    # The idea is to change two-ended beams into two one-ended beams
+    # so that we can detect cases where a ball has been placed in the middle
+    # of a two-ended beam, for when ball_on_two_ended_beam_allowed is True.
+    assert puzzle.n == 4
+
+    beams = puzzle.beams + 1  # adjust coordinates
+    num_two_ended_beams = 0
+    startxy_to_endxy = {}
+    for i in range(beams.shape[0]):
+        x = beams[i, 0]
+        y = beams[i, 1]
+        end_x = beams[i, 2]
+        end_y = beams[i, 3]
+        startxy_to_endxy[(x, y)] = (end_x, end_y)
+        if not (x == end_x and y == end_y):
+            num_two_ended_beams += 1
+            startxy_to_endxy[(end_x, end_y)] = (x, y)
+
+    ind_to_xy = {}
+    xy_to_ind = {}
+    for i, (x, y) in enumerate(puzzle.edge_locations_alt()):
+        ind_to_xy[i] = (x, y)
+        xy_to_ind[(x, y)] = i
+
+    shift = 15 * 4
+    val = 0
+    mask = 0
+    for i, (x, y) in ind_to_xy.items():
+        if puzzle.values[y, x] == ".":
+            # TODO: has no effect
+            mask |= 0b0000 << shift
+        else:
+            mask |= 0b1111 << shift
+            ind = xy_to_ind[startxy_to_endxy[(x, y)]]
+            val |= ind << shift
+        shift -= 4
+    vals = [val]
+
+    # TODO: need to do for all combinations
+    shift = 15 * 4
+    for i, (x, y) in ind_to_xy.items():
+        if puzzle.values[y, x] != ".":
+            ind = xy_to_ind[startxy_to_endxy[(x, y)]]
+            if ind != i:
+                # make pos i and ind both one-ended
+                val2 = val
+                val2 &= ~(0b1111 << shift)  # reset
+                val2 |= i << shift
+                ind_shift = (15 - ind) * 4
+                val2 &= ~(0b1111 << ind_shift)  # reset
+                val2 |= ind << ind_shift
+                vals.append(val2)
+        shift -= 4
+
+    vals = np.unique(vals)
+
+    return vals, mask
+
+
 @nb.njit(nb.uint64(nb.uint64), cache=True)
 def reflect_beams_horizontally(val):
     """Reflect the encoded beams horizontally"""

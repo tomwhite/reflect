@@ -8,6 +8,7 @@ from reflect.board import Board, block_int_to_str_array
 from reflect.count import (
     decode_board,
     encode_beams_from_puzzle,
+    encode_beams_from_puzzle_with_balls,
     encode_pieces_from_ints,
     load_all_puzzles,
 )
@@ -166,28 +167,80 @@ def _solve(beams, permutations, ball_on_two_ended_beam_allowed):  # pragma: no c
     return solutions
 
 
-# The 'quick" solve functions use the code from count.py which pre-compute all boards
+# The "quick" solve functions use the code from count.py which pre-compute all boards
 # of a certain size. Solving a board is then essentially a question of doing a
 # lookup in the set of all boards given some constraints on pieces and beams.
 
 
-def _quick_solve(puzzle, *, pieces_ints=None):
-    beams_val, beams_mask = encode_beams_from_puzzle(puzzle)
-    if pieces_ints is None:
-        pieces_ints = puzzle.pieces_ints
-    pieces_val = encode_pieces_from_ints(pieces_ints)
-    num_pieces = len(pieces_ints)
+def _get_all_puzzles(num_pieces, fewer_pieces_allowed=False):
+    if not fewer_pieces_allowed:
+        return num_pieces_to_puzzles[num_pieces]
 
-    _, all_boards, all_beams, all_pieces = num_pieces_to_puzzles[num_pieces]
+    # concat all arrays for all puzzles up to num_pieces
+    all_boards_list = []
+    all_beams_list = []
+    all_pieces_list = []
+    for n in range(num_pieces + 1):
+        _, all_boards, all_beams, all_pieces = num_pieces_to_puzzles[n]
+        all_boards_list.append(all_boards)
+        all_beams_list.append(all_beams)
+        all_pieces_list.append(all_pieces)
+
+    all_boards = np.concatenate(all_boards_list)
+    all_beams = np.concatenate(all_beams_list)
+    all_pieces = np.concatenate(all_pieces_list)
+
+    return None, all_boards, all_beams, all_pieces
+
+
+def _boards_and_beams_for_pieces(puzzle, *, fewer_pieces_allowed=False):
+    num_pieces = len(puzzle.pieces)
+
+    _, all_boards, all_beams, all_pieces = _get_all_puzzles(
+        num_pieces, fewer_pieces_allowed=fewer_pieces_allowed
+    )
+
+    if not fewer_pieces_allowed:
+        # simple case: use exactly num_pieces
+        pieces_val = encode_pieces_from_ints(puzzle.pieces_ints)
+        pieces_index = all_pieces == pieces_val
+
+    else:
+        # use num_pieces or fewer
+        pieces_subsets = set(powerset(puzzle.pieces_ints))
+        pieces_vals = np.empty(len(pieces_subsets), dtype=np.uint32)
+        for i, pieces_subset in enumerate(pieces_subsets):
+            pieces_ints_subset = np.array(list(pieces_subset), dtype=np.int8)
+            pieces_vals[i] = encode_pieces_from_ints(pieces_ints_subset)
+        pieces_index = np.isin(all_pieces, pieces_vals)
 
     # restrict to boards and beams with desired pieces
-    pieces_index = all_pieces == pieces_val
     boards_with_pieces = all_boards[pieces_index]
     beams_with_pieces = all_beams[pieces_index]
-    # match beams using the mask (key line!)
-    matching_boards = boards_with_pieces[beams_with_pieces & beams_mask == beams_val]
 
-    return [_create_solution_board(puzzle, decode_board(b)) for b in matching_boards]
+    return boards_with_pieces, beams_with_pieces
+
+
+def _boards_for_beams(
+    puzzle,
+    boards_with_pieces,
+    beams_with_pieces,
+    *,
+    ball_on_two_ended_beam_allowed=False
+):
+    if not ball_on_two_ended_beam_allowed:
+        # simple case: use exact beams from puzzle
+        beams_val, beams_mask = encode_beams_from_puzzle(puzzle)
+        beams_index = (beams_with_pieces & beams_mask) == beams_val
+    else:
+        # allow multiple sets of beams
+        beams_vals, beams_mask = encode_beams_from_puzzle_with_balls(puzzle)
+        beams_index = np.isin(beams_with_pieces & beams_mask, beams_vals)
+
+    # restrict to boards with desired beams
+    matching_boards = boards_with_pieces[beams_index]
+
+    return matching_boards
 
 
 def _create_solution_board(puzzle, board):
@@ -197,19 +250,40 @@ def _create_solution_board(puzzle, board):
     return Board.create(full_board=full_board)
 
 
-def quick_solve(board, *, fewer_pieces_allowed=False):
-    if not fewer_pieces_allowed:
-        return _quick_solve(board)
+def _quick_solve(
+    puzzle, *, fewer_pieces_allowed=False, ball_on_two_ended_beam_allowed=False
+):
+    # restrict to boards and beams with desired pieces
+    boards_with_pieces, beams_with_pieces = _boards_and_beams_for_pieces(
+        puzzle, fewer_pieces_allowed=fewer_pieces_allowed
+    )
 
-    pieces = board.pieces_ints
-    # `pieces` is a multiset so wrap in a set to remove duplicates
-    pieces_subsets = set(powerset(pieces))
-    solutions = []
-    for pieces_subset in pieces_subsets:
-        pieces_ints_subset = np.array(list(pieces_subset), dtype=np.int8)
-        solutions.extend(_quick_solve(board, pieces_ints=pieces_ints_subset))
-    return solutions
+    # restrict to beams in puzzle
+    matching_boards = _boards_for_beams(
+        puzzle,
+        boards_with_pieces,
+        beams_with_pieces,
+        ball_on_two_ended_beam_allowed=ball_on_two_ended_beam_allowed,
+    )
+
+    return matching_boards
+
+
+def quick_solve(
+    puzzle, *, fewer_pieces_allowed=False, ball_on_two_ended_beam_allowed=False
+):
+    matching_boards = _quick_solve(
+        puzzle,
+        fewer_pieces_allowed=fewer_pieces_allowed,
+        ball_on_two_ended_beam_allowed=ball_on_two_ended_beam_allowed,
+    )
+    return [_create_solution_board(puzzle, decode_board(b)) for b in matching_boards]
+
+
+def quick_count_solutions(puzzle, *, fewer_pieces_allowed=False):
+    matching_boards = _quick_solve(puzzle, fewer_pieces_allowed=fewer_pieces_allowed)
+    return len(matching_boards)
 
 
 def quick_has_unique_solution(board, *, fewer_pieces_allowed=False):
-    return len(quick_solve(board, fewer_pieces_allowed=fewer_pieces_allowed)) == 1
+    return quick_count_solutions(board, fewer_pieces_allowed=fewer_pieces_allowed) == 1

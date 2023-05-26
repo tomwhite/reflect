@@ -9,7 +9,7 @@ from .board import (
 )
 from .difficulty import board_features, predict_solve_duration
 from .game import play_game
-from .generate import generate
+from .generate import generate, quick_generate
 from .solve import (
     cproduct_idx,
     has_unique_solution,
