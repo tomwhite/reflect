@@ -1,0 +1,11 @@
+# Generated at: 2023-05-26T14:47:06
+# Difficulty: 4
+# Game duration: 165.8
+# Solve duration: 156.1
+# The angled mirrors are easy, but the ball isn't
+.A.CD.
+.\\...
+F..\.C
+G.o./.
+H./..I
+..IF..

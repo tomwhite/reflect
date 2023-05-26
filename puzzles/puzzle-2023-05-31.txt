@@ -1,0 +1,12 @@
+# Generated at: 2023-05-26T14:40:35
+# Difficulty: 4
+# Game duration: 276.2
+# Solve duration: 267.1
+# Very satisfying interplay between finding where the ball goes
+# and all of the other beams
+.AB.A.
+D..o.J
+E../.B
+F\../.
+..\/..
+.F....
