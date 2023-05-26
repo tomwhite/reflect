@@ -373,10 +373,16 @@ def encode_beams_from_board(board):
     return val
 
 
-def encode_beams_from_partial_board(board):
-    assert board.n == 4
+def encode_beams_from_puzzle(puzzle):
+    """Encode beams for a puzzle, which typically has less than
+    all possible beams for a board.
 
-    beams = board.beams + 1  # adjust coordinates
+    This works like `encode_beams` but also returns a bit mask
+    to indicate which beams are encoded.
+    """
+    assert puzzle.n == 4
+
+    beams = puzzle.beams + 1  # adjust coordinates
     startxy_to_endxy = {}
     for i in range(beams.shape[0]):
         x = beams[i, 0]
@@ -388,7 +394,7 @@ def encode_beams_from_partial_board(board):
 
     ind_to_xy = {}
     xy_to_ind = {}
-    for i, (x, y) in enumerate(board.edge_locations_alt()):
+    for i, (x, y) in enumerate(puzzle.edge_locations_alt()):
         ind_to_xy[i] = (x, y)
         xy_to_ind[(x, y)] = i
 
@@ -396,7 +402,7 @@ def encode_beams_from_partial_board(board):
     val = 0
     mask = 0
     for i, (x, y) in ind_to_xy.items():
-        if board.values[y, x] == ".":
+        if puzzle.values[y, x] == ".":
             mask |= 0b0000 << shift
         else:
             mask |= 0b1111 << shift
@@ -644,7 +650,7 @@ def load_all_puzzles(filename):
 
 
 def _quick_solve(board, *, num_pieces_to_puzzles=None, pieces_ints=None):
-    beams_val, beams_mask = encode_beams_from_partial_board(board)
+    beams_val, beams_mask = encode_beams_from_puzzle(board)
     if pieces_ints is None:
         pieces_ints = board.pieces_ints
     pieces_val = encode_pieces_from_ints(pieces_ints)

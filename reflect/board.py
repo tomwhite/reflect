@@ -66,6 +66,27 @@ class Puzzle:
         for y in range(1, self.n + 1):
             yield self.n + 1, y
 
+    def edge_locations_alt(self):
+        """Return all the edge locations in another predictable order."""
+
+        # for n = 4
+        #
+        #  15 14 13 12
+        # 0 .  .  .  . 11
+        # 1 .  .  .  . 10
+        # 2 .  .  .  . 9
+        # 3 .  .  .  . 8
+        #   4  5  6  7
+
+        for y in range(1, self.n + 1):
+            yield 0, y
+        for x in range(1, self.n + 1):
+            yield x, self.n + 1
+        for y in range(self.n, 0, -1):
+            yield self.n + 1, y
+        for x in range(self.n, 0, -1):
+            yield x, 0
+
     @property
     def beams(self):
         x = list(range(self.n + 2))
