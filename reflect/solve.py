@@ -5,6 +5,13 @@ import numba as nb
 import numpy as np
 
 from reflect.board import Board, block_int_to_str_array
+from reflect.count import (
+    all_puzzles,
+    decode_board,
+    encode_beams_from_puzzle,
+    encode_pieces_from_ints,
+)
+from reflect.util import cproduct_idx
 
 
 # from https://docs.python.org/3/library/itertools.html#itertools-recipes
@@ -69,41 +76,6 @@ def piece_permutations(pieces):
         itertools.permutations(pieces)
     )  # convert to a set for uniqueness
     return np.array(list(permutations), dtype=np.int8)
-
-
-# adapted from https://stackoverflow.com/a/64234230
-@nb.njit(nb.int32[:, :](nb.int32[:]), cache=True)
-def cproduct_idx(sizes: np.ndarray):  # pragma: no cover
-    """Generates ids tuples for a cartesian product"""
-    # assert len(sizes) >= 2  # restriction not needed
-    tuples_count = np.prod(sizes)
-    tuples = np.zeros((tuples_count, len(sizes)), dtype=np.int32)
-    tuple_idx = 0
-    tuple_idx_max = 0
-    # stores the current combination
-    current_tuple = np.zeros(len(sizes))
-    while tuple_idx < tuples_count:
-        # only include strictly increasing tuples
-        j = 1
-        for i in range(0, len(sizes) - 1):
-            if current_tuple[i] >= current_tuple[i + 1]:
-                j = 0
-                break
-        if j == 1:
-            tuples[tuple_idx_max] = current_tuple
-            tuple_idx_max += 1
-
-        current_tuple[0] += 1
-        for i in range(0, len(sizes) - 1):
-            if current_tuple[i] == sizes[i]:
-                # the reset to 0 and subsequent increment amount to carrying
-                # the number to the higher "power"
-                current_tuple[i + 1] += 1
-                current_tuple[i] = 0
-            else:
-                break
-        tuple_idx += 1
-    return tuples[:tuple_idx_max]  # only return ones actually stored
 
 
 @nb.njit(nb.boolean(nb.int8[:, :], nb.int8[:, :], nb.boolean), cache=True)
@@ -189,3 +161,72 @@ def _solve(beams, permutations, ball_on_two_ended_beam_allowed):  # pragma: no c
         solutions = solutions[:num_solutions]
     # return num_solutions, solutions # TODO: how to do this in numba
     return solutions
+
+
+# The 'quick" solve functions use the code from count.py which pre-compute all boards
+# of a certain size. Solving a board is then essentially a question of doing a
+# lookup in the set of all boards given some constraints on pieces and beams.
+
+
+def _quick_solve(puzzle, *, num_pieces_to_puzzles=None, pieces_ints=None):
+    beams_val, beams_mask = encode_beams_from_puzzle(puzzle)
+    if pieces_ints is None:
+        pieces_ints = puzzle.pieces_ints
+    pieces_val = encode_pieces_from_ints(pieces_ints)
+    num_pieces = len(pieces_ints)
+
+    if num_pieces_to_puzzles is not None and num_pieces in num_pieces_to_puzzles:
+        _, all_boards, all_beams, all_pieces = num_pieces_to_puzzles[num_pieces]
+    else:
+        _, all_boards, all_beams, all_pieces = all_puzzles(num_pieces)
+
+    # restrict to boards and beams with desired pieces
+    pieces_index = all_pieces == pieces_val
+    boards_with_pieces = all_boards[pieces_index]
+    beams_with_pieces = all_beams[pieces_index]
+    # match beams using the mask (key line!)
+    matching_boards = boards_with_pieces[beams_with_pieces & beams_mask == beams_val]
+
+    return [_create_solution_board(puzzle, decode_board(b)) for b in matching_boards]
+
+
+def _create_solution_board(puzzle, board):
+    # fills in beam letters
+    full_board = puzzle.values.copy()  # contains beam letters on edge
+    full_board[1 : puzzle.n + 1, 1 : puzzle.n + 1] = board.hidden_blocks
+    return Board.create(full_board=full_board)
+
+
+def quick_solve(board, *, num_pieces_to_puzzles=None, fewer_pieces_allowed=False):
+    if not fewer_pieces_allowed:
+        return _quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
+
+    pieces = board.pieces_ints
+    # `pieces` is a multiset so wrap in a set to remove duplicates
+    pieces_subsets = set(powerset(pieces))
+    solutions = []
+    for pieces_subset in pieces_subsets:
+        pieces_ints_subset = np.array(list(pieces_subset), dtype=np.int8)
+        solutions.extend(
+            _quick_solve(
+                board,
+                num_pieces_to_puzzles=num_pieces_to_puzzles,
+                pieces_ints=pieces_ints_subset,
+            )
+        )
+    return solutions
+
+
+def quick_has_unique_solution(
+    board, *, num_pieces_to_puzzles=None, fewer_pieces_allowed=False
+):
+    return (
+        len(
+            quick_solve(
+                board,
+                num_pieces_to_puzzles=num_pieces_to_puzzles,
+                fewer_pieces_allowed=fewer_pieces_allowed,
+            )
+        )
+        == 1
+    )

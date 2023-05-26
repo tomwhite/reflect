@@ -4,8 +4,9 @@ import numpy as np
 from numpy.random import choice, shuffle
 
 from reflect.board import Block, Board
-from reflect.count import decode_board, load_all_puzzles, quick_has_unique_solution
+from reflect.count import decode_board, load_all_puzzles
 from reflect.solve import has_unique_solution as slow_has_unique_solution
+from reflect.solve import quick_has_unique_solution
 
 # TODO: do this lazily?
 num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")

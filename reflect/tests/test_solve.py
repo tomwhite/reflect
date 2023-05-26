@@ -1,7 +1,17 @@
 import numpy as np
+import pytest
 from numpy.testing import assert_array_equal
 
-from reflect import Board, Puzzle, cproduct_idx, is_solution, piece_permutations, solve
+from reflect import (
+    Board,
+    Puzzle,
+    cproduct_idx,
+    is_solution,
+    piece_permutations,
+    quick_solve,
+    solve,
+)
+from reflect.count import load_all_puzzles
 
 
 def test_piece_permutations():
@@ -74,7 +84,91 @@ B....B
     assert solutions[0].puzzle_solution() == board.puzzle_solution()
 
 
-def test_solve__fewer_pieces_allowed():
+@pytest.mark.parametrize(
+    "full_board",
+    [
+        # unique
+        """
+..CDA.
+B\\....
+......
+.\\..\\A
+......
+..CDB.
+""",
+        # not unique
+        """
+..B...
+......
+Do\\..B
+C./...
+......
+.A....
+""",
+        """
+..B...
+......
+Do\\..B
+C./...
+......
+.A....
+""",
+        """
+.AAC..
+B.\\.\\.
+B./..D
+.\\../F
+E....E
+..DCF.
+""",
+        """
+.DEIL.
+H..\\oJ
+D//..G
+C..o.K
+A.../B
+.EGFB.
+""",
+    ],
+)
+def test_quick_solve(full_board):
+    num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
+
+    board = Board.create(full_board=full_board)
+
+    solutions = quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
+
+    # compare with regular solve
+    assert len(solve(board)) == len(solutions)
+
+
+def test_has_unique_solution_comparison():
+    num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
+
+    full_board = """
+.ABCD.
+Eo..oK
+F....F
+Go../J
+H..\\.C
+.IBHJ.
+    """
+
+    board = Board.create(full_board=full_board)
+
+    solutions = quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
+
+    for solution in solutions:
+        print(solution.puzzle_solution())
+
+    solutions = solve(board, fewer_pieces_allowed=True)
+
+    for solution in solutions:
+        print(solution.puzzle_solution())
+
+
+@pytest.mark.parametrize("solve_function", (solve, quick_solve))
+def test_solve__fewer_pieces_allowed(solve_function):
     # set on 2023-04-14
     values = """
 .ABCD.
@@ -87,7 +181,7 @@ A.....
     pieces = ["/", "/", "/", "\\", "o", "o"]
     puzzle = Puzzle.create(values, pieces)
 
-    solutions = solve(puzzle)
+    solutions = solve_function(puzzle)
     assert len(solutions) == 1
 
     expected_solution = """
@@ -131,7 +225,7 @@ A/o\\..
         ]
     )
 
-    solutions = solve(puzzle, fewer_pieces_allowed=True)
+    solutions = solve_function(puzzle, fewer_pieces_allowed=True)
     assert len(solutions) == 4
     assert (
         set(solution.puzzle_solution() for solution in solutions) == expected_solutions

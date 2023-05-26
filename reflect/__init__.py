@@ -15,6 +15,7 @@ from .solve import (
     has_unique_solution,
     is_solution,
     piece_permutations,
+    quick_solve,
     solve,
 )
 from .svg import print_svg

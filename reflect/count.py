@@ -5,7 +5,7 @@ import numba as nb
 import numpy as np
 
 from reflect.board import Board, block_int_to_str_array
-from reflect.solve import cproduct_idx, powerset
+from reflect.util import cproduct_idx
 
 
 def encode_board(board):
@@ -647,59 +647,3 @@ def compute_and_save_all_puzzles(max_pieces, filename):
 def load_all_puzzles(filename):
     with open(filename, mode="rb") as file:
         return pickle.load(file)
-
-
-def _quick_solve(board, *, num_pieces_to_puzzles=None, pieces_ints=None):
-    beams_val, beams_mask = encode_beams_from_puzzle(board)
-    if pieces_ints is None:
-        pieces_ints = board.pieces_ints
-    pieces_val = encode_pieces_from_ints(pieces_ints)
-    num_pieces = len(pieces_ints)
-
-    if num_pieces_to_puzzles is not None and num_pieces in num_pieces_to_puzzles:
-        _, all_boards, all_beams, all_pieces = num_pieces_to_puzzles[num_pieces]
-    else:
-        _, all_boards, all_beams, all_pieces = all_puzzles(num_pieces)
-
-    # restrict to boards and beams with desired pieces
-    boards_with_pieces = all_boards[all_pieces == pieces_val]
-    beams_with_pieces = all_beams[all_pieces == pieces_val]
-    # match beams using the mask (key line!)
-    matching_boards = boards_with_pieces[beams_with_pieces & beams_mask == beams_val]
-
-    return [decode_board(b) for b in matching_boards]
-
-
-def quick_solve(board, *, num_pieces_to_puzzles=None, fewer_pieces_allowed=False):
-    if not fewer_pieces_allowed:
-        return _quick_solve(board, num_pieces_to_puzzles=num_pieces_to_puzzles)
-
-    pieces = board.pieces_ints
-    # `pieces` is a multiset so wrap in a set to remove duplicates
-    pieces_subsets = set(powerset(pieces))
-    solutions = []
-    for pieces_subset in pieces_subsets:
-        pieces_ints_subset = np.array(list(pieces_subset), dtype=np.int8)
-        solutions.extend(
-            _quick_solve(
-                board,
-                num_pieces_to_puzzles=num_pieces_to_puzzles,
-                pieces_ints=pieces_ints_subset,
-            )
-        )
-    return solutions
-
-
-def quick_has_unique_solution(
-    board, *, num_pieces_to_puzzles=None, fewer_pieces_allowed=False
-):
-    return (
-        len(
-            quick_solve(
-                board,
-                num_pieces_to_puzzles=num_pieces_to_puzzles,
-                fewer_pieces_allowed=fewer_pieces_allowed,
-            )
-        )
-        == 1
-    )
