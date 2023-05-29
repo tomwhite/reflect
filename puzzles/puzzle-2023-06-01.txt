@@ -1,0 +1,10 @@
+# Generated at: 2023-05-29T13:12:08
+# Difficulty: 4
+# Game duration: 152.9
+# Solve duration: 130.3
+..BCD.
+././\D
+......
+B./..I
+.\o..J
+..GHH.
