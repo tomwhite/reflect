@@ -1,0 +1,9 @@
+# Generated at: 2023-05-30T09:37:32
+# Difficulty: 4
+# Game duration: 1851.3
+.A.A..
+..//.I
+D\/o.J
+E./..G
+......
+.DG...
