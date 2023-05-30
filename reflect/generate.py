@@ -169,8 +169,11 @@ def quick_minimise(board):
     )
 
     # Turn each beam on and off
-    min_board = board
     num_beams = len(board.beams)
+
+    min_boards = [board]
+    min_num_beams = num_beams
+
     ball_on_two_ended_beam_allowed = "o" in board.pieces
     for ind in itertools.product((False, True), repeat=num_beams):
         new_board = board.copy()
@@ -186,7 +189,11 @@ def quick_minimise(board):
         )
         unique = len(matching_boards) == 1
         if unique:
-            len(new_board.beams) < len(min_board.beams)
-            min_board = new_board
+            if len(new_board.beams) < min_num_beams:
+                min_boards = [new_board]
+                min_num_beams = len(new_board.beams)
+            elif len(new_board.beams) == min_num_beams:
+                min_boards.append(new_board)
 
-    return min_board
+    # return one of the minimum boards
+    return choice(min_boards)

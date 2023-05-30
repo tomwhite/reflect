@@ -60,7 +60,8 @@ def generate(filename, min_pieces, max_pieces):
 @click.option("--terminal", is_flag=True)
 @click.option("--min-pieces", default=4)
 @click.option("--max-pieces", default=7)
-def play(filename, terminal, min_pieces, max_pieces):
+@click.option("--quick", is_flag=True)
+def play(filename, terminal, min_pieces, max_pieces, quick):
     if filename is not None:
         with open(filename) as f:
             full_board = "".join([line for line in f.readlines()])
@@ -70,7 +71,7 @@ def play(filename, terminal, min_pieces, max_pieces):
     if terminal:
         play_game_on_terminal(board)
     else:
-        play_game(board, min_pieces=min_pieces, max_pieces=max_pieces)
+        play_game(board, min_pieces=min_pieces, max_pieces=max_pieces, quick=quick)
 
 
 @cli.command()
