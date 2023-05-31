@@ -1,0 +1,7 @@
+# Set manually. Looks a bit like a birthday cake?
+.ABCD.
+E.o...
+F./..I
+.\\\\D
+......
+..AIC.
