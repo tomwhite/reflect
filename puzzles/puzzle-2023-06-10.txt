@@ -1,0 +1,11 @@
+# Generated at: 2023-06-04T11:26:48
+# Difficulty: 5
+# Game duration: 445.1
+# Solve duration: 435.4
+# A challenge. Working out where the ball goes was hard (4 beams so can't be on edge)
+.A.CD.
+.\\...
+./o.\D
+......
+C..//.
+.GHI..
