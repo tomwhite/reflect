@@ -1,0 +1,11 @@
+# Generated at: 2023-06-04T11:12:08
+# Difficulty: 4
+# Game duration: 84.9
+# Solve duration: 64.6
+# Slightly different as there are lots of mirrors needed to place the ball
+.ABC..
+......
+C../.J
+.\o/..
+.//...
+.G....
