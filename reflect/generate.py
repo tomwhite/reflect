@@ -14,13 +14,37 @@ from reflect.solve import quick_has_unique_solution
 num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
 
 
-def generate(n_pieces=None, min_pieces=4, max_pieces=7, debug=False):
+def _match_boards(n_pieces=None, min_pieces=4, max_pieces=7, no_mirror_balls=False):
+
     if n_pieces is None:
         n_pieces = random.randrange(min_pieces, max_pieces + 1)
 
-    duplicate_groups, all_boards, _, _ = num_pieces_to_puzzles[n_pieces]
+    duplicate_groups, all_boards, all_beams, all_pieces = num_pieces_to_puzzles[
+        n_pieces
+    ]
+
     # remove duplicate groups (non-unique solutions)
     single_solution_boards = all_boards[duplicate_groups == 0]
+
+    # no mirror balls
+    if no_mirror_balls:
+        single_solution_pieces = all_pieces[duplicate_groups == 0]
+        counts_o = (single_solution_pieces & 0xF00) >> 8
+        single_solution_boards = single_solution_boards[counts_o == 0]
+        single_solution_pieces = single_solution_pieces[counts_o == 0]
+
+    return single_solution_boards
+
+
+def generate(
+    n_pieces=None, min_pieces=4, max_pieces=7, no_mirror_balls=False, debug=False
+):
+    single_solution_boards = _match_boards(
+        n_pieces=n_pieces,
+        min_pieces=min_pieces,
+        max_pieces=max_pieces,
+        no_mirror_balls=no_mirror_balls,
+    )
 
     for _ in range(20):
         if debug:
@@ -141,13 +165,15 @@ def has_unique_solution(board):
 # of a certain size.
 
 
-def quick_generate(n_pieces=None, min_pieces=4, max_pieces=7, debug=False):
-    if n_pieces is None:
-        n_pieces = random.randrange(min_pieces, max_pieces + 1)
-    duplicate_groups, all_boards, _, _ = num_pieces_to_puzzles[n_pieces]
-
-    # remove duplicate groups (non-unique solutions)
-    single_solution_boards = all_boards[duplicate_groups == 0]
+def quick_generate(
+    n_pieces=None, min_pieces=4, max_pieces=7, no_mirror_balls=False, debug=False
+):
+    single_solution_boards = _match_boards(
+        n_pieces=n_pieces,
+        min_pieces=min_pieces,
+        max_pieces=max_pieces,
+        no_mirror_balls=no_mirror_balls,
+    )
 
     val = choice(single_solution_boards)
     board = decode_board(val)

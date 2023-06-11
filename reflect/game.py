@@ -62,7 +62,7 @@ class BlockSprite(arcade.Sprite):
 
 
 class ReflectPuzzle(arcade.Window):
-    def __init__(self, board, min_pieces, max_pieces, quick):
+    def __init__(self, board, min_pieces, max_pieces, no_mirror_balls, quick):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
         self.background = None
@@ -70,6 +70,7 @@ class ReflectPuzzle(arcade.Window):
         self.original_board = board
         self.min_pieces = min_pieces
         self.max_pieces = max_pieces
+        self.no_mirror_balls = no_mirror_balls
         self.quick = quick
 
         self.shape_list = None
@@ -104,11 +105,17 @@ class ReflectPuzzle(arcade.Window):
         else:
             if self.quick:
                 self.board = quick_generate(
-                    min_pieces=self.min_pieces, max_pieces=self.max_pieces, debug=True
+                    min_pieces=self.min_pieces,
+                    max_pieces=self.max_pieces,
+                    no_mirror_balls=self.no_mirror_balls,
+                    debug=True,
                 )
             else:
                 self.board = generate(
-                    min_pieces=self.min_pieces, max_pieces=self.max_pieces, debug=True
+                    min_pieces=self.min_pieces,
+                    max_pieces=self.max_pieces,
+                    no_mirror_balls=self.no_mirror_balls,
+                    debug=True,
                 )
             print(self.board.puzzle_string())
             print(f"Predicted solve duration: {predict_solve_duration(self.board)}")
@@ -323,9 +330,13 @@ def flip_y(y):
     return SCREEN_HEIGHT - y
 
 
-def play_game(board, min_pieces, max_pieces, quick):
+def play_game(board, min_pieces, max_pieces, no_mirror_balls, quick):
     window = ReflectPuzzle(
-        board, min_pieces=min_pieces, max_pieces=max_pieces, quick=quick
+        board,
+        min_pieces=min_pieces,
+        max_pieces=max_pieces,
+        no_mirror_balls=no_mirror_balls,
+        quick=quick,
     )
     window.setup()
     arcade.run()
