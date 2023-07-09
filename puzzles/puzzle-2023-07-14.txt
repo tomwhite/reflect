@@ -1,0 +1,10 @@
+# Generated at: 2023-07-09T21:05:08
+# Difficulty: 3
+# Game duration: 92.7
+# Solve duration: 73.2
+.ABC..
+C../.B
+....oK
+.o\/.L
+G..\.L
+.HIGJ.
