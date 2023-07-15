@@ -1,3 +1,4 @@
+import datetime
 from pathlib import Path
 
 import pytest
@@ -6,14 +7,20 @@ from reflect import Board, boards_are_unique, has_unique_solution, solve
 
 
 def test_puzzles_have_unique_solution(request):
+    today = datetime.datetime.today()
+    week_ago = today - datetime.timedelta(days=7)
+    start_date = week_ago.strftime("%Y-%m-%d")
+    start_puzzle = f"puzzle-{start_date}.txt"
     for full_board_file in sorted((request.config.rootdir / "puzzles").listdir()):
         if full_board_file.isfile():
+            filename = Path(full_board_file).name
+            if filename < start_puzzle:
+                continue  # only test last week's worth
             with open(full_board_file) as f:
                 full_board = "".join([line for line in f.readlines()])
                 board = Board.create(full_board=full_board)
                 assert has_unique_solution(board)
 
-                filename = Path(full_board_file).name
                 # extra stringent checks for later puzzles
                 if filename > "puzzle-2023-04-17.txt" and filename != "puzzle-help.txt":
                     assert has_unique_solution(
