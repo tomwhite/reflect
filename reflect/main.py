@@ -92,6 +92,22 @@ def svg(filename, solution):
 
 
 @cli.command()
+@click.argument("directory", type=click.Path(exists=True, file_okay=False))
+@click.argument("output-directory", type=click.Path(exists=True, file_okay=False))
+@click.option("--solution", is_flag=True)
+def svgs(directory, output_directory, solution):
+    files = Path(directory).glob("*.txt")
+    out_dir = Path(output_directory)
+    for full_board_file in sorted(files):
+        with open(full_board_file) as f:
+            full_board = "".join([line for line in f.readlines()])
+            board = Board.create(full_board=full_board)
+            out_file = out_dir / f"{full_board_file.stem}.svg"
+            with open(out_file, "w") as out:
+                print_svg(board, show_solution=solution, file=out)
+
+
+@cli.command()
 @click.argument("input")
 @click.argument("output")
 def transform(input, output):

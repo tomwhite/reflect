@@ -1,4 +1,5 @@
 import base64
+import sys
 
 BLOCK_SIZE = 40
 CELL_SIZE = 38
@@ -31,14 +32,15 @@ COLOURS = [
 ]
 
 
-def print_svg(board, show_solution=False):
+def print_svg(board, show_solution=False, file=sys.stdout):
     n = board.n
 
     print(
         """<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
 "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-"""
+""",
+        file=file,
     )
 
     width = BLOCK_SIZE * (n + 2)
@@ -48,17 +50,19 @@ def print_svg(board, show_solution=False):
         height += BLOCK_SIZE * 2
 
     print(
-        f'<svg width="{width}" height="{height}" version="1.1" xmlns="http://www.w3.org/2000/svg">'
+        f'<svg width="{width}" height="{height}" version="1.1" xmlns="http://www.w3.org/2000/svg">',
+        file=file,
     )
 
     # Sprites
-    print("    <defs>")
+    print("    <defs>", file=file)
     for sprite_name in SPRITE_NAMES.values():
         data_uri = image_to_data_uri(f"sprites/{sprite_name}_tr.png")
         print(
-            f'        <image id="{sprite_name}" href="{data_uri}" height="{SPRITE_SIZE}" width="{SPRITE_SIZE}"/>'
+            f'        <image id="{sprite_name}" href="{data_uri}" height="{SPRITE_SIZE}" width="{SPRITE_SIZE}"/>',
+            file=file,
         )
-    print("    </defs>")
+    print("    </defs>", file=file)
 
     # Beams
     beam_paths = board.beam_paths
@@ -83,14 +87,16 @@ def print_svg(board, show_solution=False):
                 x1, y1 = x, 200
                 x2, y2 = x, 235
             print(
-                f'    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{colour}" stroke-width="{width}" />'
+                f'    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{colour}" stroke-width="{width}" />',
+                file=file,
             )
 
     # Board lines
     for i in range(n):
         for j in range(n):
             print(
-                f'    <rect x="{(i + 1) * BLOCK_SIZE}" y="{(j + 1) * BLOCK_SIZE}" width="{BLOCK_SIZE}" height="{BLOCK_SIZE}" stroke="black" fill="transparent" />'
+                f'    <rect x="{(i + 1) * BLOCK_SIZE}" y="{(j + 1) * BLOCK_SIZE}" width="{BLOCK_SIZE}" height="{BLOCK_SIZE}" stroke="black" fill="transparent" />',
+                file=file,
             )
 
     # Beam paths
@@ -105,7 +111,8 @@ def print_svg(board, show_solution=False):
                 x1, y1 = block_index_to_coord(start[0], start[1])
                 x2, y2 = block_index_to_coord(end[0], end[1])
                 print(
-                    f'    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{colour}" stroke-width="{width}" />'
+                    f'    <line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{colour}" stroke-width="{width}" />',
+                    file=file,
                 )
 
     # Blocks
@@ -119,7 +126,8 @@ def print_svg(board, show_solution=False):
                 if piece == ".":
                     continue
                 print(
-                    f'    <use href="#{SPRITE_NAMES[piece]}" transform="translate({x}, {y})" />'
+                    f'    <use href="#{SPRITE_NAMES[piece]}" transform="translate({x}, {y})" />',
+                    file=file,
                 )
     else:
         for i, piece in enumerate(board.pieces):
@@ -130,10 +138,11 @@ def print_svg(board, show_solution=False):
                 y_offset=BLOCK_SIZE * (n + 2) - SPRITE_SIZE // 2,
             )
             print(
-                f'    <use href="#{SPRITE_NAMES[piece]}" transform="translate({x}, {y})" />'
+                f'    <use href="#{SPRITE_NAMES[piece]}" transform="translate({x}, {y})" />',
+                file=file,
             )
 
-    print("</svg>")
+    print("</svg>", file=file)
 
 
 def block_index_to_coord(i, j, x_offset=0, y_offset=0):
