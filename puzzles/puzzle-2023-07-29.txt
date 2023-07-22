@@ -1,0 +1,11 @@
+# Generated at: 2023-05-16T18:14:50
+# Difficulty: 5
+# Game duration: 553.9
+# Solve duration: inf
+# Couldn't do it - but seemed close
+.AB...
+A/...H
+D\.\/F
+B././G
+...\.H
+.DF.G.

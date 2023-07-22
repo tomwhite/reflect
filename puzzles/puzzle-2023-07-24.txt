@@ -1,0 +1,11 @@
+# Generated at: 2023-06-29T14:38:06
+# Difficulty: 5
+# Game duration: 641.7
+# Solve duration: inf
+# Very tantalizing
+.AA...
+......
+E.\.\.
+.\../I
+./..oJ
+.GE.H.
