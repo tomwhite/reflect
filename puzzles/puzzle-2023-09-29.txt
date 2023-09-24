@@ -1,0 +1,10 @@
+# Generated at: 2023-09-24T17:45:49
+# Difficulty: 4
+# Game duration: 103.1
+# Solve duration: 95.5
+..B.D.
+E\....
+F.\\..
+F./\\D
+G...\B
+.E..G.
