@@ -1,0 +1,10 @@
+# Generated at: 2023-09-30T16:01:57
+# Difficulty: 4
+# Game duration: 107.8
+# Solve duration: 106.1
+.AABC.
+D....D
+.\/./H
+.//.\H
+B../..
+.C....
