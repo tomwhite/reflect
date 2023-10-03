@@ -1,0 +1,10 @@
+# Generated at: 2023-10-03T20:01:07
+# Difficulty: 3
+# Game duration: 37.2
+# Solve duration: 26.9
+.A.C..
+..../I
+..//.H
+.\\..C
+.o...J
+.GAHI.
