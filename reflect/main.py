@@ -3,12 +3,19 @@ import math
 import random
 import re
 from pathlib import Path
+from pprint import pprint
 
 import click
 
 from reflect import Board, board_features
 from reflect import generate as generate_board
-from reflect import play_game, play_game_on_terminal, predict_solve_duration, print_svg
+from reflect import (
+    play_game,
+    play_game_on_terminal,
+    predict_solve_duration,
+    print_svg,
+    quick_generate,
+)
 from reflect import solve as solve_board
 from reflect.count import compute_and_save_all_puzzles
 from reflect.stats import (
@@ -48,9 +55,44 @@ def solve(filename):
 @click.argument("filename")
 @click.option("--min-pieces", default=4)
 @click.option("--max-pieces", default=7)
-def generate(filename, min_pieces, max_pieces):
-    board = generate_board(min_pieces=min_pieces, max_pieces=max_pieces)
+@click.option("--min-excess-reflections", default=0)
+@click.option("--max-beams", default=16)
+@click.option("--no-mirror-balls", is_flag=True)
+@click.option("--quick", is_flag=True)
+def generate(
+    filename,
+    min_pieces,
+    max_pieces,
+    min_excess_reflections,
+    max_beams,
+    no_mirror_balls,
+    quick,
+):
+    while True:
+        if quick:
+            board = quick_generate(
+                min_pieces=min_pieces,
+                max_pieces=max_pieces,
+                no_mirror_balls=no_mirror_balls,
+                debug=True,
+            )
+        else:
+            board = generate_board(
+                min_pieces=min_pieces,
+                max_pieces=max_pieces,
+                no_mirror_balls=no_mirror_balls,
+                debug=True,
+            )
+        features = board_features(board)
+        if (
+            features["excess_reflections"] >= min_excess_reflections
+            and features["num_beams"] <= max_beams
+        ):
+            break
     print(board.puzzle_string())
+    pprint(board_features(board))
+    print(f"Predicted solve duration: {predict_solve_duration(board)}")
+
     with open(filename, "w") as f:
         f.write(board.puzzle_solution())
 

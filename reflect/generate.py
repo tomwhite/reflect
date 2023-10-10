@@ -184,7 +184,7 @@ def quick_generate(
             board.add_beam(x, y)
 
     if debug:
-        print("Minimising board...")
+        print(f"Minimising board with pieces {board.pieces}...")
     return quick_minimise(board)
 
 
