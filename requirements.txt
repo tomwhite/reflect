@@ -3,6 +3,7 @@ blessed
 click
 numba
 numpy
+pandas
 pillow
 pytest
 pytest-cov
