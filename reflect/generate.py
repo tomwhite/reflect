@@ -10,14 +10,13 @@ from reflect.solve import _boards_and_beams_for_pieces, _boards_for_beams
 from reflect.solve import has_unique_solution as slow_has_unique_solution
 from reflect.solve import quick_has_unique_solution
 
-# TODO: do this lazily?
-num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
-
 
 def _match_boards(n_pieces=None, min_pieces=4, max_pieces=7, no_mirror_balls=False):
 
     if n_pieces is None:
         n_pieces = random.randrange(min_pieces, max_pieces + 1)
+
+    num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
 
     duplicate_groups, all_boards, all_beams, all_pieces = num_pieces_to_puzzles[
         n_pieces

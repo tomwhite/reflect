@@ -14,9 +14,6 @@ from reflect.count import (
 )
 from reflect.util import cproduct_idx
 
-# TODO: do this lazily?
-num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
-
 
 # from https://docs.python.org/3/library/itertools.html#itertools-recipes
 def powerset(iterable):
@@ -173,6 +170,8 @@ def _solve(beams, permutations, ball_on_two_ended_beam_allowed):  # pragma: no c
 
 
 def _get_all_puzzles(num_pieces, fewer_pieces_allowed=False):
+    num_pieces_to_puzzles = load_all_puzzles("puzzles.bin")
+
     if not fewer_pieces_allowed:
         return num_pieces_to_puzzles[num_pieces]
 
