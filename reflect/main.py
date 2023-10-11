@@ -1,4 +1,5 @@
 import csv
+import datetime
 import math
 import random
 import re
@@ -52,7 +53,7 @@ def solve(filename):
 
 
 @cli.command()
-@click.argument("filename")
+@click.argument("filename", required=False)
 @click.option("--min-pieces", default=4)
 @click.option("--max-pieces", default=7)
 @click.option("--min-excess-reflections", default=0)
@@ -93,8 +94,13 @@ def generate(
     pprint(board_features(board))
     print(f"Predicted solve duration: {predict_solve_duration(board)}")
 
+    t = datetime.datetime.now().isoformat(timespec="seconds")
+    if filename is None:
+        filename = f"puzzles/generated/puzzle-{t}.txt"
     with open(filename, "w") as f:
+        f.write(f"# Generated at: {t}\n")
         f.write(board.puzzle_solution())
+        f.write("\n")
 
 
 @cli.command()
