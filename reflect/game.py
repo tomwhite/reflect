@@ -297,23 +297,15 @@ class ReflectPuzzle(arcade.Window):
             self.setup()
         elif symbol == arcade.key.D:  # debug
             print(self.board)
-        elif symbol in (
-            arcade.key.KEY_1,
-            arcade.key.KEY_2,
-            arcade.key.KEY_3,
-            arcade.key.KEY_4,
-            arcade.key.KEY_5,
-        ):
-            difficulty = symbol - 48
+        elif symbol == arcade.key.S:  # save
             t = self.start_timestamp.isoformat(timespec="seconds")
-            filename = f"puzzles/generated/puzzle-{t}.txt"
+            filename = f"puzzles/puzzle-{t}.txt"
             game_duration = time() - self.start_time
             print(
-                f"Saving to {filename} with difficulty {difficulty} with game duration {game_duration:.1f} and solve duration {self.solve_duration:.1f}"
+                f"Saving to {filename} with game duration {game_duration:.1f} and solve duration {self.solve_duration:.1f}"
             )
             with open(filename, "w") as f:
                 f.write(f"# Generated at: {t}\n")
-                f.write(f"# Difficulty: {difficulty}\n")
                 f.write(f"# Game duration: {game_duration:.1f}\n")
                 f.write(f"# Solve duration: {self.solve_duration:.1f}\n")
                 f.write(self.board.puzzle_solution())
