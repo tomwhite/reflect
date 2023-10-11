@@ -9,14 +9,15 @@ from reflect.storage import load_board
 
 def test_puzzles_have_unique_solution(request):
     today = datetime.datetime.today()
-    week_ago = today - datetime.timedelta(days=7)
-    start_date = week_ago.strftime("%Y-%m-%d")
+    start_date = (today - datetime.timedelta(days=2)).strftime("%Y-%m-%d")
+    end_date = (today + datetime.timedelta(days=5)).strftime("%Y-%m-%d")
     start_puzzle = f"puzzle-{start_date}.txt"
+    end_puzzle = f"puzzle-{end_date}.txt"
     for full_board_file in sorted((request.config.rootdir / "puzzles").listdir()):
         if full_board_file.isfile():
             filename = Path(full_board_file).name
-            if filename < start_puzzle:
-                continue  # only test last week's worth
+            if filename < start_puzzle or filename > end_puzzle:
+                continue  # only test a week's worth of puzzles
             board = load_board(full_board_file)
             assert has_unique_solution(board)
 
@@ -113,3 +114,17 @@ C.....
 
     assert boards_are_unique([board1, board2], include_transforms=False)
     assert boards_are_unique([board1, board2], include_transforms=True)
+
+
+def test_puzzles_in_future(request):
+    day = datetime.datetime.today()
+    num_days = 0
+    while True:
+        date = day.strftime("%Y-%m-%d")
+        full_board_file = request.config.rootdir / "puzzles" / f"puzzle-{date}.txt"
+        if not full_board_file.exists():
+            break
+        load_board(full_board_file)
+        num_days += 1
+        day = day + datetime.timedelta(days=1)
+    assert num_days >= 3, f"Missing {full_board_file}"
