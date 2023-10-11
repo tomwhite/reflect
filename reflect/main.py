@@ -56,7 +56,7 @@ def solve(filename):
 @click.option("--min-pieces", default=4)
 @click.option("--max-pieces", default=7)
 @click.option("--min-excess-reflections", default=0)
-@click.option("--max-beams", default=16)
+@click.option("--max-beam-edges", default=16)
 @click.option("--no-mirror-balls", is_flag=True)
 @click.option("--quick", is_flag=True)
 def generate(
@@ -64,7 +64,7 @@ def generate(
     min_pieces,
     max_pieces,
     min_excess_reflections,
-    max_beams,
+    max_beam_edges,
     no_mirror_balls,
     quick,
 ):
@@ -86,7 +86,7 @@ def generate(
         features = board_features(board)
         if (
             features["excess_reflections"] >= min_excess_reflections
-            and features["num_beams"] <= max_beams
+            and features["num_beam_edges"] <= max_beam_edges
         ):
             break
     print(board.puzzle_string())

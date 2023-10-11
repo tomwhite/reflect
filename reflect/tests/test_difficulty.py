@@ -33,6 +33,7 @@ F...oJ
     assert features["num_zero_reflection_blocks"] == 0
     assert features["excess_reflections"] == 3
     assert features["num_excess_reflection_beams"] == 1
+    assert features["num_beam_edges"] == 12
 
     # set on 6 May 2023
     full_board = """
@@ -64,6 +65,7 @@ F\\/..H
     assert features["num_zero_reflection_blocks"] == 0
     assert features["excess_reflections"] == 3
     assert features["num_excess_reflection_beams"] == 2
+    assert features["num_beam_edges"] == 11
 
 
 def test_minimum_blocks_on_path():

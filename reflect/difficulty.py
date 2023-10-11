@@ -29,6 +29,8 @@ def board_features(board):
     block_counts = collections.Counter()  # also count number of beams for each block
     # and the total number of reflections (not including mirror balls)
     num_reflections = 0
+    # and (distinct) beam edges
+    beam_edges = set()
     for path in beam_paths:
         count = 0
         num_reflections_on_path = 0
@@ -50,6 +52,8 @@ def board_features(board):
         # calculate minimum reflections on a path (not including mirror balls)
         start_loc = path[0]
         end_loc = path[-1]
+        beam_edges.add(start_loc)
+        beam_edges.add(end_loc)
         # change end loc to mirror ball if there is one
         for loc in path:
             i, j = loc
@@ -117,6 +121,8 @@ def board_features(board):
         np.array(reflections_per_beam) > np.array(min_reflections_per_beam)
     )
 
+    num_beam_edges = len(beam_edges)
+
     return dict(
         num_blocks=num_blocks,
         num_mirror_balls=num_mirror_balls,
@@ -135,6 +141,7 @@ def board_features(board):
         num_zero_reflection_blocks=num_zero_reflection_blocks,
         excess_reflections=excess_reflections,
         num_excess_reflection_beams=num_excess_reflection_beams,
+        num_beam_edges=num_beam_edges,
     )
 
 
