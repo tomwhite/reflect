@@ -26,7 +26,7 @@ from reflect.stats import (
     load_firebase_events,
     merge_stats_and_features,
 )
-from reflect.storage import load_board
+from reflect.storage import load_board, save_board
 
 
 @click.group()
@@ -96,10 +96,7 @@ def generate(
     t = datetime.datetime.now().isoformat(timespec="seconds")
     if filename is None:
         filename = f"puzzles/generated/puzzle-{t}.txt"
-    with open(filename, "w") as f:
-        f.write(f"# Generated at: {t}\n")
-        f.write(board.puzzle_solution())
-        f.write("\n")
+    save_board(board, filename, header=f"# Generated at: {t}\n")
 
 
 @cli.command()
