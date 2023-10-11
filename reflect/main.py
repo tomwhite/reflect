@@ -26,6 +26,7 @@ from reflect.stats import (
     load_firebase_events,
     merge_stats_and_features,
 )
+from reflect.storage import load_board
 
 
 @click.group()
@@ -36,20 +37,18 @@ def cli():
 @cli.command()
 @click.argument("filename")
 def solve(filename):
-    with open(filename) as f:
-        full_board = "".join([line for line in f.readlines()])
-        board = Board.create(full_board=full_board)
-        print(board.puzzle_string())
-        print()
+    board = load_board(filename)
+    print(board.puzzle_string())
+    print()
 
-        print("Solutions:")
+    print("Solutions:")
+    print()
+    solutions = solve_board(
+        board, fewer_pieces_allowed=True, ball_on_two_ended_beam_allowed=True
+    )
+    for solution in solutions:
+        print(solution.puzzle_solution())
         print()
-        solutions = solve_board(
-            board, fewer_pieces_allowed=True, ball_on_two_ended_beam_allowed=True
-        )
-        for solution in solutions:
-            print(solution.puzzle_solution())
-            print()
 
 
 @cli.command()
@@ -112,9 +111,7 @@ def generate(
 @click.option("--quick", is_flag=True)
 def play(filename, terminal, min_pieces, max_pieces, no_mirror_balls, quick):
     if filename is not None:
-        with open(filename) as f:
-            full_board = "".join([line for line in f.readlines()])
-            board = Board.create(full_board=full_board)
+        board = load_board(filename)
     else:
         board = None
     if terminal:
@@ -133,10 +130,8 @@ def play(filename, terminal, min_pieces, max_pieces, no_mirror_balls, quick):
 @click.argument("filename")
 @click.option("--solution", is_flag=True)
 def svg(filename, solution):
-    with open(filename) as f:
-        full_board = "".join([line for line in f.readlines()])
-        board = Board.create(full_board=full_board)
-        print_svg(board, show_solution=solution)
+    board = load_board(filename)
+    print_svg(board, show_solution=solution)
 
 
 @cli.command()
@@ -147,12 +142,10 @@ def svgs(directory, output_directory, solution):
     files = Path(directory).glob("*.txt")
     out_dir = Path(output_directory)
     for full_board_file in sorted(files):
-        with open(full_board_file) as f:
-            full_board = "".join([line for line in f.readlines()])
-            board = Board.create(full_board=full_board)
-            out_file = out_dir / f"{full_board_file.stem}.svg"
-            with open(out_file, "w") as out:
-                print_svg(board, show_solution=solution, file=out)
+        board = load_board(full_board_file)
+        out_file = out_dir / f"{full_board_file.stem}.svg"
+        with open(out_file, "w") as out:
+            print_svg(board, show_solution=solution, file=out)
 
 
 @cli.command()
@@ -216,13 +209,9 @@ def stats(output):
 @cli.command()
 @click.argument("input")
 def predict(input):
-    with open(input) as fin:
-        lines = fin.readlines()
-        full_board = "".join([line for line in lines])
-        board = Board.create(full_board=full_board)
-
-        predicted_solve_duration = predict_solve_duration(board)
-        print(predicted_solve_duration)
+    board = load_board(input)
+    predicted_solve_duration = predict_solve_duration(board)
+    print(predicted_solve_duration)
 
 
 @cli.command()

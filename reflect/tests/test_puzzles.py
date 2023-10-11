@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from reflect import Board, boards_are_unique, has_unique_solution, solve
+from reflect.storage import load_board
 
 
 def test_puzzles_have_unique_solution(request):
@@ -16,18 +17,16 @@ def test_puzzles_have_unique_solution(request):
             filename = Path(full_board_file).name
             if filename < start_puzzle:
                 continue  # only test last week's worth
-            with open(full_board_file) as f:
-                full_board = "".join([line for line in f.readlines()])
-                board = Board.create(full_board=full_board)
-                assert has_unique_solution(board)
+            board = load_board(full_board_file)
+            assert has_unique_solution(board)
 
-                # extra stringent checks for later puzzles
-                if filename > "puzzle-2023-04-17.txt" and filename != "puzzle-help.txt":
-                    assert has_unique_solution(
-                        board,
-                        fewer_pieces_allowed=True,
-                        ball_on_two_ended_beam_allowed=True,
-                    )
+            # extra stringent checks for later puzzles
+            if filename > "puzzle-2023-04-17.txt" and filename != "puzzle-help.txt":
+                assert has_unique_solution(
+                    board,
+                    fewer_pieces_allowed=True,
+                    ball_on_two_ended_beam_allowed=True,
+                )
 
 
 @pytest.mark.parametrize(
@@ -69,10 +68,8 @@ def test_puzzle_boards_are_unique(request):
     boards = []
     for full_board_file in (request.config.rootdir / "puzzles").listdir():
         if full_board_file.isfile():
-            with open(full_board_file) as f:
-                full_board = "".join([line for line in f.readlines()])
-                board = Board.create(full_board=full_board)
-                boards.append(board)
+            board = load_board(full_board_file)
+            boards.append(board)
     assert boards_are_unique(boards)
 
 
