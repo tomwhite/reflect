@@ -29,3 +29,9 @@ def first_missing_puzzle_path(puzzles_dir="puzzles"):
             return full_board_file
         num_days += 1
         day = day + datetime.timedelta(days=1)
+
+
+def board_generator_from_files(dir="puzzles/generated"):
+    dir_path = Path(dir)
+    for f in sorted(dir_path.iterdir()):
+        yield load_board(f)

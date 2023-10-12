@@ -26,7 +26,7 @@ from reflect.stats import (
     load_firebase_events,
     merge_stats_and_features,
 )
-from reflect.storage import load_board, save_board
+from reflect.storage import board_generator_from_files, load_board, save_board
 
 
 @click.group()
@@ -102,8 +102,12 @@ def generate(
 @click.option("--quick", is_flag=True)
 def play(filename, terminal, min_pieces, max_pieces, no_mirror_balls, quick):
     if filename is not None:
-        board = load_board(filename)
-        generator = None
+        if Path(filename).is_file():
+            board = load_board(filename)
+            generator = None
+        else:
+            board = None
+            generator = board_generator_from_files(filename)
     else:
         board = None
         generator = board_generator(
