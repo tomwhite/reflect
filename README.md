@@ -67,7 +67,7 @@ You can see yesterday's solution in the app, but to see all of the previous puzz
 
 https://tom-e-white.com/reflect/solutions/
 
-I also generate stats to track number of players, puzzle difficulty, etc over time:
+I also generate [stats](./daily-stats.nbconvert.ipynb) to track number of players, puzzle difficulty, etc over time.
 
 ## Tools
 
