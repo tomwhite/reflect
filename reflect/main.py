@@ -37,6 +37,7 @@ def cli():
 @cli.command()
 @click.argument("filename")
 def solve(filename):
+    """Find all the solutions to a puzzle"""
     board = load_board(filename)
     print(board.puzzle_string())
     print()
@@ -70,6 +71,7 @@ def generate(
     no_mirror_balls,
     quick,
 ):
+    """Generate puzzles according to specified criteria"""
     generator = board_generator(
         min_pieces=min_pieces,
         max_pieces=max_pieces,
@@ -105,6 +107,7 @@ def generate(
 @click.option("--no-mirror-balls", is_flag=True)
 @click.option("--quick", is_flag=True)
 def play(filename, terminal, min_pieces, max_pieces, no_mirror_balls, quick):
+    """Play Reflect puzzles"""
     if filename is not None:
         if Path(filename).is_file():
             board = load_board(filename)
@@ -131,6 +134,7 @@ def play(filename, terminal, min_pieces, max_pieces, no_mirror_balls, quick):
 @click.argument("filename")
 @click.option("--solution", is_flag=True)
 def svg(filename, solution):
+    """Convert a puzzle to SVG format"""
     board = load_board(filename)
     print_svg(board, show_solution=solution)
 
@@ -140,6 +144,7 @@ def svg(filename, solution):
 @click.argument("output-directory", type=click.Path(exists=True, file_okay=False))
 @click.option("--solution", is_flag=True)
 def svgs(directory, output_directory, solution):
+    """Convert multiple puzzles to SVG format"""
     files = Path(directory).glob("*.txt")
     out_dir = Path(output_directory)
     for full_board_file in sorted(files):
@@ -153,6 +158,7 @@ def svgs(directory, output_directory, solution):
 @click.argument("input")
 @click.argument("output")
 def transform(input, output):
+    """Randomly transform a puzzle by one of its symmetries"""
     with open(input) as fin, open(output, "w") as fout:
         lines = fin.readlines()
         full_board = "".join([line for line in lines])
@@ -166,6 +172,7 @@ def transform(input, output):
 @click.argument("directory", type=click.Path(exists=True, file_okay=False))
 @click.argument("output")
 def features(directory, output):
+    """Write puzzle features to a CSV file"""
     all_features = []
     files = Path(directory).glob("*.txt")
     for full_board_file in sorted(files):
@@ -199,6 +206,7 @@ def features(directory, output):
 @cli.command()
 @click.argument("output")
 def stats(output):
+    """Write puzzle stats and features to a CSV file"""
     events_df = load_firebase_events()
     device_df = compute_per_device_stats(events_df)
     stats_df = compute_stats(events_df, device_df)
@@ -210,6 +218,7 @@ def stats(output):
 @cli.command()
 @click.argument("input")
 def predict(input):
+    """Predict a puzzle's solve duration using a model"""
     board = load_board(input)
     predicted_solve_duration = predict_solve_duration(board)
     print(predicted_solve_duration)
@@ -218,6 +227,7 @@ def predict(input):
 @cli.command()
 @click.argument("output")
 def save_all_puzzles(output):
+    """Precompute all puzzle solutions"""
     compute_and_save_all_puzzles(max_pieces=7, filename=output)
 
 
