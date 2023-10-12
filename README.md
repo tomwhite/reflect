@@ -10,15 +10,13 @@ Here is an example, with the initial board (left); after a few pieces have been 
 
 ## Setting puzzles
 
-The challenge for the setter is to create puzzles that are challenging, but neither very easy nor virtually impossible. After some [initial explorations](puzzles/old/README.txt) I found that the number of blocks (pieces) roughly correlated with the difficulty of the puzzle, with 4, 5, or 6 pieces giving interesting puzzles of suitable difficulty.
+The challenge for the setter is to create puzzles that are challenging, but neither very easy nor virtually impossible. After some [initial explorations](puzzles/old/README.txt) I found that the number of blocks (pieces) roughly correlated with the difficulty of the puzzle, with 4 to 7 pieces giving interesting puzzles of suitable difficulty.
 
 The number of beams in a puzzle has a more complex relationship with difficulty level, since if there is a beam at every edge of the board, then that gives more information (and generally makes for an easier puzzle) than one where some edges don't have a beam shown.
 
 The hardest thing about setting puzzles is ensuring that there is only one solution. I wrote a program early on to check that this is the case. Often I set a puzzle and found that it wasn't unique. It is often (but not always!) possible to remedy the situation by adding more beams.
 
-I have a puzzle generator that creates random puzzles with 4 to 6 pieces. It starts with all possible beams, then tries to gradually remove them (at random) until the solution is no longer unique. I then try to solve the puzzle myself, and if I like it I'll use it on the website.
-
-Puzzles with 7 pieces are not always very difficult, but the program for checking uniqueness runs very slowly.
+I have a puzzle generator that creates random puzzles with 6 or 7 pieces. It starts with all possible beams, then tries to gradually remove them (at random) until the solution is no longer unique. I then try to solve the puzzle myself, and if I like it I'll use it on the website.
 
 There is certainly more to discover about what makes a good puzzle.
 
@@ -63,20 +61,61 @@ So my plan is to try setting some puzzles by hand, and to see how I would solve 
 
 One other insight I had is that this could be a "fixed" puzzle with a selection of beams chosen by the setter, rather than one where the player get to choose which beams to try. This would avoid the problem mentioned above where we have to choose the maximum number of beams to try, and give the setter more control over crafting a puzzle with a certain degree of difficulty. Missing beams would not necessarily mean that there are no blocks there - rather that there is enough information in the other beams to solve the puzzle. One side effect of this approach would be that it's possible to print a puzzle to solve using pen and paper, like a crossword, or sudoku. I like this.
 
+## Solutions and stats
+
+You can see yesterday's solution in the app, but to see all of the previous puzzle solutions open the following page (best on a device with a big screen):
+
+https://tom-e-white.com/reflect/solutions/
+
+I also generate stats to track number of players, puzzle difficulty, etc over time:
+
 ## Tools
 
-Set up an environment
+I have written supporting tools in Python to generate puzzles, and to analyse them in various ways.
+
+To try then out, first set up an environment
 
 ```shell
 conda create --name reflect python=3.9
 conda activate reflect
 pip install -r requirements.txt
+pip install -e .
 ```
 
-Run the tests with
+To check everything is working, you can run the tests with
 
 ```shell
 pytest -vs
+```
+
+There is a `puzzle` command which has a number of subcommands for doing various tasks.
+Here are some examples.
+
+Generate a new puzzle and save it in a file called `puzzle.txt`.
+
+```shell
+puzzle generate puzzle.txt
+```
+
+Play an interactive game to generate a new puzzle:
+
+```shell
+puzzle play
+```
+
+You can press "S" to save the puzzle, or "R" to reload (generate a new puzzle).
+
+Generate 10 new puzzles in the default location (`puzzles/generated`) with various
+restrictions:
+
+```shell
+puzzle generate --number=10 --min-pieces=6 --max-pieces=7 --min-excess-reflections=1 --max-beam-edges=10 --quick
+```
+
+Then play the generated puzzles:
+
+```shell
+puzzle play puzzles/generated
 ```
 
 Solve a puzzle
@@ -84,20 +123,6 @@ Solve a puzzle
 ```shell
 puzzle solve puzzles/old/puzzle-010.txt
 ```
-
-Generate a new puzzle
-
-```shell
-puzzle generate puzzle.txt
-```
-
-Or play an interactive game to generate a new puzzle:
-
-```shell
-puzzle play
-```
-
-You can press a number (1-5) to rate its difficulty and save the puzzle as a text file.
 
 Convert a puzzle to a static SVG image:
 
