@@ -25,7 +25,7 @@
 
         const today = new Date();
         const startDate = new Date(2023, 3, 3);
-        for (let d = startDate; d <= today; d.setDate(d.getDate() + 1)) {
+        for (let d = startDate; d < today; d.setDate(d.getDate() + 1)) {
           const date = new Date(d);
           if (date.getDay() == 1) {
             // Monday
