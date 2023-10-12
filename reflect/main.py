@@ -8,14 +8,14 @@ from pprint import pprint
 
 import click
 
-from reflect import Board, board_features
-from reflect import generate as generate_board
 from reflect import (
+    Board,
+    board_features,
+    board_generator,
     play_game,
     play_game_on_terminal,
     predict_solve_duration,
     print_svg,
-    quick_generate,
 )
 from reflect import solve as solve_board
 from reflect.count import compute_and_save_all_puzzles
@@ -68,21 +68,15 @@ def generate(
     no_mirror_balls,
     quick,
 ):
+    generator = board_generator(
+        min_pieces=min_pieces,
+        max_pieces=max_pieces,
+        no_mirror_balls=no_mirror_balls,
+        debug=True,
+        quick=quick,
+    )
     while True:
-        if quick:
-            board = quick_generate(
-                min_pieces=min_pieces,
-                max_pieces=max_pieces,
-                no_mirror_balls=no_mirror_balls,
-                debug=True,
-            )
-        else:
-            board = generate_board(
-                min_pieces=min_pieces,
-                max_pieces=max_pieces,
-                no_mirror_balls=no_mirror_balls,
-                debug=True,
-            )
+        board = next(generator)
         features = board_features(board)
         if (
             features["excess_reflections"] >= min_excess_reflections
@@ -109,18 +103,20 @@ def generate(
 def play(filename, terminal, min_pieces, max_pieces, no_mirror_balls, quick):
     if filename is not None:
         board = load_board(filename)
+        generator = None
     else:
         board = None
-    if terminal:
-        play_game_on_terminal(board)
-    else:
-        play_game(
-            board,
+        generator = board_generator(
             min_pieces=min_pieces,
             max_pieces=max_pieces,
             no_mirror_balls=no_mirror_balls,
+            debug=True,
             quick=quick,
         )
+    if terminal:
+        play_game_on_terminal(board)
+    else:
+        play_game(board, generator)
 
 
 @cli.command()

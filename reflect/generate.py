@@ -222,3 +222,30 @@ def quick_minimise(board):
 
     # return one of the minimum boards
     return choice(min_boards)
+
+
+def board_generator(
+    n_pieces=None,
+    min_pieces=4,
+    max_pieces=7,
+    no_mirror_balls=False,
+    debug=False,
+    quick=True,
+):
+    while True:
+        if quick:
+            yield quick_generate(
+                n_pieces=n_pieces,
+                min_pieces=min_pieces,
+                max_pieces=max_pieces,
+                no_mirror_balls=no_mirror_balls,
+                debug=debug,
+            )
+        else:
+            yield generate(
+                n_pieces=n_pieces,
+                min_pieces=min_pieces,
+                max_pieces=max_pieces,
+                no_mirror_balls=no_mirror_balls,
+                debug=debug,
+            )

@@ -8,7 +8,6 @@ from time import time
 import arcade
 
 from reflect.difficulty import board_features, predict_solve_duration
-from reflect.generate import generate, quick_generate
 
 # Screen title and size
 SCREEN_WIDTH = 240
@@ -62,16 +61,13 @@ class BlockSprite(arcade.Sprite):
 
 
 class ReflectPuzzle(arcade.Window):
-    def __init__(self, board, min_pieces, max_pieces, no_mirror_balls, quick):
+    def __init__(self, board, board_generator):
         super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
 
         self.background = None
 
         self.original_board = board
-        self.min_pieces = min_pieces
-        self.max_pieces = max_pieces
-        self.no_mirror_balls = no_mirror_balls
-        self.quick = quick
+        self.board_generator = board_generator
 
         self.shape_list = None
         self.path_list = None
@@ -103,20 +99,7 @@ class ReflectPuzzle(arcade.Window):
         if self.original_board is not None:
             self.board = self.original_board.copy()
         else:
-            if self.quick:
-                self.board = quick_generate(
-                    min_pieces=self.min_pieces,
-                    max_pieces=self.max_pieces,
-                    no_mirror_balls=self.no_mirror_balls,
-                    debug=True,
-                )
-            else:
-                self.board = generate(
-                    min_pieces=self.min_pieces,
-                    max_pieces=self.max_pieces,
-                    no_mirror_balls=self.no_mirror_balls,
-                    debug=True,
-                )
+            self.board = next(self.board_generator)
             print(self.board.puzzle_string())
             print(board_features(self.board))
             print(f"Predicted solve duration: {predict_solve_duration(self.board)}")
@@ -323,13 +306,10 @@ def flip_y(y):
     return SCREEN_HEIGHT - y
 
 
-def play_game(board, min_pieces, max_pieces, no_mirror_balls, quick):
+def play_game(board, board_generator=None):
     window = ReflectPuzzle(
         board,
-        min_pieces=min_pieces,
-        max_pieces=max_pieces,
-        no_mirror_balls=no_mirror_balls,
-        quick=quick,
+        board_generator,
     )
     window.setup()
     arcade.run()
