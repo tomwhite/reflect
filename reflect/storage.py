@@ -1,3 +1,6 @@
+import datetime
+from pathlib import Path
+
 from reflect.board import Board
 
 
@@ -13,3 +16,16 @@ def save_board(board, filename, header=None):
             f.write(header)
         f.write(board.puzzle_solution())
         f.write("\n")
+
+
+def first_missing_puzzle_path(puzzles_dir="puzzles"):
+    """Return the path for the next puzzle to be set."""
+    day = datetime.datetime.today()
+    num_days = 0
+    while True:
+        date = day.strftime("%Y-%m-%d")
+        full_board_file = Path("puzzles") / f"puzzle-{date}.txt"
+        if not full_board_file.exists():
+            return full_board_file
+        num_days += 1
+        day = day + datetime.timedelta(days=1)

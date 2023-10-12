@@ -8,6 +8,7 @@ from time import time
 import arcade
 
 from reflect.difficulty import board_features, predict_solve_duration
+from reflect.storage import first_missing_puzzle_path
 
 # Screen title and size
 SCREEN_WIDTH = 240
@@ -276,13 +277,15 @@ class ReflectPuzzle(arcade.Window):
 
     def on_key_press(self, symbol: int, modifiers: int):
         """User presses key"""
-        if symbol == arcade.key.R:
+        if symbol == arcade.key.Q:  # quit
+            arcade.exit()
+        elif symbol == arcade.key.R:  # reset/reload
             self.setup()
         elif symbol == arcade.key.D:  # debug
             print(self.board)
         elif symbol == arcade.key.S:  # save
             t = self.start_timestamp.isoformat(timespec="seconds")
-            filename = f"puzzles/puzzle-{t}.txt"
+            filename = first_missing_puzzle_path()
             game_duration = time() - self.start_time
             print(
                 f"Saving to {filename} with game duration {game_duration:.1f} and solve duration {self.solve_duration:.1f}"

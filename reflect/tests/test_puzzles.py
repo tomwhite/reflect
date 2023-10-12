@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from reflect import Board, boards_are_unique, has_unique_solution, solve
-from reflect.storage import load_board
+from reflect.storage import first_missing_puzzle_path, load_board
 
 
 def test_puzzles_have_unique_solution(request):
@@ -128,3 +128,4 @@ def test_puzzles_in_future(request):
         num_days += 1
         day = day + datetime.timedelta(days=1)
     assert num_days >= 3, f"Missing {full_board_file}"
+    assert first_missing_puzzle_path().name == Path(full_board_file).name
