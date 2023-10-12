@@ -53,6 +53,7 @@ def solve(filename):
 
 @cli.command()
 @click.argument("filename", required=False)
+@click.option("--number", default=1)
 @click.option("--min-pieces", default=4)
 @click.option("--max-pieces", default=7)
 @click.option("--min-excess-reflections", default=0)
@@ -61,6 +62,7 @@ def solve(filename):
 @click.option("--quick", is_flag=True)
 def generate(
     filename,
+    number,
     min_pieces,
     max_pieces,
     min_excess_reflections,
@@ -75,22 +77,24 @@ def generate(
         debug=True,
         quick=quick,
     )
-    while True:
-        board = next(generator)
-        features = board_features(board)
-        if (
-            features["excess_reflections"] >= min_excess_reflections
-            and features["num_beam_edges"] <= max_beam_edges
-        ):
-            break
-    print(board.puzzle_string())
-    pprint(board_features(board))
-    print(f"Predicted solve duration: {predict_solve_duration(board)}")
+    if filename is not None and number != 1:
+        raise ValueError("Can't set `filename` when `number` is not 1")
+    for _ in range(number):
+        while True:
+            board = next(generator)
+            features = board_features(board)
+            if (
+                features["excess_reflections"] >= min_excess_reflections
+                and features["num_beam_edges"] <= max_beam_edges
+            ):
+                break
+        print(board.puzzle_string())
+        pprint(board_features(board))
+        print(f"Predicted solve duration: {predict_solve_duration(board)}")
 
-    t = datetime.datetime.now().isoformat(timespec="seconds")
-    if filename is None:
-        filename = f"puzzles/generated/puzzle-{t}.txt"
-    save_board(board, filename, header=f"# Generated at: {t}\n")
+        t = datetime.datetime.now().isoformat(timespec="seconds")
+        f = filename or f"puzzles/generated/puzzle-{t}.txt"
+        save_board(board, f, header=f"# Generated at: {t}\n")
 
 
 @cli.command()
