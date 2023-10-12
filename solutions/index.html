@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reflect</title>
+    <style>
+      td {
+        text-align: center;
+        vertical-align: middle;
+      }
+    </style>
+    <script type="text/javascript">
+      // Format a date in ISO format (YYYY-MM-DD) according to local time
+      // From https://stackoverflow.com/a/50130338
+      function formatDate(date) {
+        return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+          .toISOString()
+          .split("T")[0];
+      }
+      window.onload = (event) => {
+        const calendar = document.getElementById("calendar");
+
+        let tr = document.createElement("tr");
+        let html = "";
+
+        const today = new Date();
+        const startDate = new Date(2023, 3, 3);
+        for (let d = startDate; d <= today; d.setDate(d.getDate() + 1)) {
+          const date = new Date(d);
+          if (date.getDay() == 1) {
+            // Monday
+            tr.innerHTML = html;
+            calendar.appendChild(tr);
+            // new row
+            tr = document.createElement("tr");
+            html = `<td>${formatDate(date)}</td>\n`;
+          }
+          // prettier-ignore
+          html += `<td><object data="puzzle-${formatDate(date)}.svg"></object></td>\n`;
+        }
+        tr.innerHTML = html;
+        calendar.appendChild(tr);
+        // Final row of days
+        tr = document.createElement("tr");
+        html = `
+        <td></td>
+        <td>Monday</td>
+        <td>Tuesday</td>
+        <td>Wednesday</td>
+        <td>Thursday</td>
+        <td>Friday</td>
+        <td>Saturday</td>
+        <td>Sunday</td>`;
+        tr.innerHTML = html;
+        calendar.appendChild(tr);
+      };
+    </script>
+  </head>
+  <body>
+    <table id="calendar" border="0">
+      <tr>
+        <td></td>
+        <td>Monday</td>
+        <td>Tuesday</td>
+        <td>Wednesday</td>
+        <td>Thursday</td>
+        <td>Friday</td>
+        <td>Saturday</td>
+        <td>Sunday</td>
+      </tr>
+      <tr>
+        <td>2023-03-27</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><object data="puzzle-2023-03-31.svg"></object></td>
+        <td><object data="puzzle-2023-04-01.svg"></object></td>
+        <td><object data="puzzle-2023-04-02.svg"></object></td>
+      </tr>
+    </table>
+  </body>
+</html>
