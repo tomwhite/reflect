@@ -18,6 +18,8 @@ The hardest thing about setting puzzles is ensuring that there is only one solut
 
 I have a puzzle generator that creates random puzzles with 6 or 7 pieces. It starts with all possible beams, then tries to gradually remove them (at random) until the solution is no longer unique. I then try to solve the puzzle myself, and if I like it I'll use it on the website.
 
+Here's a [notebook](./combinatorics.ipynb) that goes through the process of counting the number of Reflect puzzles, and how that helps find solutions to puzzles and generate new puzzles.
+
 There is certainly more to discover about what makes a good puzzle.
 
 ## History
