@@ -1,0 +1,9 @@
+# Generated at: 2023-10-14T21:38:55
+# Game duration: 36.3
+# Solve duration: 31.6
+..B...
+E.\.oJ
+F..\..
+G\....
+.\../I
+..EFI.
