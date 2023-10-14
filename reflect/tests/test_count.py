@@ -10,6 +10,7 @@ from reflect.count import (
     canonicalize_board,
     canonicalize_puzzle,
     compute_and_save_all_puzzles,
+    count_beams,
     decode_board,
     encode_beams,
     encode_beams_from_board,
@@ -173,6 +174,12 @@ def test_reflect_beams_vertically(board):
 def test_transpose_beams(board):
     val = encode_beams(encode_board(board))
     assert transpose_beams(val) == encode_beams(transpose(encode_board(board)))
+
+
+def test_count_beams(board):
+    val = encode_beams(encode_board(board))
+    board.add_all_beams()
+    assert count_beams(val) == len(board.beams)
 
 
 def test_encode_pieces(board):

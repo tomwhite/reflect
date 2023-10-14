@@ -55,9 +55,7 @@ def generate(
             print(board.pieces)
 
         # turn on all beams
-        for x, y in board.edge_locations():
-            if board.values[y, x] == ".":
-                board.add_beam(x, y)
+        board.add_all_beams()
 
         if has_unique_solution(board):
             if debug:
@@ -178,9 +176,7 @@ def quick_generate(
     board = decode_board(val)
 
     # turn on all beams
-    for x, y in board.edge_locations():
-        if board.values[y, x] == ".":
-            board.add_beam(x, y)
+    board.add_all_beams()
 
     if debug:
         print(f"Minimising board with pieces {board.pieces}...")

@@ -1,4 +1,5 @@
 import base64
+import io
 import sys
 
 BLOCK_SIZE = 40
@@ -33,6 +34,13 @@ COLOURS = [
 
 
 def print_svg(board, show_solution=False, file=sys.stdout):
+
+    return_svg = file is None
+    if return_svg:
+        from IPython.display import SVG
+
+        file = io.StringIO()
+
     n = board.n
 
     print(
@@ -143,6 +151,9 @@ def print_svg(board, show_solution=False, file=sys.stdout):
             )
 
     print("</svg>", file=file)
+
+    if return_svg:
+        return SVG(file.getvalue())
 
 
 def block_index_to_coord(i, j, x_offset=0, y_offset=0):

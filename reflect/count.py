@@ -524,6 +524,19 @@ def transpose_beams(val):
     return r
 
 
+@nb.njit(nb.uint64(nb.uint64), cache=True)
+def count_beams(val):
+    """Count the number of encoded beams"""
+
+    c = 0  # number of positions that reflect back to self
+    for i in range(16):
+        shift = (15 - i) * 4
+        end = val >> shift & 0xF
+        if i == end:
+            c += 1
+    return 8 + (c // 2)
+
+
 @nb.njit(nb.uint32(nb.uint64), cache=True)
 def encode_pieces(board_val):
     """Encode a multiset of pieces from an encoded board as an unsigned int by packing bits.

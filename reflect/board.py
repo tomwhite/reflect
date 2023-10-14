@@ -366,6 +366,11 @@ class Board:
         self.values[cond] = "."
         self.num_beams -= 1
 
+    def add_all_beams(self):
+        for x, y in self.edge_locations():
+            if self.values[y, x] == ".":
+                self.add_beam(x, y)
+
     def score(self):
         """Return a score for the values on the board, 1 if they match the hidden blocks, 0 otherwise."""
         eq = np.array_equal(
