@@ -196,7 +196,20 @@ def quick_minimise(board):
     min_num_beams = num_beams
 
     ball_on_two_ended_beam_allowed = "o" in board.pieces
-    for ind in itertools.product((False, True), repeat=num_beams):
+    prev_turned_off = 0
+    # order by number of beams to turn off
+    for ind in sorted(itertools.product((False, True), repeat=num_beams), key=sum):
+
+        # see if we can exit early
+        turned_off = sum(ind)
+        if turned_off != prev_turned_off:
+            tried_beams = num_beams - prev_turned_off
+            if min_num_beams > tried_beams:
+                # min_num_beams was not changed in last round, so we can
+                # exit since turning off more won't find more solutions
+                break
+            prev_turned_off = turned_off
+
         new_board = board.copy()
         for x, y in board.beams[list(ind)][:, :2]:
             new_board.remove_beam(x + 1, y + 1)
