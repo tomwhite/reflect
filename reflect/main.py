@@ -222,6 +222,7 @@ def predict(input):
     board = load_board(input)
     predicted_solve_duration = predict_solve_duration(board)
     print(predicted_solve_duration)
+    pprint(board_features(board))
 
 
 @cli.command()
