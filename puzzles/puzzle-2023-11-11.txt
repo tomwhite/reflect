@@ -1,9 +1,9 @@
-# Generated at: 2023-10-17T20:38:39
-# Game duration: 45.6
-# Solve duration: 42.8
-......
-D..\/E
-E.../D
-......
-./o\/J
-.GHIJ.
+# Generated at: 2023-10-17T21:23:09
+# Game duration: 276.3
+# Solve duration: 262.4
+.A.CC.
+.\.\/.
+./..oJ
+E/...F
+A../..
+.F..H.
