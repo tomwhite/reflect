@@ -1,0 +1,10 @@
+# Generated at: 2023-04-21T20:59:36
+# Difficulty: 5
+# Game duration: 333.2
+# Solve duration: inf
+.A.CD.
+E....E
+F\o..J
+C\...F
+.\.//.
+..HD..

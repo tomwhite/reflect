@@ -1,0 +1,11 @@
+# Generated at: 2023-06-11T15:15:03
+# Difficulty: 5
+# Game duration: 422.9
+# Solve duration: inf
+# Hard
+.AAB..
+.\/.\.
+E./..H
+././..
+..\..H
+.B..E.
