@@ -1,0 +1,10 @@
+# Generated at: 2023-04-16T15:21:00
+# Difficulty: 5
+# Solve duration: inf
+# Couldn't see this one.
+..BB..
+D.\//I
+......
+./..\I
+D./.oJ
+.FG.H.
