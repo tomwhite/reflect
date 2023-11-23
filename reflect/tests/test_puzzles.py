@@ -30,6 +30,20 @@ def test_puzzles_have_unique_solution(request):
                 )
 
 
+def test_extra_puzzles_have_unique_solution(request):
+    for full_board_file in sorted(
+        (request.config.rootdir / "puzzles" / "extra").listdir()
+    ):
+        if full_board_file.isfile():
+            board = load_board(full_board_file)
+            assert has_unique_solution(board), f"{full_board_file} not unique"
+            assert has_unique_solution(
+                board,
+                fewer_pieces_allowed=True,
+                ball_on_two_ended_beam_allowed=True,
+            ), f"{full_board_file} not unique"
+
+
 @pytest.mark.parametrize(
     "full_board",
     [
