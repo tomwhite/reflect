@@ -1,0 +1,9 @@
+# Generated at: 2023-12-03T09:08:19
+# Game duration: 155.2
+# Solve duration: 140.4
+.A....
+D.\./J
+E..\..
+.o../H
+./../.
+.HDE..
