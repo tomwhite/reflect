@@ -283,9 +283,12 @@ class ReflectPuzzle(arcade.Window):
             self.setup()
         elif symbol == arcade.key.D:  # debug
             print(self.board)
-        elif symbol == arcade.key.S:  # save
+        elif symbol in (arcade.key.S, arcade.key.E):  # save or extra
             t = self.start_timestamp.isoformat(timespec="seconds")
-            filename = first_missing_puzzle_path()
+            if symbol == arcade.key.S:
+                filename = first_missing_puzzle_path()
+            else:
+                filename = f"puzzles/extra/puzzle-{t}.txt"
             game_duration = time() - self.start_time
             print(
                 f"Saving to {filename} with game duration {game_duration:.1f} and solve duration {self.solve_duration:.1f}"
