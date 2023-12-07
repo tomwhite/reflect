@@ -51,7 +51,7 @@
       const SCREEN_HEIGHT = 400 * SCALE;
 
       const BLOCK_SIZE = 40 * SCALE;
-      const CELL_SIZE = 38 * SCALE;
+      const CELL_SIZE = 36 * SCALE;
 
       const BEAM_WIDTH = 5 * SCALE;
       const GRID_WIDTH = 1 * SCALE;
@@ -469,7 +469,7 @@
 
           // Logo
           const logo = this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
-          logo.setScale(SCALE);
+          logo.setScale(SCALE / 1.5);
 
           // Beams
           const beamGraphics = this.add.graphics();
@@ -486,7 +486,7 @@
 
           // Cells
           const cellGraphics = this.add.graphics();
-          cellGraphics.fillStyle(0xf0f8ff);
+          cellGraphics.fillStyle("0xf0f0f0");
 
           for (var i = 0; i < n; i++) {
             for (var j = 0; j < n; j++) {
@@ -556,17 +556,25 @@
           });
 
           this.input.on("dragleave", function (pointer, gameObject, dropZone) {
+            console.log("----------------------");
+            var loc = dropZone.data ? dropZone.data.get("loc") : null;
+            console.log("dragleave", loc);
             // remove image from drop zone
             if (dropZone.data && dropZone.data.get("image") === gameObject) {
+              console.log("dragleave: remove image");
               dropZone.data.remove("image");
             }
+            console.log(boardValues);
+            console.log(gameObject.data.get("loc"));
           });
 
           this.input.on(
             "drop",
             function (pointer, gameObject, dropZone) {
+              // console.log("drop");
               if (dropZone.data && dropZone.data.get("image") !== undefined) {
                 // drop zone already occupied - reset position
+                // console.log("drop zone already occupied");
                 gameObject.x = gameObject.input.dragStartX;
                 gameObject.y = gameObject.input.dragStartY;
                 return;
@@ -671,11 +679,14 @@
                 boardValues[j][i] = ".";
                 gameObject.data.remove("loc");
               }
+              // console.log(boardValues);
+              // console.log(gameObject.data.get("loc"));
             },
             this
           );
 
           this.input.on("dragend", function (pointer, gameObject, dropped) {
+            console.log("dragend", dropped);
             if (!dropped) {
               // not dropped on drop zone - reset position
               gameObject.x = gameObject.input.dragStartX;
