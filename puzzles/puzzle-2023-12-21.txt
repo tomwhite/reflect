@@ -1,0 +1,9 @@
+# Generated at: 2023-12-16T21:41:20
+# Game duration: 67.1
+# Solve duration: 54.1
+.ABC..
+..../I
+.\\..B
+C../..
+A./.o.
+..F.H.
