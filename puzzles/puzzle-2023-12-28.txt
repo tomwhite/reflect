@@ -1,0 +1,9 @@
+# Generated at: 2023-12-23T17:51:03
+# Game duration: 69.1
+# Solve duration: 65.2
+..BCD.
+E\....
+C\...E
+B./...
+.\./\D
+......
