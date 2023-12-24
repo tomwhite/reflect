@@ -45,6 +45,19 @@ const TEXT_STYLE_10_PT = {
   },
 };
 
+const BUTTON_STYLE = {
+  fontFamily: "Arial",
+  fontSize: 16 * SCALE,
+  color: "black",
+  backgroundColor: "#f0f8ff",
+  textDecoration: "none",
+  padding: {
+    y: 12 * SCALE,
+  },
+  align: "center",
+  fixedWidth: 170 * SCALE,
+};
+
 const TEXT_STYLE_18_PT = {
   fontFamily: "Arial",
   fontSize: 18 * SCALE,
@@ -493,7 +506,7 @@ class PlayScene extends Phaser.Scene {
     help.setScale(SCALE);
     help.on("pointerup", (e) => {
       this.scene.setVisible(false, "PlayScene");
-      this.scene.launch("HelpScene");
+      this.scene.launch("MenuScene");
       this.scene.pause();
     });
 
@@ -635,6 +648,48 @@ class PlayScene extends Phaser.Scene {
   }
 }
 
+class MenuScene extends Phaser.Scene {
+  constructor() {
+    super({ key: "MenuScene" });
+  }
+
+  preload() {}
+
+  create() {
+    // Logo
+    const logo = this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
+    logo.setScale(SCALE);
+
+    let [x, y] = blockIndexToCoord(5, 0);
+    const close = this.add.image(x, y, "close").setInteractive();
+    close.setScale(SCALE);
+    close.on("pointerup", (e) => {
+      this.scene.resume("PlayScene");
+      this.scene.stop();
+      this.scene.setVisible(true, "PlayScene");
+    });
+
+    let y_offset = BLOCK_SIZE * 2;
+    this.add
+      .text(SCREEN_WIDTH / 2, y_offset, "How to play", BUTTON_STYLE)
+      .setOrigin(0.5)
+      .setInteractive()
+      .on("pointerup", (e) => {
+        this.scene.launch("HelpScene");
+        this.scene.stop();
+      });
+    y_offset += BLOCK_SIZE * 1.5;
+    this.add
+      .text(SCREEN_WIDTH / 2, y_offset, "Yesterday's solution", BUTTON_STYLE)
+      .setOrigin(0.5)
+      .setInteractive()
+      .on("pointerup", (e) => {
+        this.scene.launch("SolutionScene");
+        this.scene.stop();
+      });
+  }
+}
+
 class HelpScene extends Phaser.Scene {
   constructor() {
     super({ key: "HelpScene" });
@@ -711,19 +766,6 @@ class HelpScene extends Phaser.Scene {
       TEXT_STYLE_10_PT
     );
     y_offset += BLOCK_SIZE * 0.375;
-    this.add
-      .text(
-        0,
-        y_offset,
-        "See the solution to yesterday's puzzle",
-        TEXT_STYLE_10_PT
-      )
-      .setStyle({ color: "#4363d8" })
-      .setInteractive()
-      .on("pointerup", (e) => {
-        this.scene.launch("SolutionScene");
-        this.scene.stop();
-      });
     y_offset += BLOCK_SIZE * 0.375;
     this.add.text(
       0,
@@ -811,7 +853,7 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   backgroundColor: "#FFFFFF",
-  scene: [PlayScene, HelpScene, SolutionScene],
+  scene: [PlayScene, MenuScene, HelpScene, SolutionScene],
 };
 
 const game = new Phaser.Game(config);
