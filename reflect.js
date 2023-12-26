@@ -403,7 +403,7 @@ class PlayScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("logo", "sprites/reflect.png");
+    this.load.image("logo", "sprites/reflect-staging.png");
     for (const name of Object.values(SPRITE_NAMES)) {
       this.load.image(name, `sprites/${name}_tr.png`);
     }
