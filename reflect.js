@@ -422,7 +422,6 @@ class PlayScene extends Phaser.Scene {
     const hiddenBlocks = board.hiddenBlocks;
     const beamPaths = board.beamPaths;
     const pieces = board.pieces;
-    const boardValues = Array.from(Array(n), () => Array(n).fill("."));
     const board_y_offset = BLOCK_SIZE;
 
     let gameOver = false;
@@ -445,7 +444,7 @@ class PlayScene extends Phaser.Scene {
     beamPathGraphics.visible = false;
     drawBeamPaths(n, beamPathGraphics, beamPaths, board_y_offset);
 
-    // Cells
+    // Cells (board)
     const cellGraphics = this.add.graphics();
     cellGraphics.fillStyle(0xf0f8ff);
 
@@ -466,6 +465,8 @@ class PlayScene extends Phaser.Scene {
       }
     }
 
+    // Cells (below board)
+    const zones = [];
     for (var i = 0; i < pieces.length; i++) {
       let [x, y] = blockIndexToCoord(
         (i % 4) + 1,
@@ -476,6 +477,7 @@ class PlayScene extends Phaser.Scene {
       const zone = this.add
         .zone(x, y, CELL_SIZE, CELL_SIZE)
         .setRectangleDropZone(CELL_SIZE, CELL_SIZE);
+      zones.push(zone);
 
       cellGraphics.fillRect(
         zone.x - zone.input.hitArea.width / 2,
@@ -485,7 +487,8 @@ class PlayScene extends Phaser.Scene {
       );
     }
 
-    // Blocks
+    // Blocks (these are last so they are on top of everything else)
+    this.blockImages = [];
     for (var i = 0; i < pieces.length; i++) {
       let [x, y] = blockIndexToCoord(
         (i % 4) + 1,
@@ -499,6 +502,14 @@ class PlayScene extends Phaser.Scene {
       image.setScale(SCALE);
       image.setData("piece", pieces[i]);
       this.input.setDraggable(image);
+      this.blockImages.push(image);
+
+      // Cell zone has a reference to block image and vice versa.
+      // This invariant is maintained during drag and drop, and this
+      // state is used to construct board values.
+      const zone = zones[i];
+      zone.setData("image", image);
+      image.setData("zone", zone);
     }
 
     let [x, y] = blockIndexToCoord(5, 0);
@@ -516,13 +527,6 @@ class PlayScene extends Phaser.Scene {
       gameObject.y = dragY;
     });
 
-    this.input.on("dragleave", function (pointer, gameObject, dropZone) {
-      // remove image from drop zone
-      if (dropZone.data && dropZone.data.get("image") === gameObject) {
-        dropZone.data.remove("image");
-      }
-    });
-
     this.input.on(
       "drop",
       function (pointer, gameObject, dropZone) {
@@ -536,20 +540,25 @@ class PlayScene extends Phaser.Scene {
         gameObject.x = dropZone.x;
         gameObject.y = dropZone.y;
         dropZone.setData("image", gameObject);
+
+        // remove image from previous drop zone
+        gameObject.data.get("zone").data.remove("image");
+        // set image to new drop zone
+        gameObject.setData("zone", dropZone);
+
         if (dropZone.data.get("loc") !== undefined) {
           // drop zone is on board
-          if (gameObject.data.get("loc") !== undefined) {
-            // remove piece from board
-            const [i, j] = gameObject.data.get("loc");
-            boardValues[j][i] = ".";
-            gameObject.data.remove("loc");
-          }
-          // add piece to the board
-          const [i, j] = dropZone.data.get("loc");
-          gameObject.setData("loc", [i, j]);
-          boardValues[j][i] = gameObject.data.get("piece");
 
           // test if game over
+          const boardValues = Array.from(Array(n), () => Array(n).fill("."));
+          for (let block of this.blockImages) {
+            const loc = block.data.get("zone").data.get("loc");
+            if (loc === undefined) {
+              continue;
+            }
+            const [i, j] = loc;
+            boardValues[j][i] = block.data.get("piece");
+          }
           if (JSON.stringify(boardValues) == JSON.stringify(hiddenBlocks)) {
             cellGraphics.visible = false;
             beamPathGraphics.visible = true;
@@ -623,12 +632,6 @@ class PlayScene extends Phaser.Scene {
             plausible("solved");
             saveEvent("solved");
           }
-        } else if (gameObject.data.get("loc") !== undefined) {
-          // drop zone is not on board, but piece was previously on board
-          // remove piece from board
-          const [i, j] = gameObject.data.get("loc");
-          boardValues[j][i] = ".";
-          gameObject.data.remove("loc");
         }
       },
       this
