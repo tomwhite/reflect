@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Reflect stats</title>
+  </head>
+  <body>
+    <h3>Stats</h3>
+    <div id="content"></div>
+    <script type="text/javascript">
+      // Format a date in ISO format (YYYY-MM-DD) according to local time
+      // From https://stackoverflow.com/a/50130338
+      function formatDate(date) {
+        return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+          .toISOString()
+          .split("T")[0];
+      }
+      // Return "today" in YYYY-MM-DD
+      // Allow overriding with url param ?date=YYYY-MM-DD
+      function getEffectiveDate() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dateParam = urlParams.get("date");
+        return dateParam ? dateParam : formatDate(new Date());
+      }
+      const today = getEffectiveDate();
+      function getStats() {
+        let content = "";
+        const playedHistoryJson = localStorage.getItem("playedHistory");
+        const playedHistory =
+          playedHistoryJson == null
+            ? []
+            : Array.from(new Set(JSON.parse(playedHistoryJson))).sort();
+        const played = Array.from(new Set(playedHistory)).length;
+        console.log(`Played: ${played}`);
+        content += `Played: ${played}<br/>`;
+
+        const solvedHistoryJson = localStorage.getItem("solvedHistory");
+        const solvedHistory =
+          solvedHistoryJson == null
+            ? []
+            : Array.from(new Set(JSON.parse(solvedHistoryJson))).sort();
+        const solved = Array.from(new Set(solvedHistory)).length;
+        console.log(`Solved: ${solved}`);
+        content += `Solved: ${solved}<br/>`;
+
+        let currentStreak = 0;
+        Array.from(new Set(solvedHistory))
+          .sort()
+          .reverse()
+          .map((d) => new Date(d))
+          .forEach((d, i) => {
+            if (new Date(today) - d === i * 60 * 60 * 24 * 1000) {
+              currentStreak++;
+            }
+          });
+        console.log(`Streak: ${currentStreak}`);
+        content += `Streak: ${currentStreak}<br/>`;
+
+        content += "<br/>Played history</br>";
+        for (let d of new Set(playedHistory)) {
+          content += `${d}<br/>`;
+        }
+        return content;
+      }
+      const node = document.getElementById("content");
+      node.innerHTML = `<p>${getStats()}</p>`;
+    </script>
+  </body>
+</html>
