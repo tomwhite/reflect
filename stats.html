@@ -60,6 +60,10 @@
         for (let d of new Set(playedHistory)) {
           content += `${d}<br/>`;
         }
+        content += "<br/>Solved history</br>";
+        for (let d of new Set(solvedHistory)) {
+          content += `${d}<br/>`;
+        }
         return content;
       }
       const node = document.getElementById("content");
