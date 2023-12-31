@@ -25,6 +25,7 @@
       const today = getEffectiveDate();
       function getStats() {
         let content = "";
+        content += `Device: ${localStorage.getItem("deviceId")}<br/>`;
         const playedHistoryJson = localStorage.getItem("playedHistory");
         const playedHistory =
           playedHistoryJson == null
