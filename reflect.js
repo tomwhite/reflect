@@ -58,6 +58,19 @@ const BUTTON_STYLE = {
   fixedWidth: 170 * SCALE,
 };
 
+const INVERSE_BUTTON_STYLE = {
+  fontFamily: "Arial",
+  fontSize: 16 * SCALE,
+  color: "#f0f8ff",
+  backgroundColor: "black",
+  textDecoration: "none",
+  padding: {
+    y: 12 * SCALE,
+  },
+  align: "center",
+  fixedWidth: 170 * SCALE,
+};
+
 const TEXT_STYLE_18_PT = {
   fontFamily: "Arial",
   fontSize: 18 * SCALE,
@@ -648,6 +661,65 @@ class PlayScene extends Phaser.Scene {
         seenFirstMove = true;
       }
     });
+
+    if (today === "2024-01-01") {
+      this.scene.launch("MessageScene");
+      this.scene.pause();
+    }
+  }
+}
+
+class MessageScene extends Phaser.Scene {
+  constructor() {
+    super({ key: "MessageScene" });
+  }
+
+  preload() {
+    this.load.image("close", "sprites/close-circle-line.png");
+  }
+
+  create() {
+    const graphics = this.add.graphics();
+    graphics.fillStyle(0x000000, 0.1);
+    graphics.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
+    graphics.fillStyle(0x000000);
+    graphics.fillRect(0, SCREEN_HEIGHT / 2, SCREEN_WIDTH, SCREEN_HEIGHT / 2);
+    graphics.fillStyle(0xffffff);
+    const pad = GRID_WIDTH * 2;
+    let y_offset = pad + SCREEN_HEIGHT / 2;
+    graphics.fillRect(0, y_offset, SCREEN_WIDTH, SCREEN_HEIGHT - pad);
+
+    let [x, y] = blockIndexToCoord(5, 0);
+    y = y_offset + BLOCK_SIZE / 2;
+    const close = this.add.image(x, y, "close").setInteractive();
+    close.setScale(SCALE);
+    close.on("pointerup", (e) => {
+      this.scene.resume("PlayScene");
+      this.scene.stop();
+    });
+
+    y_offset += BLOCK_SIZE;
+    this.add
+      .text(SCREEN_WIDTH / 2, y_offset, "Happy New Year!", TEXT_STYLE_18_PT)
+      .setOrigin(0.5);
+    y_offset += BLOCK_SIZE;
+    this.add
+      .text(
+        SCREEN_WIDTH / 2,
+        y_offset,
+        "Thank you for playing Reflect",
+        TEXT_STYLE_10_PT
+      )
+      .setOrigin(0.5);
+    y_offset += BLOCK_SIZE;
+    this.add
+      .text(SCREEN_WIDTH / 2, y_offset, "OK", INVERSE_BUTTON_STYLE)
+      .setOrigin(0.5)
+      .setInteractive()
+      .on("pointerup", (e) => {
+        this.scene.resume("PlayScene");
+        this.scene.stop();
+      });
   }
 }
 
@@ -856,7 +928,7 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   backgroundColor: "#FFFFFF",
-  scene: [PlayScene, MenuScene, HelpScene, SolutionScene],
+  scene: [PlayScene, MessageScene, MenuScene, HelpScene, SolutionScene],
 };
 
 const game = new Phaser.Game(config);
