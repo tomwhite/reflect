@@ -1,0 +1,9 @@
+# Generated at: 2024-01-13T17:28:56
+# Game duration: 63.3
+# Solve duration: 62.3
+.ABCD.
+.\.\.C
+......
+D.../A
+G.o\/.
+......
