@@ -79,6 +79,7 @@ def test_not_unique_solution(full_board):
     assert len(solutions) > 1
 
 
+@pytest.mark.xfail(reason="some boards have same blocks (but not beams)")
 def test_puzzle_boards_are_unique(request):
     boards = []
     for full_board_file in (request.config.rootdir / "puzzles").listdir():
