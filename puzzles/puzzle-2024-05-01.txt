@@ -1,0 +1,9 @@
+# Generated at: 2024-04-24T09:23:14
+# Game duration: 1.0
+# Solve duration: inf
+...CD.
+./../J
+../\\J
+Eo..\C
+......
+.GHHI.
