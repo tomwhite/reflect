@@ -1,0 +1,9 @@
+# Generated at: 2024-05-06T11:45:25
+# Game duration: 3.7
+# Solve duration: inf
+..BC..
+Eo..\.
+F/.//.
+..\..B
+H....H
+.C.I..
