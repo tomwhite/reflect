@@ -438,7 +438,7 @@ def block_str_to_int_array(blocks):
 def block_int_to_str_array(blocks):
     condlist = [blocks == x.value for x in Block]
     choicelist = [x.char for x in Block]
-    return np.select(condlist, choicelist, 0)
+    return np.select(condlist, choicelist, ".")
 
 
 def boards_are_unique(boards, include_transforms=True):

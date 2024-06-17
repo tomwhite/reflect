@@ -15,9 +15,11 @@ def encode_board(board):
     assert board.n == 4
     shift = 15 * 2
     val = 0
+    # cast to int64 so that val has same type
+    block_ints = board.hidden_blocks_ints.astype(np.int64)
     for i in range(4):
         for j in range(4):
-            val |= board.hidden_blocks_ints[i, j] << shift
+            val |= block_ints[i, j] << shift
             shift -= 2
     return val
 
