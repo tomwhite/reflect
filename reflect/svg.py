@@ -157,8 +157,8 @@ def print_svg(board, show_solution=False, file=sys.stdout):
 
 
 def block_index_to_coord(i, j, x_offset=0, y_offset=0):
-    x = i * BLOCK_SIZE + BLOCK_SIZE // 2 + x_offset
-    y = j * BLOCK_SIZE + BLOCK_SIZE // 2 + y_offset
+    x = int(i) * BLOCK_SIZE + BLOCK_SIZE // 2 + x_offset
+    y = int(j) * BLOCK_SIZE + BLOCK_SIZE // 2 + y_offset
     return x, y
 
 
