@@ -26,7 +26,12 @@ from reflect.stats import (
     load_firebase_events,
     merge_stats_and_features,
 )
-from reflect.storage import board_generator_from_files, load_board, save_board
+from reflect.storage import (
+    board_generator_from_files,
+    first_missing_puzzle_path,
+    load_board,
+    save_board,
+)
 
 
 @click.group()
@@ -61,6 +66,7 @@ def solve(filename):
 @click.option("--max-beam-edges", default=16)
 @click.option("--no-mirror-balls", is_flag=True)
 @click.option("--quick", is_flag=True)
+@click.option("--skip-test-play", is_flag=True, default=True)
 def generate(
     filename,
     number,
@@ -70,6 +76,7 @@ def generate(
     max_beam_edges,
     no_mirror_balls,
     quick,
+    skip_test_play,
 ):
     """Generate puzzles according to specified criteria"""
     generator = board_generator(
@@ -95,7 +102,13 @@ def generate(
         print(f"Predicted solve duration: {predict_solve_duration(board)}")
 
         t = datetime.datetime.now().isoformat(timespec="seconds")
-        f = filename or f"puzzles/generated/puzzle-{t}.txt"
+        if filename:
+            f = filename
+        elif skip_test_play:
+            # save directly as next puzzle (without test playing it)
+            f = first_missing_puzzle_path()
+        else:
+            f = f"puzzles/generated/puzzle-{t}.txt"
         save_board(board, f, header=f"# Generated at: {t}\n")
 
 
