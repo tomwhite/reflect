@@ -14,7 +14,9 @@ def load_firebase_events(path="results.json"):
     df = df[["puzzle", "name", "device", "timestamp"]]
     today = datetime.today().strftime("%Y-%m-%d")
     df = df[df["puzzle"] != today]
-    df["date"] = pd.to_datetime(df["puzzle"], format="%Y-%m-%d")
+    # coerce will set invalid date to NaT, which we then filter out with notnull
+    df["date"] = pd.to_datetime(df["puzzle"], errors="coerce", format="%Y-%m-%d")
+    df = df[df["date"].notnull()]
     return df
 
 
@@ -38,6 +40,11 @@ def compute_solve_duration(group):
         elif row["name"] == "solved":
             first_solve_time = row["timestamp"]
             break  # ignore any more events (e.g. if solved again)
+    # following guards against cases where events were out of order for some (unknown) reason
+    if isinstance(last_first_move_time_before_solved, float) and math.isnan(
+        last_first_move_time_before_solved
+    ):
+        return math.nan
     return (first_solve_time - last_first_move_time_before_solved).total_seconds()
 
 
