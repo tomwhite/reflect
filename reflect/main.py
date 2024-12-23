@@ -99,7 +99,7 @@ def generate(
                 break
         print(board.puzzle_string())
         pprint(board_features(board))
-        print(f"Predicted solve duration: {predict_solve_duration(board)}")
+        # print(f"Predicted solve duration: {predict_solve_duration(board)}")
 
         t = datetime.datetime.now().isoformat(timespec="seconds")
         if filename:

@@ -8,3 +8,6 @@ pillow
 pytest
 pytest-cov
 scikit-learn
+jupyter
+matplotlib
+seaborn
