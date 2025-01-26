@@ -1,4 +1,4 @@
-arcade
+arcade<3
 blessed
 click
 numba
