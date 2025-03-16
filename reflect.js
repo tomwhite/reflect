@@ -924,6 +924,7 @@ const config = {
   width: SCREEN_WIDTH,
   height: SCREEN_HEIGHT,
   scale: {
+    parent: "phaser-game",
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
