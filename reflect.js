@@ -662,7 +662,7 @@ class PlayScene extends Phaser.Scene {
       }
     });
 
-    if (today === "2024-01-01") {
+    if (today === "2026-01-01" || today === "2026-01-02" || today === "2026-01-03") {
       this.scene.launch("MessageScene");
       this.scene.pause();
     }
@@ -698,11 +698,11 @@ class MessageScene extends Phaser.Scene {
       this.scene.stop();
     });
 
-    y_offset += BLOCK_SIZE;
+    y_offset += BLOCK_SIZE / 2;
     this.add
       .text(SCREEN_WIDTH / 2, y_offset, "Happy New Year!", TEXT_STYLE_18_PT)
       .setOrigin(0.5);
-    y_offset += BLOCK_SIZE;
+    y_offset += BLOCK_SIZE / 2;
     this.add
       .text(
         SCREEN_WIDTH / 2,
@@ -711,9 +711,26 @@ class MessageScene extends Phaser.Scene {
         TEXT_STYLE_10_PT
       )
       .setOrigin(0.5);
+    y_offset += BLOCK_SIZE / 2;
+    this.add
+      .text(
+        SCREEN_WIDTH / 2,
+        y_offset,
+        "New game out now: Polarize",
+        TEXT_STYLE_10_PT
+      )
+      .setOrigin(0.5);
     y_offset += BLOCK_SIZE;
     this.add
-      .text(SCREEN_WIDTH / 2, y_offset, "OK", INVERSE_BUTTON_STYLE)
+      .text(SCREEN_WIDTH / 2, y_offset, "Play Polarize", INVERSE_BUTTON_STYLE)
+      .setOrigin(0.5)
+      .setInteractive()
+      .on("pointerup", (e) => {
+        window.open("https://tom-e-white.com/polarize/", '_blank');
+      });
+    y_offset += BLOCK_SIZE * 1.5;
+    this.add
+      .text(SCREEN_WIDTH / 2, y_offset, "Back to Reflect", INVERSE_BUTTON_STYLE)
       .setOrigin(0.5)
       .setInteractive()
       .on("pointerup", (e) => {
