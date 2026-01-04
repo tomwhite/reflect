@@ -779,6 +779,14 @@ class MenuScene extends Phaser.Scene {
         this.scene.launch("SolutionScene");
         this.scene.stop();
       });
+    y_offset += BLOCK_SIZE * 1.5;
+    this.add
+      .text(SCREEN_WIDTH / 2, y_offset, "Play Polarize", BUTTON_STYLE)
+      .setOrigin(0.5)
+      .setInteractive()
+      .on("pointerup", (e) => {
+        window.open("https://tom-e-white.com/polarize/", '_blank');
+      });
   }
 }
 
