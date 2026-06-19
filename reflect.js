@@ -499,6 +499,7 @@ class PlayScene extends PhaserScene {
     const cellGraphics = this.add.graphics();
     cellGraphics.fillStyle(0xf0f8ff);
 
+    const boardZones = Array.from(Array(n), () => Array(n));
     for (var i = 0; i < n; i++) {
       for (var j = 0; j < n; j++) {
         const [x, y] = blockIndexToCoord(i + 1, j + 1);
@@ -506,6 +507,7 @@ class PlayScene extends PhaserScene {
           .zone(x, y, CELL_SIZE, CELL_SIZE)
           .setRectangleDropZone(CELL_SIZE, CELL_SIZE)
           .setData("loc", [i, j]);
+        boardZones[j][i] = zone;
 
         cellGraphics.fillRect(
           zone.x - zone.input.hitArea.width / 2,
@@ -572,6 +574,26 @@ class PlayScene extends PhaserScene {
       this.scene.pause();
     });
 
+    const showWinState = () => {
+      cellGraphics.visible = false;
+      beamPathGraphics.visible = true;
+      gameOver = true;
+      let images = this.children.list.filter(
+        (x) => x instanceof Phaser.GameObjects.Image
+      );
+      images.forEach((image) =>
+        image.input ? this.input.setDraggable(image, false) : null
+      );
+      const stats = getStats();
+      this.add.text(BLOCK_SIZE * 1.5, BLOCK_SIZE * (n + 2) + BLOCK_SIZE / 2 + board_y_offset, stats.played, TEXT_STYLE_24_PT).setOrigin(0.5);
+      this.add.text(BLOCK_SIZE * 1.5, BLOCK_SIZE * (n + 2) + BLOCK_SIZE + board_y_offset, "Played", TEXT_STYLE_10_PT).setOrigin(0.5, 0);
+      this.add.text(BLOCK_SIZE * 3, BLOCK_SIZE * (n + 2) + BLOCK_SIZE / 2 + board_y_offset, stats.solved, TEXT_STYLE_24_PT).setOrigin(0.5);
+      this.add.text(BLOCK_SIZE * 3, BLOCK_SIZE * (n + 2) + BLOCK_SIZE + board_y_offset, "Solved", TEXT_STYLE_10_PT).setOrigin(0.5, 0);
+      this.add.text(BLOCK_SIZE * 4.5, BLOCK_SIZE * (n + 2) + BLOCK_SIZE / 2 + board_y_offset, stats.currentStreak, TEXT_STYLE_24_PT).setOrigin(0.5);
+      this.add.text(BLOCK_SIZE * 4.5, BLOCK_SIZE * (n + 2) + BLOCK_SIZE + board_y_offset, "Current", TEXT_STYLE_10_PT).setOrigin(0.5, 0);
+      this.add.text(BLOCK_SIZE * 4.5, BLOCK_SIZE * (n + 2) + BLOCK_SIZE * 1.3 + board_y_offset, "Streak", TEXT_STYLE_10_PT).setOrigin(0.5, 0);
+    };
+
     this.input.on("drag", function (pointer, gameObject, dragX, dragY) {
       // update image coordinates as it is dragged
       gameObject.x = dragX;
@@ -611,75 +633,8 @@ class PlayScene extends PhaserScene {
             boardValues[j][i] = block.data.get("piece");
           }
           if (JSON.stringify(boardValues) == JSON.stringify(hiddenBlocks)) {
-            cellGraphics.visible = false;
-            beamPathGraphics.visible = true;
-            gameOver = true;
-            // disable dragging
-            let images = this.children.list.filter(
-              (x) => x instanceof Phaser.GameObjects.Image
-            );
-            images.forEach((image) =>
-              image.input ? this.input.setDraggable(image, false) : null
-            );
-            // save to local storage
             saveSolved();
-            const stats = getStats();
-            this.add
-              .text(
-                BLOCK_SIZE * 1.5,
-                BLOCK_SIZE * (n + 2) + BLOCK_SIZE / 2 + board_y_offset,
-                stats.played,
-                TEXT_STYLE_24_PT
-              )
-              .setOrigin(0.5);
-            this.add
-              .text(
-                BLOCK_SIZE * 1.5,
-                BLOCK_SIZE * (n + 2) + BLOCK_SIZE + board_y_offset,
-                "Played",
-                TEXT_STYLE_10_PT
-              )
-              .setOrigin(0.5, 0);
-            this.add
-              .text(
-                BLOCK_SIZE * 3,
-                BLOCK_SIZE * (n + 2) + BLOCK_SIZE / 2 + board_y_offset,
-                stats.solved,
-                TEXT_STYLE_24_PT
-              )
-              .setOrigin(0.5);
-            this.add
-              .text(
-                BLOCK_SIZE * 3,
-                BLOCK_SIZE * (n + 2) + BLOCK_SIZE + board_y_offset,
-                "Solved",
-                TEXT_STYLE_10_PT
-              )
-              .setOrigin(0.5, 0);
-            this.add
-              .text(
-                BLOCK_SIZE * 4.5,
-                BLOCK_SIZE * (n + 2) + BLOCK_SIZE / 2 + board_y_offset,
-                stats.currentStreak,
-                TEXT_STYLE_24_PT
-              )
-              .setOrigin(0.5);
-            this.add
-              .text(
-                BLOCK_SIZE * 4.5,
-                BLOCK_SIZE * (n + 2) + BLOCK_SIZE + board_y_offset,
-                "Current",
-                TEXT_STYLE_10_PT
-              )
-              .setOrigin(0.5, 0);
-            this.add
-              .text(
-                BLOCK_SIZE * 4.5,
-                BLOCK_SIZE * (n + 2) + BLOCK_SIZE * 1.3 + board_y_offset,
-                "Streak",
-                TEXT_STYLE_10_PT
-              )
-              .setOrigin(0.5, 0);
+            showWinState();
             plausible("solved");
             saveEvent("solved");
           }
@@ -703,6 +658,31 @@ class PlayScene extends PhaserScene {
     if (today === "2026-01-01" || today === "2026-01-02" || today === "2026-01-03") {
       this.scene.launch("MessageScene");
       this.scene.pause();
+    }
+
+    // Restore solved state if puzzle was already completed today
+    if (getHistory("solvedHistory").includes(today)) {
+      const imagesByPiece = new Map();
+      for (const image of this.blockImages) {
+        const piece = image.getData("piece");
+        if (!imagesByPiece.has(piece)) imagesByPiece.set(piece, []);
+        imagesByPiece.get(piece).push(image);
+      }
+      for (var j = 0; j < n; j++) {
+        for (var i = 0; i < n; i++) {
+          const piece = hiddenBlocks[j][i];
+          if (piece === ".") continue;
+          const image = imagesByPiece.get(piece)?.shift();
+          if (!image) continue;
+          const zone = boardZones[j][i];
+          image.getData("zone").data.remove("image");
+          zone.setData("image", image);
+          image.setData("zone", zone);
+          image.x = zone.x;
+          image.y = zone.y;
+        }
+      }
+      showWinState();
     }
   }
 }

@@ -85,3 +85,19 @@ test('solving the puzzle records a solve in localStorage', async ({ page }) => {
   );
   expect(solved).toContain(TEST_DATE);
 });
+
+test('already-solved puzzle restores win state on reload', async ({ page }) => {
+  await page.goto(URL);
+  await page.evaluate((date) => {
+    localStorage.setItem('solvedHistory', JSON.stringify([date]));
+  }, TEST_DATE);
+
+  await page.reload();
+  await waitForGame(page);
+
+  const draggableCount = await page.evaluate(() => {
+    const scene = window.game.scene.getScene('PlayScene');
+    return scene.children.list.filter(x => x.input?.isDraggable).length;
+  });
+  expect(draggableCount).toBe(0);
+});
