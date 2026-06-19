@@ -6,6 +6,9 @@ module.exports = defineConfig({
     // Match game canvas dimensions exactly so game coords === browser coords
     viewport: { width: 480, height: 800 },
     baseURL: 'http://localhost:8080',
+    // launchOptions: {
+    //   slowMo: 1000,  // ms delay after each action
+    // },
   },
   webServer: {
     command: 'python3 -m http.server 8080',
