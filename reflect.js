@@ -963,7 +963,7 @@ if (typeof Phaser !== 'undefined') {
     scene: [PlayScene, MessageScene, MenuScene, HelpScene, SolutionScene],
   };
 
-  const game = new Phaser.Game(config);
+  window.game = new Phaser.Game(config);
 }
 
 export { Board, formatDate };
