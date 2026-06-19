@@ -96,7 +96,7 @@ function blockIndexToCoord(i, j, y_offset = BLOCK_SIZE) {
   return [x, y + y_offset];
 }
 
-class Board {
+export class Board {
   constructor(text) {
     this.fullBoard = text
       .split("\n")
@@ -200,7 +200,7 @@ class Board {
 
 // Format a date in ISO format (YYYY-MM-DD) according to local time
 // From https://stackoverflow.com/a/50130338
-function formatDate(date) {
+export function formatDate(date) {
   return new Date(date.getTime() - date.getTimezoneOffset() * 60000)
     .toISOString()
     .split("T")[0];
@@ -277,7 +277,7 @@ function saveEvent(name) {
   event.device = deviceId;
   if (isLocalhost()) {
     console.log("Ignoring event on localhost");
-  } else {
+  } else if (typeof db !== 'undefined') {
     db.collection("puzzles")
       .doc(today)
       .collection("events")
@@ -922,4 +922,3 @@ if (typeof Phaser !== 'undefined') {
   window.game = new Phaser.Game(config);
 }
 
-export { Board, formatDate };
