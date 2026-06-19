@@ -253,6 +253,14 @@ if (typeof firebase !== 'undefined') {
 const today = typeof window !== 'undefined' ? getEffectiveDate() : null;
 const deviceId = typeof window !== 'undefined' ? getDeviceId() : null;
 
+if (typeof document !== 'undefined') {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && getEffectiveDate() !== today) {
+      window.location.reload();
+    }
+  });
+}
+
 function saveEvent(name) {
   const eventHistoryJson = localStorage.getItem("eventHistory");
   const eventHistory =
