@@ -291,17 +291,16 @@ function saveEvent(name) {
   }
 }
 
+function getHistory(key) {
+  const json = localStorage.getItem(key);
+  return json == null ? [] : Array.from(new Set(JSON.parse(json))).sort();
+}
+
 function savePlayed() {
-  const solvedHistoryJson = localStorage.getItem("solvedHistory");
-  const solvedHistory =
-    solvedHistoryJson == null
-      ? []
-      : Array.from(new Set(JSON.parse(solvedHistoryJson))).sort();
-  const playedHistoryJson = localStorage.getItem("playedHistory");
-  const playedHistory =
-    playedHistoryJson == null
-      ? solvedHistory // init from solved history
-      : Array.from(new Set(JSON.parse(playedHistoryJson))).sort();
+  // init from solved history if played history has never been set
+  const playedHistory = localStorage.getItem("playedHistory") !== null
+    ? getHistory("playedHistory")
+    : getHistory("solvedHistory");
   if (!playedHistory.includes(today)) {
     playedHistory.push(today);
     localStorage.setItem("playedHistory", JSON.stringify(playedHistory));
@@ -309,11 +308,7 @@ function savePlayed() {
 }
 
 function saveSolved() {
-  const solvedHistoryJson = localStorage.getItem("solvedHistory");
-  const solvedHistory =
-    solvedHistoryJson == null
-      ? []
-      : Array.from(new Set(JSON.parse(solvedHistoryJson))).sort();
+  const solvedHistory = getHistory("solvedHistory");
   if (!solvedHistory.includes(today)) {
     solvedHistory.push(today);
     localStorage.setItem("solvedHistory", JSON.stringify(solvedHistory));
@@ -321,19 +316,11 @@ function saveSolved() {
 }
 
 function getStats() {
-  const playedHistoryJson = localStorage.getItem("playedHistory");
-  const playedHistory =
-    playedHistoryJson == null
-      ? []
-      : Array.from(new Set(JSON.parse(playedHistoryJson))).sort();
+  const playedHistory = getHistory("playedHistory");
   const played = Array.from(new Set(playedHistory)).length;
   console.log(`Played: ${played}`);
 
-  const solvedHistoryJson = localStorage.getItem("solvedHistory");
-  const solvedHistory =
-    solvedHistoryJson == null
-      ? []
-      : Array.from(new Set(JSON.parse(solvedHistoryJson))).sort();
+  const solvedHistory = getHistory("solvedHistory");
   const solved = Array.from(new Set(solvedHistory)).length;
   console.log(`Solved: ${solved}`);
 
@@ -422,6 +409,44 @@ function drawBoardLines(n, boardGraphics, board_y_offset) {
   }
 }
 
+function drawBoardContent(scene, board, board_y_offset) {
+  const n = board.n;
+  const beamPaths = board.beamPaths;
+
+  const logo = scene.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
+  logo.setScale(SCALE);
+
+  const beamGraphics = scene.add.graphics();
+  drawBeams(n, beamGraphics, beamPaths, board_y_offset);
+
+  const boardGraphics = scene.add.graphics();
+  drawBoardLines(n, boardGraphics, board_y_offset);
+
+  const beamPathGraphics = scene.add.graphics();
+  drawBeamPaths(n, beamPathGraphics, beamPaths, board_y_offset);
+
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      const ch = board.hiddenBlocks[i][j];
+      if (ch != ".") {
+        const [x0, y0] = blockIndexToCoord(j + 1, i + 1, board_y_offset);
+        scene.add.image(x0, y0, SPRITE_NAMES[ch]).setScale(SCALE);
+      }
+    }
+  }
+}
+
+function addCloseButton(scene) {
+  const [x, y] = blockIndexToCoord(5, 0);
+  const close = scene.add.image(x, y, "close").setInteractive();
+  close.setScale(SCALE);
+  close.on("pointerup", () => {
+    scene.scene.resume("PlayScene");
+    scene.scene.stop();
+    scene.scene.setVisible(true, "PlayScene");
+  });
+}
+
 const PhaserScene = typeof Phaser !== 'undefined' ? Phaser.Scene : class {};
 
 class PlayScene extends PhaserScene {
@@ -495,7 +520,7 @@ class PlayScene extends PhaserScene {
     // Cells (below board)
     const zones = [];
     for (var i = 0; i < pieces.length; i++) {
-      let [x, y] = blockIndexToCoord(
+      const [x, y] = blockIndexToCoord(
         (i % 4) + 1,
         Math.floor(i / 4),
         BLOCK_SIZE * (n + 2) + board_y_offset
@@ -517,7 +542,7 @@ class PlayScene extends PhaserScene {
     // Blocks (these are last so they are on top of everything else)
     this.blockImages = [];
     for (var i = 0; i < pieces.length; i++) {
-      let [x, y] = blockIndexToCoord(
+      const [x, y] = blockIndexToCoord(
         (i % 4) + 1,
         Math.floor(i / 4),
         BLOCK_SIZE * (n + 2) + board_y_offset
@@ -766,14 +791,7 @@ class MenuScene extends PhaserScene {
     const logo = this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
     logo.setScale(SCALE);
 
-    let [x, y] = blockIndexToCoord(5, 0);
-    const close = this.add.image(x, y, "close").setInteractive();
-    close.setScale(SCALE);
-    close.on("pointerup", (e) => {
-      this.scene.resume("PlayScene");
-      this.scene.stop();
-      this.scene.setVisible(true, "PlayScene");
-    });
+    addCloseButton(this);
 
     let y_offset = BLOCK_SIZE * 2;
     this.add
@@ -817,46 +835,11 @@ class HelpScene extends PhaserScene {
     const puzzle = this.cache.text.get("helpPuzzle");
     const board = new Board(puzzle);
     const n = board.n;
-    const hiddenBlocks = board.hiddenBlocks;
-    const beamPaths = board.beamPaths;
-    const pieces = board.pieces;
     const board_y_offset = BLOCK_SIZE * 2;
 
-    // Logo
-    const logo = this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
-    logo.setScale(SCALE);
+    drawBoardContent(this, board, board_y_offset);
 
-    // Beams
-    const beamGraphics = this.add.graphics();
-    drawBeams(n, beamGraphics, beamPaths, board_y_offset);
-
-    // Board lines
-    const boardGraphics = this.add.graphics();
-    drawBoardLines(n, boardGraphics, board_y_offset);
-
-    // Beam paths
-    const beamPathGraphics = this.add.graphics();
-    drawBeamPaths(n, beamPathGraphics, beamPaths, board_y_offset);
-
-    // Blocks
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
-        const ch = board.hiddenBlocks[i][j];
-        if (ch != ".") {
-          const [x0, y0] = blockIndexToCoord(j + 1, i + 1, board_y_offset);
-          this.add.image(x0, y0, SPRITE_NAMES[ch]).setScale(SCALE);
-        }
-      }
-    }
-
-    let [x, y] = blockIndexToCoord(5, 0);
-    const close = this.add.image(x, y, "close").setInteractive();
-    close.setScale(SCALE);
-    close.on("pointerup", (e) => {
-      this.scene.resume("PlayScene");
-      this.scene.stop();
-      this.scene.setVisible(true, "PlayScene");
-    });
+    addCloseButton(this);
 
     // Help text
     this.add.text(
@@ -905,38 +888,9 @@ class SolutionScene extends PhaserScene {
   create() {
     const puzzle = this.cache.text.get("yesterdayPuzzle");
     const board = new Board(puzzle);
-    const n = board.n;
-    const hiddenBlocks = board.hiddenBlocks;
-    const beamPaths = board.beamPaths;
-    const pieces = board.pieces;
     const board_y_offset = BLOCK_SIZE * 2;
 
-    // Logo
-    const logo = this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
-    logo.setScale(SCALE);
-
-    // Beams
-    const beamGraphics = this.add.graphics();
-    drawBeams(n, beamGraphics, beamPaths, board_y_offset);
-
-    // Board lines
-    const boardGraphics = this.add.graphics();
-    drawBoardLines(n, boardGraphics, board_y_offset);
-
-    // Beam paths
-    const beamPathGraphics = this.add.graphics();
-    drawBeamPaths(n, beamPathGraphics, beamPaths, board_y_offset);
-
-    // Blocks
-    for (let i = 0; i < n; i++) {
-      for (let j = 0; j < n; j++) {
-        const ch = board.hiddenBlocks[i][j];
-        if (ch != ".") {
-          const [x0, y0] = blockIndexToCoord(j + 1, i + 1, board_y_offset);
-          this.add.image(x0, y0, SPRITE_NAMES[ch]).setScale(SCALE);
-        }
-      }
-    }
+    drawBoardContent(this, board, board_y_offset);
 
     this.add
       .text(
@@ -947,14 +901,7 @@ class SolutionScene extends PhaserScene {
       )
       .setOrigin(0.5);
 
-    let [x, y] = blockIndexToCoord(5, 0);
-    const close = this.add.image(x, y, "close").setInteractive();
-    close.setScale(SCALE);
-    close.on("pointerup", (e) => {
-      this.scene.resume("PlayScene");
-      this.scene.stop();
-      this.scene.setVisible(true, "PlayScene");
-    });
+    addCloseButton(this);
   }
 }
 
