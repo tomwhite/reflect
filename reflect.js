@@ -34,7 +34,8 @@ const COLOURS = [
   "#aaffc3",
   "#000075",
   "#a9a9a9",
-].map((hex) => Phaser.Display.Color.HexStringToColor(hex).color);
+].map((hex) => typeof Phaser !== 'undefined'
+  ? Phaser.Display.Color.HexStringToColor(hex).color : 0);
 
 const TEXT_STYLE_10_PT = {
   fontFamily: "Arial",
@@ -243,12 +244,14 @@ const firebaseConfig = {
   appId: "1:694197574513:web:908d805861beec1db1b4d0",
 };
 
-firebase.initializeApp(firebaseConfig);
+let db;
+if (typeof firebase !== 'undefined') {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+}
 
-const db = firebase.firestore();
-
-const today = getEffectiveDate();
-const deviceId = getDeviceId();
+const today = typeof window !== 'undefined' ? getEffectiveDate() : null;
+const deviceId = typeof window !== 'undefined' ? getDeviceId() : null;
 
 function saveEvent(name) {
   const eventHistoryJson = localStorage.getItem("eventHistory");
@@ -410,7 +413,9 @@ function drawBoardLines(n, boardGraphics, board_y_offset) {
   }
 }
 
-class PlayScene extends Phaser.Scene {
+const PhaserScene = typeof Phaser !== 'undefined' ? Phaser.Scene : class {};
+
+class PlayScene extends PhaserScene {
   constructor() {
     super({ key: "PlayScene" });
   }
@@ -669,7 +674,7 @@ class PlayScene extends Phaser.Scene {
   }
 }
 
-class MessageScene extends Phaser.Scene {
+class MessageScene extends PhaserScene {
   constructor() {
     super({ key: "MessageScene" });
   }
@@ -740,7 +745,7 @@ class MessageScene extends Phaser.Scene {
   }
 }
 
-class MenuScene extends Phaser.Scene {
+class MenuScene extends PhaserScene {
   constructor() {
     super({ key: "MenuScene" });
   }
@@ -790,7 +795,7 @@ class MenuScene extends Phaser.Scene {
   }
 }
 
-class HelpScene extends Phaser.Scene {
+class HelpScene extends PhaserScene {
   constructor() {
     super({ key: "HelpScene" });
   }
@@ -876,7 +881,7 @@ class HelpScene extends Phaser.Scene {
   }
 }
 
-class SolutionScene extends Phaser.Scene {
+class SolutionScene extends PhaserScene {
   constructor() {
     super({ key: "SolutionScene" });
   }
@@ -944,17 +949,21 @@ class SolutionScene extends Phaser.Scene {
   }
 }
 
-const config = {
-  type: Phaser.AUTO,
-  width: SCREEN_WIDTH,
-  height: SCREEN_HEIGHT,
-  scale: {
-    parent: "phaser-game",
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-  },
-  backgroundColor: "#FFFFFF",
-  scene: [PlayScene, MessageScene, MenuScene, HelpScene, SolutionScene],
-};
+if (typeof Phaser !== 'undefined') {
+  const config = {
+    type: Phaser.AUTO,
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    scale: {
+      parent: "phaser-game",
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+    backgroundColor: "#FFFFFF",
+    scene: [PlayScene, MessageScene, MenuScene, HelpScene, SolutionScene],
+  };
 
-const game = new Phaser.Game(config);
+  const game = new Phaser.Game(config);
+}
+
+export { Board, formatDate };
