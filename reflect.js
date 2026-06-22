@@ -790,7 +790,7 @@ class MenuScene extends PhaserScene {
       .setOrigin(0.5)
       .setInteractive()
       .on("pointerup", (e) => {
-        this.scene.launch("HelpScene");
+        this.scene.launch("HowToPlayScene1");
         this.scene.stop();
       });
     y_offset += BLOCK_SIZE * 1.5;
@@ -822,54 +822,100 @@ class MenuScene extends PhaserScene {
   }
 }
 
-class HelpScene extends PhaserScene {
+class HowToPlayScene1 extends PhaserScene {
   constructor() {
-    super({ key: "HelpScene" });
+    super({ key: "HowToPlayScene1" });
   }
 
   preload() {
-    this.load.text("helpPuzzle", "puzzles/puzzle-help.txt");
+    this.load.text("helpPuzzle1", "puzzles/puzzle-help1.txt");
   }
 
   create() {
-    const puzzle = this.cache.text.get("helpPuzzle");
+    const puzzle = this.cache.text.get("helpPuzzle1");
     const board = new Board(puzzle);
-    const n = board.n;
-    const board_y_offset = BLOCK_SIZE * 2;
+    let board_y_offset = BLOCK_SIZE;
+
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "Position the mirrors so each beam of light",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+    board_y_offset += BLOCK_H;
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "connects edges of the same colour",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+
+    board_y_offset += BLOCK_SIZE;
+    drawBoardContent(this, board, board_y_offset);
+
+    board_y_offset += 4 * BLOCK_SIZE;
+
+    board_y_offset += 3 * BLOCK_SIZE;
+    this.add
+      .text(SCREEN_WIDTH / 2, board_y_offset, "Next", BUTTON_STYLE)
+      .setOrigin(0.5)
+      .setInteractive()
+      .on("pointerup", (e) => {
+        this.scene.launch("HowToPlayScene2");
+        this.scene.stop();
+      });
+  }
+}
+
+class HowToPlayScene2 extends PhaserScene {
+  constructor() {
+    super({ key: "HowToPlayScene2" });
+  }
+
+  preload() {
+    this.load.text("helpPuzzle2", "puzzles/puzzle-help2.txt");
+  }
+
+  create() {
+    const puzzle = this.cache.text.get("helpPuzzle2");
+    const board = new Board(puzzle);
+    let board_y_offset = BLOCK_SIZE;
+
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "Beams from just one edge must end",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+    board_y_offset += BLOCK_H;
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "at a mirror ball",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
 
     drawBoardContent(this, board, board_y_offset);
 
-    addCloseButton(this);
+    board_y_offset += 6 * BLOCK_SIZE;
 
-    // Help text
     this.add.text(
-      0,
-      BLOCK_SIZE * 1.25,
-      "Drag all of the mirrors onto the grid, so each",
-      TEXT_STYLE_10_PT
-    );
-    this.add.text(
-      0,
-      BLOCK_SIZE * 1.625,
-      "beam of light connects to the same colour",
-      TEXT_STYLE_10_PT
-    );
-    this.add.text(0, BLOCK_SIZE * 2.375, "For example:", TEXT_STYLE_10_PT);
-    let y_offset = BLOCK_SIZE * (n + 2) + board_y_offset;
-    this.add.text(
-      0,
-      y_offset,
-      "A new puzzle is released every day",
-      TEXT_STYLE_10_PT
-    );
-    y_offset += BLOCK_SIZE * 0.375;
-    y_offset += BLOCK_SIZE * 0.375;
-    this.add.text(
-      0,
-      y_offset,
-      "© 2023 Tom White (tom.e.white@gmail.com)",
-      TEXT_STYLE_10_PT
-    );
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "All mirrors must be placed on the board",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+
+    board_y_offset += 2 * BLOCK_SIZE;
+    this.add
+      .text(SCREEN_WIDTH / 2, board_y_offset, "Done", BUTTON_STYLE)
+      .setOrigin(0.5)
+      .setInteractive()
+      .on("pointerup", (e) => {
+        this.scene.resume("PlayScene");
+        this.scene.stop();
+        this.scene.setVisible(true, "PlayScene");
+      });
   }
 }
 
@@ -963,6 +1009,14 @@ class AboutScene extends PhaserScene {
       TEXT_STYLE_12_PT
     ).setOrigin(0.5);
 
+    board_y_offset += BLOCK_SIZE;
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "© 2023 Tom White",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+
     addCloseButton(this);
   }
 }
@@ -978,7 +1032,7 @@ if (typeof Phaser !== 'undefined') {
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     backgroundColor: "#FFFFFF",
-    scene: [PlayScene, MessageScene, MenuScene, HelpScene, SolutionScene, AboutScene],
+    scene: [PlayScene, MessageScene, MenuScene, HowToPlayScene1, HowToPlayScene2, SolutionScene, AboutScene],
   };
 
   window.game = new Phaser.Game(config);

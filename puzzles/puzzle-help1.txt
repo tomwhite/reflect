@@ -1,0 +1,7 @@
+# A simple puzzle for How to Play pages
+...A..
+......
+C....C
+A../\.
+......
+...BB.
