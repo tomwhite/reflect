@@ -9,7 +9,7 @@ puzzle svgs --solution puzzles solutions
 puzzle features puzzles features.csv
 
 # Get timing data
-source ./get-stats.sh
+python get-stats.py
 
 # Run notebook
 jupyter nbconvert --to notebook --execute daily-stats.ipynb

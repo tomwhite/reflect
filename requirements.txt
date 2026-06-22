@@ -1,4 +1,5 @@
 arcade<3
+firebase-admin
 blessed
 click
 numba
