@@ -7,6 +7,9 @@ const SCREEN_HEIGHT = 400 * SCALE;
 const BLOCK_SIZE = 40 * SCALE;
 const CELL_SIZE = 38 * SCALE;
 
+const BLOCK_H = BLOCK_SIZE / 2;
+const BLOCK_3Q = BLOCK_SIZE + BLOCK_H;
+
 const BEAM_WIDTH = 5 * SCALE;
 const GRID_WIDTH = 1 * SCALE;
 
@@ -40,6 +43,15 @@ const COLOURS = [
 const TEXT_STYLE_10_PT = {
   fontFamily: "Arial",
   fontSize: 10 * SCALE,
+  color: "black",
+  padding: {
+    bottom: 2,
+  },
+};
+
+const TEXT_STYLE_12_PT = {
+  fontFamily: "Arial",
+  fontSize: 12 * SCALE,
   color: "black",
   padding: {
     bottom: 2,
@@ -798,6 +810,15 @@ class MenuScene extends PhaserScene {
       .on("pointerup", (e) => {
         window.open("https://tom-e-white.com/polarize/", '_blank');
       });
+    y_offset += BLOCK_SIZE * 1.5;
+    this.add
+      .text(SCREEN_WIDTH / 2, y_offset, "About", BUTTON_STYLE)
+      .setOrigin(0.5)
+      .setInteractive()
+      .on("pointerup", (e) => {
+        this.scene.launch("AboutScene");
+        this.scene.stop();
+      });
   }
 }
 
@@ -884,6 +905,68 @@ class SolutionScene extends PhaserScene {
   }
 }
 
+class AboutScene extends PhaserScene {
+  constructor() {
+    super({ key: "AboutScene" });
+  }
+
+  preload() {}
+
+  create() {
+    // Logo
+    const logo = this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
+    logo.setScale(SCALE);
+
+    let board_y_offset = BLOCK_SIZE;
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "A light puzzle by Tom White",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+
+    board_y_offset += BLOCK_SIZE;
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "I developed the idea and graphics in the 80s,",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+    board_y_offset += BLOCK_H;
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "but only created the daily puzzle in 2023.",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+
+    board_y_offset += BLOCK_SIZE;
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "A new puzzle is released every day",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+
+    board_y_offset += BLOCK_SIZE;
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "Send any comments or feedback to",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+    board_y_offset += BLOCK_H;
+    this.add.text(
+      SCREEN_WIDTH / 2,
+      board_y_offset + BLOCK_H,
+      "tom.e.white@gmail.com",
+      TEXT_STYLE_12_PT
+    ).setOrigin(0.5);
+
+    addCloseButton(this);
+  }
+}
+
 if (typeof Phaser !== 'undefined') {
   const config = {
     type: Phaser.AUTO,
@@ -895,7 +978,7 @@ if (typeof Phaser !== 'undefined') {
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     backgroundColor: "#FFFFFF",
-    scene: [PlayScene, MessageScene, MenuScene, HelpScene, SolutionScene],
+    scene: [PlayScene, MessageScene, MenuScene, HelpScene, SolutionScene, AboutScene],
   };
 
   window.game = new Phaser.Game(config);
