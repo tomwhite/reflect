@@ -461,13 +461,13 @@ function addCloseButton(scene) {
 async function shareReflect(streak) {
   const shareData = {
     title: 'Reflect',
-    text: `I solved today's Reflect puzzle! Current streak: ${streak}`,
+    text: `I solved today's Reflect puzzle!`,
     url: 'https://tom-e-white.com/reflect/',
   };
   if (navigator.canShare) {
     try {
-      const blob = await fetch('logo.png').then(r => r.blob());
-      const file = new File([blob], 'logo.png', { type: 'image/png' });
+      const blob = await fetch('favicon/favicon-32x32.png').then(r => r.blob());
+      const file = new File([blob], 'reflect.png', { type: 'image/png' });
       if (navigator.canShare({ files: [file] })) {
         shareData.files = [file];
       }
@@ -679,7 +679,7 @@ class PlayScene extends PhaserScene {
             showWinState();
             plausible("solved");
             saveEvent("solved");
-            if (today.endsWith("-01")) {  // show on 1st of every month
+            if (today.endsWith("-30")) {  // show on 1st of every month
               this.scene.launch('ShareScene', { streak: getStats().currentStreak });
             }
           }
