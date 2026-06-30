@@ -628,12 +628,14 @@ class PlayScene extends PhaserScene {
       this.add.text(BLOCK_SIZE * 4.5, BLOCK_SIZE * (n + 2) + BLOCK_SIZE / 2 + board_y_offset, stats.currentStreak, TEXT_STYLE_24_PT).setOrigin(0.5);
       this.add.text(BLOCK_SIZE * 4.5, BLOCK_SIZE * (n + 2) + BLOCK_SIZE + board_y_offset, "Current", TEXT_STYLE_10_PT).setOrigin(0.5, 0);
       this.add.text(BLOCK_SIZE * 4.5, BLOCK_SIZE * (n + 2) + BLOCK_SIZE * 1.3 + board_y_offset, "Streak", TEXT_STYLE_10_PT).setOrigin(0.5, 0);
-      this.add.text(
-        SCREEN_WIDTH / 2,
-        BLOCK_SIZE * (n + 2) + BLOCK_SIZE * 2.5 + board_y_offset,
-        'Share',
-        BUTTON_STYLE
-      ).setOrigin(0.5).setInteractive().on('pointerup', () => shareReflect(stats.currentStreak));
+      if (navigator.canShare) {
+        this.add.text(
+          SCREEN_WIDTH / 2,
+          BLOCK_SIZE * (n + 2) + BLOCK_SIZE * 2.5 + board_y_offset,
+          'Share',
+          BUTTON_STYLE
+        ).setOrigin(0.5).setInteractive().on('pointerup', () => shareReflect(stats.currentStreak));
+      }
     };
 
     this.input.on("drag", function (pointer, gameObject, dragX, dragY) {
@@ -679,7 +681,7 @@ class PlayScene extends PhaserScene {
             showWinState();
             plausible("solved");
             saveEvent("solved");
-            if (today.endsWith("-30")) {  // show on 1st of every month
+            if (navigator.canShare && today.endsWith("-30")) {  // show on 1st of every month
               this.scene.launch('ShareScene', { streak: getStats().currentStreak });
             }
           }
