@@ -458,16 +458,17 @@ function addCloseButton(scene) {
   });
 }
 
+let snapshotBlob = null;
+
 async function shareReflect(streak) {
   const shareData = {
     title: 'Reflect',
     text: `I solved today's Reflect puzzle!`,
     url: 'https://tom-e-white.com/reflect/',
   };
-  if (navigator.canShare) {
+  if (navigator.canShare && snapshotBlob) {
     try {
-      const blob = await fetch('favicon/favicon-32x32.png').then(r => r.blob());
-      const file = new File([blob], 'reflect.png', { type: 'image/png' });
+      const file = new File([snapshotBlob], 'reflect.png', { type: 'image/png' });
       if (navigator.canShare({ files: [file] })) {
         shareData.files = [file];
       }
@@ -601,6 +602,22 @@ class PlayScene extends PhaserScene {
       image.setData("zone", zone);
     }
 
+    this.game.events.once(Phaser.Core.Events.POST_RENDER, () => {
+      this.game.renderer.snapshot((image) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.naturalWidth;
+        canvas.height = image.naturalHeight;
+        canvas.getContext('2d').drawImage(image, 0, 0);
+        canvas.toBlob((blob) => {
+          snapshotBlob = blob;
+          if (getHistory("solvedHistory").includes(today)) {
+            restoreToSolvedState();
+            showWinState();
+          }
+        }, 'image/png');
+      });
+    });
+
     let [x, y] = blockIndexToCoord(5, 0);
     const help = this.add.image(x, y, "help").setInteractive();
     help.setScale(SCALE);
@@ -635,6 +652,29 @@ class PlayScene extends PhaserScene {
           'Share',
           BUTTON_STYLE
         ).setOrigin(0.5).setInteractive().on('pointerup', () => shareReflect(stats.currentStreak));
+      }
+    };
+
+    const restoreToSolvedState = () => {
+      const imagesByPiece = new Map();
+      for (const image of this.blockImages) {
+        const piece = image.getData("piece");
+        if (!imagesByPiece.has(piece)) imagesByPiece.set(piece, []);
+        imagesByPiece.get(piece).push(image);
+      }
+      for (var j = 0; j < n; j++) {
+        for (var i = 0; i < n; i++) {
+          const piece = hiddenBlocks[j][i];
+          if (piece === ".") continue;
+          const image = imagesByPiece.get(piece)?.shift();
+          if (!image) continue;
+          const zone = boardZones[j][i];
+          image.getData("zone").data.remove("image");
+          zone.setData("image", image);
+          image.setData("zone", zone);
+          image.x = zone.x;
+          image.y = zone.y;
+        }
       }
     };
 
@@ -707,30 +747,6 @@ class PlayScene extends PhaserScene {
       this.scene.pause();
     }
 
-    // Restore solved state if puzzle was already completed today
-    if (getHistory("solvedHistory").includes(today)) {
-      const imagesByPiece = new Map();
-      for (const image of this.blockImages) {
-        const piece = image.getData("piece");
-        if (!imagesByPiece.has(piece)) imagesByPiece.set(piece, []);
-        imagesByPiece.get(piece).push(image);
-      }
-      for (var j = 0; j < n; j++) {
-        for (var i = 0; i < n; i++) {
-          const piece = hiddenBlocks[j][i];
-          if (piece === ".") continue;
-          const image = imagesByPiece.get(piece)?.shift();
-          if (!image) continue;
-          const zone = boardZones[j][i];
-          image.getData("zone").data.remove("image");
-          zone.setData("image", image);
-          image.setData("zone", zone);
-          image.x = zone.x;
-          image.y = zone.y;
-        }
-      }
-      showWinState();
-    }
   }
 }
 
