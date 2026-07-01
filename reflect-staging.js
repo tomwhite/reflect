@@ -605,9 +605,15 @@ class PlayScene extends PhaserScene {
     this.game.events.once(Phaser.Core.Events.POST_RENDER, () => {
       this.game.renderer.snapshot((image) => {
         const canvas = document.createElement('canvas');
-        canvas.width = image.naturalWidth;
-        canvas.height = image.naturalHeight;
-        canvas.getContext('2d').drawImage(image, 0, 0);
+        const size = Math.max(image.naturalWidth, image.naturalHeight);
+        const offsetX = Math.floor((size - image.naturalWidth) / 2);
+        const offsetY = Math.floor((size - image.naturalHeight) / 2);
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(image, offsetX, offsetY);
         canvas.toBlob((blob) => {
           snapshotBlob = blob;
           if (getHistory("solvedHistory").includes(today)) {
