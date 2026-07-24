@@ -20,7 +20,7 @@ const SPRITE_NAMES = {
 };
 
 // https://sashamaps.net/docs/resources/20-colors/
-const COLOURS = [
+const DEFAULT_COLOURS = [
   "#e6194B",
   "#3cb44b",
   "#ffe119",
@@ -39,6 +39,37 @@ const COLOURS = [
   "#a9a9a9",
 ].map((hex) => typeof Phaser !== 'undefined'
   ? Phaser.Display.Color.HexStringToColor(hex).color : 0);
+
+// Colours from the same site which are 99.99% accessible
+const ACCESSIBLE_COLOURS = [
+  "#ffe119",
+  "#4363d8",
+  "#f58231",
+  "#dcbeff",
+  "#800000",
+  "#000075",
+  "#a9a9a9",
+  "#000000",
+  // the following are 99% accessible, but will only be used for rare puzzles that need more than 8 colours
+  "#e6194B",
+  "#3cb44b",
+  "#42d4f4",
+  "#f032e6",
+  "#fabed4",
+  "#469990",
+  "#9A6324",
+  "#fffac8",
+  "#aaffc3",
+].map((hex) => typeof Phaser !== 'undefined'
+  ? Phaser.Display.Color.HexStringToColor(hex).color : 0);
+
+function isAccessibleMode() {
+  return JSON.parse(localStorage.getItem("accessibleMode")) == true;
+}
+
+function getColours() {
+  return isAccessibleMode() ? ACCESSIBLE_COLOURS : DEFAULT_COLOURS;
+}
 
 const TEXT_STYLE_10_PT = {
   fontFamily: "Arial",
@@ -355,7 +386,7 @@ function drawBeams(n, beamGraphics, beamPaths, board_y_offset) {
     const start = beamPath[0];
     const end = beamPath[beamPath.length - 1];
     for (let [i, j] of [start, end]) {
-      beamGraphics.lineStyle(BEAM_WIDTH, COLOURS[bi]);
+      beamGraphics.lineStyle(BEAM_WIDTH, getColours()[bi]);
       const [x, y] = blockIndexToCoord(i, j, board_y_offset);
       if (i == 0) {
         beamGraphics.lineBetween(BEAM_WIDTH, y, BLOCK_SIZE, y);
@@ -394,7 +425,7 @@ function drawBeamPaths(n, beamPathGraphics, beamPaths, board_y_offset) {
       const [x0, y0] = blockIndexToCoord(start[0], start[1], board_y_offset);
       const [x1, y1] = blockIndexToCoord(end[0], end[1], board_y_offset);
 
-      beamPathGraphics.lineStyle(BEAM_WIDTH, COLOURS[bi]);
+      beamPathGraphics.lineStyle(BEAM_WIDTH, getColours()[bi]);
       beamPathGraphics.lineBetween(x0, y0, x1, y1);
     }
   }
@@ -918,6 +949,15 @@ class MenuScene extends PhaserScene {
       });
     y_offset += BLOCK_SIZE * 1.5;
     this.add
+      .text(SCREEN_WIDTH / 2, y_offset, "Settings", BUTTON_STYLE)
+      .setOrigin(0.5)
+      .setInteractive()
+      .on("pointerup", (e) => {
+        this.scene.launch("SettingsScene");
+        this.scene.stop();
+      });
+    y_offset += BLOCK_SIZE * 1.5;
+    this.add
       .text(SCREEN_WIDTH / 2, y_offset, "About", BUTTON_STYLE)
       .setOrigin(0.5)
       .setInteractive()
@@ -1057,6 +1097,45 @@ class SolutionScene extends PhaserScene {
   }
 }
 
+class SettingsScene extends PhaserScene {
+  constructor() {
+    super({ key: "SettingsScene" });
+  }
+
+  preload() {}
+
+  create() {
+    // Logo
+    const logo = this.add.image(SCREEN_WIDTH / 2, BLOCK_SIZE / 2, "logo");
+    logo.setScale(SCALE);
+
+    addCloseButton(this);
+
+    let y_offset = BLOCK_SIZE * 2;
+    if (isAccessibleMode()) {
+      this.add
+        .text(SCREEN_WIDTH / 2, y_offset, "Use default colours", BUTTON_STYLE)
+        .setOrigin(0.5)
+        .setInteractive()
+        .on("pointerup", (e) => {
+          localStorage.removeItem("accessibleMode");
+          this.scene.launch("PlayScene");
+          this.scene.stop();
+        });
+    } else {
+      this.add
+        .text(SCREEN_WIDTH / 2, y_offset, "Use accessible colours", BUTTON_STYLE)
+        .setOrigin(0.5)
+        .setInteractive()
+        .on("pointerup", (e) => {
+          localStorage.setItem("accessibleMode", JSON.stringify(true));
+          this.scene.launch("PlayScene");
+          this.scene.stop();
+        });
+    }
+  }
+}
+
 class AboutScene extends PhaserScene {
   constructor() {
     super({ key: "AboutScene" });
@@ -1138,7 +1217,7 @@ if (typeof Phaser !== 'undefined') {
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     backgroundColor: "#FFFFFF",
-    scene: [PlayScene, MessageScene, ShareScene, MenuScene, HowToPlayScene1, HowToPlayScene2, SolutionScene, AboutScene],
+    scene: [PlayScene, MessageScene, ShareScene, MenuScene, HowToPlayScene1, HowToPlayScene2, SolutionScene, SettingsScene, AboutScene],
   };
 
   window.game = new Phaser.Game(config);
