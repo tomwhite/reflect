@@ -8,7 +8,6 @@ from .board import (
     boards_are_unique,
 )
 from .difficulty import board_features, predict_solve_duration
-from .game import play_game
 from .generate import board_generator, generate, quick_generate
 from .solve import (
     cproduct_idx,

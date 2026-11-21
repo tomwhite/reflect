@@ -12,7 +12,6 @@ from reflect import (
     Board,
     board_features,
     board_generator,
-    play_game,
     play_game_on_terminal,
     predict_solve_duration,
     print_svg,
@@ -140,6 +139,9 @@ def play(filename, terminal, min_pieces, max_pieces, no_mirror_balls, quick):
     if terminal:
         play_game_on_terminal(board)
     else:
+        # imported here so arcade is only loaded when the GUI is used
+        from reflect.game import play_game
+
         play_game(board, generator)
 
 

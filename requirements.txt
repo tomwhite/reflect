@@ -1,4 +1,4 @@
-arcade<3
+arcade
 firebase-admin
 blessed
 click
